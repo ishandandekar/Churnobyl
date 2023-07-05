@@ -3,8 +3,8 @@
 > **Warning**: This is a work in progress. Until specified, please do not directly use the code. There will be addtition as well as improvements over the time. Use the code only to get inspiration and not for actual production usage.
 
 ### TODO:
-- [ ] Setup project
-- [ ] Integrate python environment
+- [x] Setup project
+- [x] Integrate python environment
 - [ ] Learn pre-commit and linters
 - [ ] Make base notebooks without thinking of optimization
 - [ ] Mdoulize the notebook code into python scripts
