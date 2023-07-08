@@ -12,3 +12,16 @@ repos:
       - id: detect-aws-credentials
       - id: detect-private-key
       - id: requirements-txt-fixer
+  # - repo: https://github.com/psf/black
+  #   rev: stable
+  #   hooks:
+  #   - id: black
+  # - repo: https://github.com/pycqa/isort
+  #   rev: 5.11.2
+  #   hooks:
+  #     - id: isort
+  #       name: isort (python)
+  # - repo: https://github.com/PyCQA/flake8
+  #   rev: 6.0.0
+  #   hooks:
+  #   -   id: flake8
