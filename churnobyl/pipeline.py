@@ -74,5 +74,5 @@ if __name__ == "__main__":
     )
     parser.add_argument("--config", default="./config.yaml")
     args = parser.parse_args()
-    config_path = Path(args.config)
+    config_path = Path(args.config_dir)
     main(config_path=config_path)
