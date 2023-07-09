@@ -24,12 +24,21 @@ from prefect import task, flow
 import argparse
 import yaml
 from munch import Munch
+import wandb
 from churnobyl import data as Data, model as Model
 
 
 @task
-def config():
-    ...
+def config(path: Path) -> Munch:
+    if path.exists():
+        with open(path, "r") as stream:
+            try:
+                config = yaml.safe_load(stream)
+                return Munch(config)
+            except yaml.YAMLError as exc:
+                print(exc)
+    else:
+        raise Exception("Path error occured. File does not exist")
 
 
 @task
@@ -53,7 +62,8 @@ def push_artifacts():
 
 
 @flow
-def main(config_path: Path):
+def main(config_path: Path) -> None:
+    config = config(config_path)
     pass
 
 

@@ -1,0 +1,4 @@
+PATH:
+  DATA: data
+  VIZ: images
+  MODEL: model
