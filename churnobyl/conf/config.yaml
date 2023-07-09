@@ -2,3 +2,7 @@ PATH:
   DATA: data
   VIZ: images
   MODEL: model
+
+data:
+  schema: data_schema.yaml
+  train_test_split: 0.1
