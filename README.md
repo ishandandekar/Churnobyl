@@ -9,7 +9,9 @@
 - [x] Learn pre-commit and linters
 - [x] Make base notebooks without thinking of optimization
 - [x] Create a `pipeline.py` script
-- [ ] Mdoulize the notebook code into python scripts
+- [ ] Explore and update the files in `./data_schema`
+- [ ] Only keep `.yaml` file for schema
+- [ ] Modulize the notebook code into python scripts
 - [ ] Integrate prefect for workflow orchestration
 - [ ] Add workflow files using Github Actions
 - [ ] Explore AWS services to think for deployment options
