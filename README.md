@@ -8,8 +8,8 @@
 - [x] Integrate python environment
 - [x] Learn pre-commit and linters
 - [x] Make base notebooks without thinking of optimization
+- [x] Create a `pipeline.py` script
 - [ ] Mdoulize the notebook code into python scripts
-- [ ] Create a `pipeline.py` script
 - [ ] Integrate prefect for workflow orchestration
 - [ ] Add workflow files using Github Actions
 - [ ] Explore AWS services to think for deployment options
