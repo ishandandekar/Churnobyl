@@ -23,6 +23,7 @@ import boto3
 from prefect import task, flow
 import argparse
 import yaml
+from munch import Munch
 from churnobyl import data as Data, model as Model
 
 
