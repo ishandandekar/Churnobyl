@@ -15,3 +15,7 @@
 - [ ] Explore AWS services to think for deployment options
 - [ ] Try EvidentlyAI model monitoring service
 - [ ] Integrate Streamlit to display graphs
+
+### Refs:
+
+- https://stackoverflow.com/questions/52570869/load-yaml-as-nested-objects-instead-of-dictionary-in-python
