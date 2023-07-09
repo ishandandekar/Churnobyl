@@ -16,11 +16,15 @@ from sklearn import (
     svm,
 )
 import optuna as opt
+import wandb
 
 
-def run_experiments(model_list):
+# TODO: Add model experiment code
+def run_experiments(model_list, metric):
+    # TODO: Raise error if best model is not rf or xgb
     ...
 
 
+# TODO: Add code for rf and xgb tuning
 def tune_model():
     ...
