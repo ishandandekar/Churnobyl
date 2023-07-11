@@ -1,8 +1,9 @@
 PATH:
-  DATA: data
-  VIZ: images
-  MODEL: model
+  data: data
+  viz: images
+  model: model
 
 data:
-  schema: data_schema.yaml
+  churn_schema: data_schemas/churn_schema.yaml
+  input_schema: data_schemas/input_schema.yaml
   train_test_split: 0.1
