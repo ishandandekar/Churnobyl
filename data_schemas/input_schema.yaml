@@ -1,0 +1,281 @@
+schema_type: dataframe
+version: 0.15.2
+columns:
+  customerID:
+    title: customerID
+    description: Unique ID for every entry
+    dtype: object
+    nullable: false
+    checks: null
+    unique: true
+    coerce: false
+    required: true
+    regex: false
+  gender:
+    title: gender
+    description: Whether the customer is a male or female
+    dtype: object
+    nullable: false
+    checks:
+      isin:
+      - Male
+      - Female
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  SeniorCitizen:
+    title: SeniorCitizen
+    description: Whether the customer is a senior citizen or not
+    dtype: int64
+    nullable: false
+    checks:
+      isin:
+      - 0
+      - 1
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  Partner:
+    title: Partner
+    description: Whether the customer has a partner or not
+    dtype: object
+    nullable: false
+    checks:
+      isin:
+      - 'Yes'
+      - 'No'
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  Dependents:
+    title: Dependents
+    description: Whether the customer has dependents or not
+    dtype: object
+    nullable: false
+    checks: null
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  tenure:
+    title: tenure
+    description: Number of months the customer has stayed with the company
+    dtype: int64
+    nullable: false
+    checks:
+      greater_than_or_equal_to: 0.0
+      less_than_or_equal_to: 72.0
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  PhoneService:
+    title: PhoneService
+    description: Whether the customer has a phone service or not
+    dtype: object
+    nullable: false
+    checks:
+      isin:
+      - 'No'
+      - 'Yes'
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  MultipleLines:
+    title: MultipleLines
+    description: Whether the customer has multiple lines or not
+    dtype: object
+    nullable: false
+    checks:
+      isin:
+      - 'No'
+      - 'Yes'
+      - No phone service
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  InternetService:
+    title: InternetService
+    description: Customer's internet service provider
+    dtype: object
+    nullable: false
+    checks:
+      isin:
+      - DSL
+      - Fiber optic
+      - 'No'
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  OnlineSecurity:
+    title: OnlineSecurity
+    description: Whether the customer has online security or not
+    dtype: object
+    nullable: false
+    checks:
+      isin:
+      - 'No'
+      - 'Yes'
+      - No internet service
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  OnlineBackup:
+    title: OnlineBackup
+    description: Whether the customer has online backup or not
+    dtype: object
+    nullable: false
+    checks:
+      isin:
+      - 'Yes'
+      - 'No'
+      - No internet service
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  DeviceProtection:
+    title: DeviceProtection
+    description: Whether the customer has device protection or not
+    dtype: object
+    nullable: false
+    checks:
+      isin:
+      - 'No'
+      - 'Yes'
+      - No internet service
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  TechSupport:
+    title: TechSupport
+    description: Whether the customer has tech support or not
+    dtype: object
+    nullable: false
+    checks:
+      isin:
+      - 'No'
+      - 'Yes'
+      - No internet service
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  StreamingTV:
+    title: StreamingTV
+    description: Whether the customer has streaming TV or not
+    dtype: object
+    nullable: false
+    checks:
+      isin:
+      - 'No'
+      - 'Yes'
+      - No internet service
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  StreamingMovies:
+    title: StreamingMovies
+    description: Whether the customer has streaming movies or not
+    dtype: object
+    nullable: false
+    checks:
+      isin:
+      - 'No'
+      - 'Yes'
+      - No internet service
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  Contract:
+    title: Contract
+    description: The contract term of the customer
+    dtype: object
+    nullable: false
+    checks:
+      isin:
+      - Month-to-month
+      - One year
+      - Two year
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  PaperlessBilling:
+    title: PaperlessBilling
+    description: Whether the customer has paperless billing or not
+    dtype: object
+    nullable: false
+    checks:
+      isin:
+      - 'Yes'
+      - 'No'
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  PaymentMethod:
+    title: PaymentMethod
+    description: The customer's payment method
+    dtype: object
+    nullable: false
+    checks:
+      isin:
+      - Electronic check
+      - Mailed check
+      - Bank transfer (automatic)
+      - Credit card (automatic)
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  MonthlyCharges:
+    title: MonthlyCharges
+    description: The amount charged to the customer monthly
+    dtype: float64
+    nullable: false
+    checks: null
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+  TotalCharges:
+    title: TotalCharges
+    description: The total amount charged to the customer
+    dtype: object
+    nullable: false
+    checks: null
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+checks: null
+index:
+- title: null
+  description: null
+  dtype: int64
+  nullable: false
+  checks: null
+  name: null
+  unique: false
+  coerce: false
+dtype: null
+coerce: true
+strict: false
+name: null
+ordered: false
+unique: null
+report_duplicates: all
+unique_column_names: false
+title: null
+description: null

@@ -1,0 +1,35 @@
+schema_type: dataframe
+version: 0.15.2
+columns:
+  Churn:
+    title: Churn
+    description: Whether the customer churned or not
+    dtype: object
+    nullable: false
+    checks:
+      isin:
+      - NoYes
+    unique: false
+    coerce: false
+    required: true
+    regex: false
+checks: null
+index:
+- title: null
+  description: null
+  dtype: int64
+  nullable: false
+  checks: null
+  name: null
+  unique: false
+  coerce: false
+dtype: null
+coerce: true
+strict: false
+name: null
+ordered: false
+unique: null
+report_duplicates: all
+unique_column_names: false
+title: null
+description: null
