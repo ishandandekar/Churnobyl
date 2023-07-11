@@ -13,8 +13,14 @@ Any help is always welcomed. The project is open-source. The key features that a
 - [x] Learn pre-commit and linters
 - [x] Make base notebooks without thinking of optimization
 - [x] Create a `pipeline.py` script
-- [ ] Explore and update the files in `./data_schema`
-- [ ] Only keep `.yaml` file for schema
+- [x] Explore and update the files in `./data_schema`
+- [x] Only keep `.yaml` file for schema
+- [ ] Add code to save preprocessor and all models into the specified directory
+- [ ] Fill the [`./churnobyl/data.py`](./churnobyl/data.py)
+- [ ] Fill the [`./churnobyl/model.py`](./churnobyl/model.py)
+- [ ] Fill the [`./churnobyl/pipeline.py`](./churnobyl/pipeline.py), to reflect the actual workflow
+- [ ] Run model experiments notebook
+- [ ] Update config file
 - [ ] Modulize the notebook code into python scripts
 - [ ] Integrate prefect for workflow orchestration
 - [ ] Create `Dockerfile`
@@ -27,3 +33,4 @@ Any help is always welcomed. The project is open-source. The key features that a
 
 - https://stackoverflow.com/questions/52570869/load-yaml-as-nested-objects-instead-of-dictionary-in-python
 - https://www.youtube.com/watch?v=-tU7fuUiq7w&ab_channel=ArjanCodes
+- https://pandera.readthedocs.io/en/stable/checks.html
