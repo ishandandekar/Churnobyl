@@ -1,9 +1,12 @@
+SEED: 42
+
 PATH:
-  data: data
-  viz: images
-  model: model
+  - data: data
+  - viz: images
+  - model: model
+  - logs: logs
 
 data:
-  churn_schema: data_schemas/churn_schema.yaml
-  input_schema: data_schemas/input_schema.yaml
-  train_test_split: 0.1
+  - churn_schema: data_schemas/churn_schema.yaml
+  - input_schema: data_schemas/input_schema.yaml
+  - train_test_split: 0.1
