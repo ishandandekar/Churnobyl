@@ -1,5 +1,7 @@
 # Churnobyl
 
+[[LICENCE]](LICENCE)
+
 > **Warning**: This is a work in progress. Until specified, please do not directly use the code. There will be addtition as well as improvements over the time. Use the code only to get inspiration and not for actual production usage.
 
 ## Contributions
@@ -15,7 +17,7 @@ Any help is always welcomed. The project is open-source. The key features that a
 - [x] Create a `pipeline.py` script
 - [x] Explore and update the files in `./data_schema`
 - [x] Only keep `.yaml` file for schema
-- [ ] Figure out preprocessing code present in [`./temp/temp.py`](./temp/temp.py)
+- [x] Figure out preprocessing code present in [`./temp/temp.py`](./temp/temp.py)
 - [ ] Add code to save preprocessor and all models into the specified directory
 - [ ] Fill the [`./churnobyl/data.py`](./churnobyl/data.py)
 - [ ] Fill the [`./churnobyl/model.py`](./churnobyl/model.py)
