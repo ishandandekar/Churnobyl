@@ -15,6 +15,7 @@ Any help is always welcomed. The project is open-source. The key features that a
 - [x] Create a `pipeline.py` script
 - [x] Explore and update the files in `./data_schema`
 - [x] Only keep `.yaml` file for schema
+- [ ] Figure out preprocessing code present in [`./temp/temp.py`](./temp/temp.py)
 - [ ] Add code to save preprocessor and all models into the specified directory
 - [ ] Fill the [`./churnobyl/data.py`](./churnobyl/data.py)
 - [ ] Fill the [`./churnobyl/model.py`](./churnobyl/model.py)
@@ -33,4 +34,10 @@ Any help is always welcomed. The project is open-source. The key features that a
 
 - https://stackoverflow.com/questions/52570869/load-yaml-as-nested-objects-instead-of-dictionary-in-python
 - https://www.youtube.com/watch?v=-tU7fuUiq7w&ab_channel=ArjanCodes
+- https://github.com/ishandandekar/misc
 - https://pandera.readthedocs.io/en/stable/checks.html
+- https://gist.github.com/ishandandekar/d9a60b1d7d5b8af9fd1c640e63c8ceb2
+- https://gist.github.com/ishandandekar/fa7dbf05b41e30b8dc492cf18968f12a
+- https://octopus.com/blog/githubactions-docker-ecr
+- https://aws.amazon.com/blogs/compute/using-aws-lambda-extensions-to-send-logs-to-custom-destinations/
+- https://neptune.ai/blog/ml-model-testing-teams-share-how-they-test-models
