@@ -43,3 +43,9 @@ Any help is always welcomed. The project is open-source. The key features that a
 - https://octopus.com/blog/githubactions-docker-ecr
 - https://aws.amazon.com/blogs/compute/using-aws-lambda-extensions-to-send-logs-to-custom-destinations/
 - https://neptune.ai/blog/ml-model-testing-teams-share-how-they-test-models
+- https://github.com/whylabs/whylogs/tree/mainline
+- https://whylogs.readthedocs.io/en/stable/examples/integrations/flask_streaming/flask_with_whylogs.html
+- https://aws.amazon.com/blogs/compute/deploying-machine-learning-models-with-serverless-templates/
+- https://betterprogramming.pub/deploying-ml-models-using-aws-lambda-and-api-gateway-f1f349515c81
+- https://aws.amazon.com/blogs/machine-learning/deploy-a-machine-learning-inference-data-capture-solution-on-aws-lambda/
+- https://blog.devgenius.io/how-to-put-an-ml-model-into-production-dc3a99eeb2cc
