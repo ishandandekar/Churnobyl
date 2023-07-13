@@ -32,7 +32,7 @@ TARGET = ["Churn"]
 SEED = 69420
 
 df = pd.read_csv(
-    "./data/WA_Fn-UseC_-Telco-Customer-Churn.csv", usecols=CAT_COLS + NUM_COLS + TARGET
+    "../data/WA_Fn-UseC_-Telco-Customer-Churn.csv", usecols=CAT_COLS + NUM_COLS + TARGET
 )
 df.TotalCharges = df.TotalCharges.replace(to_replace=" ", value="0")
 
@@ -50,16 +50,16 @@ CAT_COLS_LE = list(set(CAT_COLS) - set(CAT_COLS_OHE))
 scaler = StandardScaler().set_output(transform="pandas")
 encoder_ohe = OneHotEncoder(feature_name_combiner=custom_combiner)
 encoder_oe = OrdinalEncoder().set_output(transform="pandas")
-converter = FunctionTransformer(
-    lambda x: pd.to_numeric(x, errors="coerce"), validate=False
-)
+# converter = FunctionTransformer(
+#     lambda x: pd.to_numeric(x, errors="coerce"), validate=False
+# )
 
 # Step 2: Create a list of transformer tuples
 transformers = [
+    # ("totalcharges_conversion", converter, ["TotalCharges"]),
     ("numerical", scaler, NUM_COLS),
     ("categorical_ohe", encoder_ohe, CAT_COLS_OHE),
     ("categorical_le", encoder_oe, CAT_COLS_LE),
-    ("totalcharges_conversion", converter, ["TotalCharges"]),
 ]
 
 # Step 3: Create the ColumnTransformer
@@ -73,13 +73,13 @@ X_ohe_ = df[CAT_COLS_OHE]
 print(f"Previously --> {X_ohe_.shape}")
 print(f"Previously type --> {type(X_ohe_)}")
 encoder_ohe.fit(X_ohe_)
-X_ohe__trans_ = encoder_ohe.transform(X_ohe_)
-X_ohe__trans_df_: pd.DataFrame = pd.DataFrame(
-    X_ohe__trans_.toarray(), columns=encoder_ohe.get_feature_names_out()
+X_ohe_trans_ = encoder_ohe.transform(X_ohe_)
+X_ohe_trans_df_: pd.DataFrame = pd.DataFrame(
+    X_ohe_trans_.toarray(), columns=encoder_ohe.get_feature_names_out()
 )
-print(f"Now --> {X_ohe__trans_df_.shape}")
-print(f"Now type --> {type(X_ohe__trans_df_)}")
-print(f"Now cols --> {X_ohe__trans_df_.columns}", end="\n\n")
+print(f"Now --> {X_ohe_trans_df_.shape}")
+print(f"Now type --> {type(X_ohe_trans_df_)}")
+print(f"Now cols --> {X_ohe_trans_df_.columns}", end="\n\n")
 
 print("##" * 6, end="\n\n")
 
@@ -89,12 +89,39 @@ X_oe_ = df[CAT_COLS_LE]
 print(f"Previously --> {X_oe_.shape}")
 print(f"Previously type --> {type(X_oe_)}")
 encoder_oe.fit(X_oe_)
-X_oe__trans_ = encoder_oe.transform(X_oe_)
-print(f"Now --> {X_oe__trans_.shape}")
-print(f"Now type --> {type(X_oe__trans_)}")
-print(f"Now cols --> {X_oe__trans_.columns}", end="\n\n")
+X_oe_trans_ = encoder_oe.transform(X_oe_)
+
+print(f"Now --> {X_oe_trans_.shape}")
+print(f"Now type --> {type(X_oe_trans_)}")
+print(f"Now cols --> {X_oe_trans_.columns}", end="\n\n")
+print(f"Now dtype --> {X_oe_trans_[X_oe_trans_.columns[0]].dtype}", end="\n\n")
+
 
 print("##" * 6, end="\n\n")
 
+# # Converting dtype
+# X_convert_ = df["TotalCharges"]
+# print(f"Previously --> {X_convert_.shape}")
+# print(f"Previously type --> {type(X_convert_)}")
+# converter.fit(X_convert_)
+# X_covert_trans_: pd.DataFrame = pd.DataFrame(
+#     converter.transform(X_convert_), columns=["TotalCharges"], dtype=np.float16
+# )
+# print(f"Now --> {X_covert_trans_.shape}")
+# print(f"Now type --> {type(X_covert_trans_)}", end="\n\n")
+# # print(f"Now cols --> {X_covert_trans_.columns}", end="\n\n")
+
+# print("##" * 6, end="\n\n")
+
 # Scaling num cols
-# TODO: Add code for scaling numerical columns
+X_scale_ = df[NUM_COLS]
+print(f"Previously --> {X_scale_.shape}")
+print(f"Previously type --> {type(X_scale_)}")
+scaler.fit(X_scale_)
+X_scale_trans_ = scaler.transform(X_scale_)
+print(f"Now --> {X_scale_trans_.shape}")
+print(f"Now type --> {type(X_scale_trans_)}")
+print(f"Now cols --> {X_scale_trans_.columns}", end="\n\n")
+print(f"Now dtype --> {X_scale_trans_[X_scale_trans_.columns[0]].dtype}", end="\n\n")
+print("-----" * 6, end="\n\n")
+print(df["TotalCharges"].dtype)
