@@ -18,11 +18,11 @@ Any help is always welcomed. The project is open-source. The key features that a
 - [x] Explore and update the files in `./data_schema`
 - [x] Only keep `.yaml` file for schema
 - [x] Figure out preprocessing code present in [`./temp/temp.py`](./temp/temp.py)
-- [ ] Add code to save preprocessor and all models into the specified directory
+- [x] Run model experiments notebook
+- [x] Add code to save preprocessor and all models into the specified directory
 - [ ] Fill the [`./churnobyl/data.py`](./churnobyl/data.py)
 - [ ] Fill the [`./churnobyl/model.py`](./churnobyl/model.py)
 - [ ] Fill the [`./churnobyl/pipeline.py`](./churnobyl/pipeline.py), to reflect the actual workflow
-- [ ] Run model experiments notebook
 - [ ] Update config file
 - [ ] Modulize the notebook code into python scripts
 - [ ] Integrate prefect for workflow orchestration
@@ -49,3 +49,8 @@ Any help is always welcomed. The project is open-source. The key features that a
 - https://betterprogramming.pub/deploying-ml-models-using-aws-lambda-and-api-gateway-f1f349515c81
 - https://aws.amazon.com/blogs/machine-learning/deploy-a-machine-learning-inference-data-capture-solution-on-aws-lambda/
 - https://blog.devgenius.io/how-to-put-an-ml-model-into-production-dc3a99eeb2cc
+- https://aws.amazon.com/blogs/machine-learning/build-a-ci-cd-pipeline-for-deploying-custom-machine-learning-models-using-aws-services/
+- https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://towardsai.net/p/l/model-monitoring-dashboards-made-easy-1-3%3Famp%3D1&ved=2ahUKEwjF06zUrI2AAxVQcGwGHekJDvEQFnoECCcQAQ&usg=AOvVaw1a1kNPwMKpByjAb8PkguQ9
+- https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://neptune.ai/blog/ml-model-monitoring-best-tools&ved=2ahUKEwjF06zUrI2AAxVQcGwGHekJDvEQFnoECCUQAQ&usg=AOvVaw0cWnCVHcV7-lAU9ivcr-lf
+- https://retool.com/templates/machine-learning-model-monitoring-dashboard
+- https://docs.dominodatalab.com/en/5.3/user_guide/715969/model-monitoring/
