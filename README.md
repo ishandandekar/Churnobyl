@@ -22,6 +22,7 @@ Any help is always welcomed. The project is open-source. The key features that a
 - [x] Add code to save preprocessor and all models into the specified directory
 - [x] Fill the [`./churnobyl/data.py`](./churnobyl/data.py)
 - [ ] Fill the [`./churnobyl/model.py`](./churnobyl/model.py)
+- [ ] Fill the [`./churnobyl/visualize.py`](./churnobyl/visualize.py)
 - [ ] Fill the [`./churnobyl/pipeline.py`](./churnobyl/pipeline.py), to reflect the actual workflow
 - [ ] Update config file
 - [ ] Modulize the notebook code into python scripts
@@ -42,6 +43,7 @@ Any help is always welcomed. The project is open-source. The key features that a
 - https://gist.github.com/ishandandekar/fa7dbf05b41e30b8dc492cf18968f12a
 - https://octopus.com/blog/githubactions-docker-ecr
 - https://aws.amazon.com/blogs/compute/using-aws-lambda-extensions-to-send-logs-to-custom-destinations/
+- https://madewithml.com/courses/mlops/testing/
 - https://neptune.ai/blog/ml-model-testing-teams-share-how-they-test-models
 - https://github.com/whylabs/whylogs/tree/mainline
 - https://whylogs.readthedocs.io/en/stable/examples/integrations/flask_streaming/flask_with_whylogs.html
