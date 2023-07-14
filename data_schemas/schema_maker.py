@@ -1,6 +1,6 @@
 import pandas as pd
 import pandera as pa
-from data_schema import TRAINING_SCHEMA, INPUT_SCHEMA, CHURN_SCHEMA
+from data_schema import CHURN_SCHEMA, INPUT_SCHEMA, TRAINING_SCHEMA
 
 with open("training_schema.yaml", "w") as file:
     file.write(TRAINING_SCHEMA.to_yaml())
