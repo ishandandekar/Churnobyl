@@ -9,4 +9,5 @@ PATH:
 data:
   - churn_schema: data_schemas/churn_schema.yaml
   - input_schema: data_schemas/input_schema.yaml
+  - training_schema: data_schemas/training_schema.yaml
   - train_test_split: 0.1
