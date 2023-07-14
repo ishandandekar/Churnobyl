@@ -1,2 +1,3 @@
-import fastapi
 import pickle
+
+import fastapi

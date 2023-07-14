@@ -1,36 +1,38 @@
-from pathlib import Path
-from datetime import datetime
-import pickle as pkl
+import argparse
 import logging
+import pickle as pkl
 import typing as t
+from datetime import datetime
+from pathlib import Path
+
+import boto3
 import numpy as np
+import optuna as opt
 import pandas as pd
 import pandera as pa
-import xgboost as xgb
-from sklearn import (
-    model_selection,
-    preprocessing,
-    dummy,
-    metrics,
-    ensemble,
-    tree,
-    neighbors,
-    pipeline,
-    compose,
-    linear_model,
-    svm,
-)
-import optuna as opt
 import shap
-import pickle
-import boto3
-from prefect import task, flow
-import argparse
+import wandb
+import xgboost as xgb
 import yaml
 from munch import Munch
-import wandb
+from prefect import flow, task
+from sklearn import (
+    compose,
+    dummy,
+    ensemble,
+    linear_model,
+    metrics,
+    model_selection,
+    neighbors,
+    pipeline,
+    preprocessing,
+    svm,
+    tree,
+)
+
 from churnobyl.data import DataDreamer
 from churnobyl.model import LearnLab
+from churnobyl.visualize import Vizard
 
 
 @task
@@ -160,9 +162,10 @@ def get_best_model(config, X_train, X_test, y_train, y_test, logger: logging.Log
 
 
 @task
-def vizard(results: pd.DataFrame, logger: logging.Logger):
+def vizard(results: pd.DataFrame, logger: logging.Logger) -> None:
     # TODO: Accepts viz dir, model and shap
     # TODO: Makes vizualizations for optuna and shap
+
     logger.info("Plots have been drawn")
     ...
 

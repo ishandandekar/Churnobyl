@@ -2,11 +2,12 @@
 This script contains all the data utility functions.
 """
 
-from pathlib import Path
 from io import StringIO
-import requests
-import pandas as pd
+from pathlib import Path
+
 import boto3
+import pandas as pd
+import requests
 
 
 class DataDreamer:

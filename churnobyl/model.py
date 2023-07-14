@@ -3,26 +3,27 @@ This file contains functions and class to run modelling experiments,
 tune the hyperparameters and use shap values
 """
 
-from pathlib import Path
 import typing as t
+from pathlib import Path
+
+import optuna as opt
 import pandas as pd
+import shap
+import wandb
 import xgboost as xgb
 from sklearn import (
-    model_selection,
-    preprocessing,
+    compose,
     dummy,
-    metrics,
     ensemble,
-    tree,
+    linear_model,
+    metrics,
+    model_selection,
     neighbors,
     pipeline,
-    compose,
-    linear_model,
+    preprocessing,
     svm,
+    tree,
 )
-import optuna as opt
-import wandb
-import shap
 
 
 class LearnLab:
