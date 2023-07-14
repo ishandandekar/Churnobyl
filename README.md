@@ -20,7 +20,7 @@ Any help is always welcomed. The project is open-source. The key features that a
 - [x] Figure out preprocessing code present in [`./temp/temp.py`](./temp/temp.py)
 - [x] Run model experiments notebook
 - [x] Add code to save preprocessor and all models into the specified directory
-- [ ] Fill the [`./churnobyl/data.py`](./churnobyl/data.py)
+- [x] Fill the [`./churnobyl/data.py`](./churnobyl/data.py)
 - [ ] Fill the [`./churnobyl/model.py`](./churnobyl/model.py)
 - [ ] Fill the [`./churnobyl/pipeline.py`](./churnobyl/pipeline.py), to reflect the actual workflow
 - [ ] Update config file
