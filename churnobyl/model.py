@@ -6,7 +6,7 @@ tune the hyperparameters and use shap values
 import typing as t
 from pathlib import Path
 
-import optuna as opt
+import optuna
 import pandas as pd
 import shap
 import wandb
@@ -47,10 +47,5 @@ class LearnLab:
 
     # TODO: Add code for rf and xgb tuning
     @staticmethod
-    def tune_model():
-        ...
-
-    # TODO: Add shap code
-    @staticmethod
-    def explain_model():
+    def tune_model(X_train, X_test, y_train, y_test) -> optuna.Study:
         ...
