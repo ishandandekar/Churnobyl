@@ -2,7 +2,7 @@ SEED: 42
 
 PATH:
   - data: data
-  - viz: images
+  - viz: figures
   - model: model
   - logs: logs
 
