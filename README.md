@@ -1,6 +1,6 @@
 # Churnobyl
 
-[[LICENCE]](LICENCE)
+[LICENCE](LICENCE)
 
 > **Warning**: This is a work in progress. Until specified, please do not directly use the code. There will be addtition as well as improvements over the time. Use the code only to get inspiration and not for actual production usage.
 
@@ -21,8 +21,8 @@ Any help is always welcomed. The project is open-source. The key features that a
 - [x] Run model experiments notebook
 - [x] Add code to save preprocessor and all models into the specified directory
 - [x] Fill the [`./churnobyl/data.py`](./churnobyl/data.py)
+- [x] Fill the [`./churnobyl/visualize.py`](./churnobyl/visualize.py)
 - [ ] Fill the [`./churnobyl/model.py`](./churnobyl/model.py)
-- [ ] Fill the [`./churnobyl/visualize.py`](./churnobyl/visualize.py)
 - [ ] Add tests for `pytest`
 - [ ] Fill the [`./churnobyl/pipeline.py`](./churnobyl/pipeline.py), to reflect the actual workflow
 - [ ] Update config file
