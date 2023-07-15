@@ -23,6 +23,7 @@ Any help is always welcomed. The project is open-source. The key features that a
 - [x] Fill the [`./churnobyl/data.py`](./churnobyl/data.py)
 - [ ] Fill the [`./churnobyl/model.py`](./churnobyl/model.py)
 - [ ] Fill the [`./churnobyl/visualize.py`](./churnobyl/visualize.py)
+- [ ] Add tests for `pytest`
 - [ ] Fill the [`./churnobyl/pipeline.py`](./churnobyl/pipeline.py), to reflect the actual workflow
 - [ ] Update config file
 - [ ] Modulize the notebook code into python scripts
