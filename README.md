@@ -1,6 +1,6 @@
 # Churnobyl
 
-![tests workflow](https://github.com/ishandandekar/Chrunobyl/actions/workflows/tests.yaml/badge.svg)[LICENCE](LICENCE)
+[![Tests](https://github.com/ishandandekar/Churnobyl/actions/workflows/tests.yaml/badge.svg)](https://github.com/ishandandekar/Churnobyl/actions/workflows/tests.yaml)[LICENCE](LICENCE)
 
 > **Warning**: This is a work in progress. Until specified, please do not directly use the code. There will be addtition as well as improvements over the time. Use the code only to get inspiration and not for actual production usage.
 
