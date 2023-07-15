@@ -1,9 +1,12 @@
 from pathlib import Path
+import typing as t
 import matplotlib.pyplot as plt
 import optuna
 import pandas as pd
 import shap
 import math
+import os
+from plotly import graph_objs as go, express as px, subplots as sp
 
 
 class Vizard:
@@ -11,45 +14,20 @@ class Vizard:
     def plot_data_insights(
         df: pd.DataFrame,
         target_dist_path: Path,
-        demographic_dist_path: Path,
-        cust_acc_dist_path: Path,
+        contract_dist_path: Path,
+        payment_dist_path: Path,
+        isp_gender_churn_dist_path: Path,
+        partner_churn_dist_path: Path,
     ) -> None:
-        for path in [target_dist_path, demographic_dist_path, cust_acc_dist_path]:
+        for path in [
+            target_dist_path,
+            contract_dist_path,
+            payment_dist_path,
+            isp_gender_churn_dist_path,
+            partner_churn_dist_path,
+        ]:
             if not str(path).endswith(".png"):
                 raise Exception(f"{path} should be a path to `.png`")
-
-        def percentage_plot(cols: list, sup_title: str, save_path: Path):
-            n_cols = 2
-            n_rows = math.ceil(len(cols) / 2)
-
-            fig = plt.figure(figsize=(12, 5 * n_rows))
-            fig.suptitle(sup_title, fontsize=22, y=0.95)
-
-            for idx, col in enumerate(cols, start=1):
-                ax = fig.add_subplot(n_rows, n_cols, idx)
-
-                prop_by_independant = pd.crosstab(df[col], df["Churn"]).apply(
-                    lambda x: x / x.sum() * 100, axis=1
-                )
-                prop_by_independant.plot(
-                    kind="bar", ax=ax, stacked=True, rot=0, color=["#101820", "#FEE715"]
-                )
-
-                ax.legend(
-                    loc="upper right",
-                    bbox_to_anchor=(0.62, 0.5, 0.5, 0.5),
-                    title="Churn",
-                    fancybox=True,
-                )
-                ax.set_title(
-                    f"Proportion of obsevations by {col}", fontsize=16, loc="left"
-                )
-                ax.tick_params(rotation="auto")
-                spine_names = ["top", "right"]
-                for spine in spine_names:
-                    ax.spines[spine].set_visible(False)
-                plt.savefig(save_path, format="png")
-                plt.close()
 
         # Target distribution
         fig = plt.figure(figsize=(10, 6))
@@ -64,23 +42,78 @@ class Vizard:
         ax.set_xlabel("churn", fontsize=14)
         ax.set_ylabel("proportion of observations", fontsize=13)
         ax.tick_params(rotation="auto")
-        spine_names = ["top", "right"]
-        for spine in spine_names:
-            ax.spines[spine].set_visible(False)
         plt.savefig(target_dist_path, format="png")
         plt.close()
 
-        demographic_cols = ["gender", "SeniorCitizen", "Partner", "Dependents"]
-        percentage_plot(
-            cols=demographic_cols,
-            sup_title="Demographic Information",
-            save_path=demographic_dist_path,
+        fig = px.histogram(
+            df,
+            x="Churn",
+            color="Contract",
+            barmode="group",
+            title="<b>Customer contract distribution<b>",
+        )
+        fig.update_layout(width=700, height=500, bargap=0.2)
+        fig.write_image(contract_dist_path)
+
+        labels = df["PaymentMethod"].unique()
+        values = df["PaymentMethod"].value_counts()
+
+        fig = go.Figure(data=[go.Pie(labels=labels, values=values, hole=0.3)])
+        fig.update_layout(title_text="<b>Payment Method Distribution</b>")
+        fig.write_image(payment_dist_path)
+
+        fig = go.Figure()
+
+        fig.add_trace(
+            go.Bar(
+                x=[
+                    ["Churn:No", "Churn:No", "Churn:Yes", "Churn:Yes"],
+                    ["Female", "Male", "Female", "Male"],
+                ],
+                y=[965, 992, 219, 240],
+                name="DSL",
+            )
         )
 
-        account_cols = ["Contract", "PaperlessBilling", "PaymentMethod"]
-        percentage_plot(
-            account_cols, "Customer Account Information", save_path=cust_acc_dist_path
+        fig.add_trace(
+            go.Bar(
+                x=[
+                    ["Churn:No", "Churn:No", "Churn:Yes", "Churn:Yes"],
+                    ["Female", "Male", "Female", "Male"],
+                ],
+                y=[889, 910, 664, 633],
+                name="Fiber optic",
+            )
         )
+
+        fig.add_trace(
+            go.Bar(
+                x=[
+                    ["Churn:No", "Churn:No", "Churn:Yes", "Churn:Yes"],
+                    ["Female", "Male", "Female", "Male"],
+                ],
+                y=[690, 717, 56, 57],
+                name="No Internet",
+            )
+        )
+
+        fig.update_layout(
+            title_text="<b>Churn Distribution w.r.t. Internet Service and Gender</b>"
+        )
+
+        fig.write_image(isp_gender_churn_dist_path)
+
+        color_map = {"Yes": "#FFA15A", "No": "#00CC96"}
+        fig = px.histogram(
+            df,
+            x="Churn",
+            color="Partner",
+            barmode="group",
+            title="<b>Chrun distribution w.r.t. Partners</b>",
+            color_discrete_map=color_map,
+        )
+        fig.update_layout(width=700, height=500, bargap=0.1)
+        fig.write_image(partner_churn_dist_path)
 
     @staticmethod
     def plot_performance_metrics(results: pd.DataFrame, path: Path) -> None:
@@ -102,19 +135,23 @@ class Vizard:
             raise Exception(f"{param_importance_path} should be a path to `.png`")
         if not str(parallel_coordinate_path).endswith(".png"):
             raise Exception(f"{parallel_coordinate_path} should be a path to `.png`")
-        param_importances = optuna.visualization.plot_param_importances(study)
+        print("[INFO] Saving plot for param importances")
+        param_importances: go.Figure = optuna.visualization.plot_param_importances(
+            study
+        )
         param_importances.write_image(param_importance_path)
 
-        parallel_coordinate = optuna.visualization.plot_parallel_coordinate(study)
+        parallel_coordinate: go.Figure = optuna.visualization.plot_parallel_coordinate(
+            study
+        )
         parallel_coordinate.write_image(parallel_coordinate_path)
 
     @staticmethod
     def plot_shap(model, X_train: pd.DataFrame, path: Path) -> None:
         if not str(path).endswith(".png"):
             raise Exception(f"{path} should be a path to `.png`")
-        explainer: shap.Explainer = shap.Explainer(model)
-        features_names = X_train.columns.to_list()
-        shap_values = explainer.shap_values(X_train)
-        shap.summary_plot(shap_values, X_train, features_names=features_names)
+        explainer = shap.Explainer(model, X_train)
+        shap_values = explainer(X_train)
+        shap.plots.bar(shap_values, show=False)
         plt.savefig(path, format="png")
         plt.close()
