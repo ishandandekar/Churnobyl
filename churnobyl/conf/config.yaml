@@ -7,7 +7,46 @@ PATH:
   - logs: logs
 
 data:
-  - churn_schema: data_schemas/churn_schema.yaml
-  - input_schema: data_schemas/input_schema.yaml
-  - training_schema: data_schemas/training_schema.yaml
   - train_test_split: 0.1
+  - CAT_COLS:
+    - gender
+    - SeniorCitizen
+    - Partner
+    - Dependents
+    - PhoneService
+    - MultipleLines
+    - InternetService
+    - OnlineSecurity
+    - OnlineBackup
+    - DeviceProtection
+    - TechSupport
+    - StreamingTV
+    - StreamingMovies
+    - Contract
+    - PaperlessBilling
+    - PaymentMethod
+  - NUM_COLS:
+    - tenure
+    - MonthlyCharges
+    - TotalCharges
+  - CAT_COLS_OHE:
+    - PaymentMethod
+    - Contract
+    - InternetService
+  - CAT_COLS_LE:
+    - OnlineSecurity
+    - MultipleLines
+    - Dependents
+    - DeviceProtection
+    - StreamingTV
+    - OnlineBackup
+    - gender
+    - SeniorCitizen
+    - PhoneService
+    - Partner
+    - PaperlessBilling
+    - StreamingMovies
+    - TechSupport
+
+model:
+  - n_trials: 100
