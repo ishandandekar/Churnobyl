@@ -1,39 +1,22 @@
 SEED: 42
 
 PATH:
-  - data: data
-  - viz: figures
-  - model: model
-  - logs: logs
+  data: data
+  viz: figures
+  model: model
+  logs: logs
 
 data:
-  - train_test_split: 0.1
-  - CAT_COLS:
-    - gender
-    - SeniorCitizen
-    - Partner
-    - Dependents
-    - PhoneService
-    - MultipleLines
-    - InternetService
-    - OnlineSecurity
-    - OnlineBackup
-    - DeviceProtection
-    - TechSupport
-    - StreamingTV
-    - StreamingMovies
-    - Contract
-    - PaperlessBilling
-    - PaymentMethod
-  - NUM_COLS:
+  train_test_split: 0.1
+  NUM_COLS:
     - tenure
     - MonthlyCharges
     - TotalCharges
-  - CAT_COLS_OHE:
+  CAT_COLS_OHE:
     - PaymentMethod
     - Contract
     - InternetService
-  - CAT_COLS_LE:
+  CAT_COLS_OE:
     - OnlineSecurity
     - MultipleLines
     - Dependents
@@ -49,4 +32,18 @@ data:
     - TechSupport
 
 model:
-  - n_trials: 100
+  n_trials: 100
+  models:
+    dummy:
+    knn:
+    lr:
+    svm:
+    rf:
+    gb:
+    dt:
+    abc:
+    voting:
+    - gb
+    - lr
+    - abc
+    xgb:
