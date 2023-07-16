@@ -1,9 +1,11 @@
-from churnobyl.visualize import Vizard
-import pandas as pd
-from pathlib import Path
 import os
+from pathlib import Path
+
 import optuna
-from sklearn import linear_model, datasets, model_selection, metrics
+import pandas as pd
+from sklearn import datasets, linear_model, metrics, model_selection
+
+from churnobyl.visualize import Vizard
 
 
 def test_plot_data_insights():
