@@ -22,11 +22,12 @@ Any help is always welcomed. The project is open-source. The key features that a
 - [x] Add code to save preprocessor and all models into the specified directory
 - [x] Fill the [`./churnobyl/data.py`](./churnobyl/data.py)
 - [x] Fill the [`./churnobyl/visualize.py`](./churnobyl/visualize.py)
-- [ ] Fill the [`./churnobyl/model.py`](./churnobyl/model.py)
-- [ ] Add tests for `pytest`
+- [x] Fill the [`./churnobyl/model.py`](./churnobyl/model.py)
+- [x] Update config file
 - [ ] Fill the [`./churnobyl/pipeline.py`](./churnobyl/pipeline.py), to reflect the actual workflow
-- [ ] Update config file
-- [ ] Modulize the notebook code into python scripts
+- [ ] Add tests for `pytest`
+- [x] Modulize the notebook code into python scripts
+- [ ] Run modelling experiments [`notebook`](./notebooks/01-model-experiments.ipynb) one-last-time
 - [ ] Integrate prefect for workflow orchestration
 - [ ] Create `Dockerfile`
 - [ ] Add workflow files using Github Actions
