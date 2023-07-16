@@ -1,10 +1,11 @@
 import argparse
-import random
 import logging
 import pickle as pkl
+import random
 import typing as t
 from datetime import datetime
 from pathlib import Path
+
 import boto3
 import numpy as np
 import optuna
@@ -13,6 +14,7 @@ import pandera as pa
 import wandb
 import xgboost as xgb
 import yaml
+from model import LearnLab
 from munch import Munch
 from prefect import flow, task
 from sklearn import (
@@ -28,10 +30,9 @@ from sklearn import (
     svm,
     tree,
 )
-
-from data import DataDreamer, TRAINING_SCHEMA
-from model import LearnLab
 from visualize import Vizard
+
+from data import TRAINING_SCHEMA, DataDreamer
 
 
 @task(
@@ -150,8 +151,10 @@ def data_transformer(
         path_ = artifact_dir / f"{name}.pkl"
         with open(str(path_), "wb") as f:
             pkl.dump(preprocessor, f)
+    logger.info("Preprocessors have been saved into a `pickle` file")
+    X_to_train, X_to_test = ..., ...
     logger.info("Data has been transformed")
-    return X_train, X_test, y_train, y_test
+    return X_to_train, X_to_test, y_train, y_test
 
 
 @task(
@@ -210,6 +213,7 @@ def get_best_model(
         X_test=X_test,
         y_train=y_train,
         y_test=y_test,
+        model_dir=model_dir,
     )
     logger.info("Models have been trained")
     logger.info(
@@ -225,7 +229,7 @@ def get_best_model(
 
 
 @task(
-    name="visualize_stuff",
+    name="make_plots_and_viz",
     description="Create visualizations for model explainability and data analysis",
 )
 def vizard(
@@ -295,7 +299,7 @@ def main(config_path: Path) -> None:
     print("[INFO] Setup completed")
     df = data_loader(schema=TRAINING_SCHEMA, logger=logger)
     X_train, X_test, y_train, y_test = data_splits(config=config, df=df, logger=logger)
-    X_train, X_test, y_train, y_test = data_transformer(
+    X_to_train, X_to_test, y_train, y_test = data_transformer(
         config=config,
         X_train=X_train,
         X_test=X_test,
@@ -303,6 +307,14 @@ def main(config_path: Path) -> None:
         y_test=y_test,
         artifact_dir=ARTIFACT_DIR,
         logger=logger,
+    )
+    results, study, best_model, best_params, best_metric = get_best_model(
+        config=config,
+        X_train=X_to_train,
+        X_test=X_to_test,
+        y_train=y_train,
+        y_test=y_test,
+        model_dir=MODEL_DIR,
     )
     logger.info("All processes done. Pipeline has been completed")
     ...

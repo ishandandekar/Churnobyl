@@ -1,12 +1,15 @@
-from pathlib import Path
+import math
+import os
 import typing as t
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import optuna
 import pandas as pd
 import shap
-import math
-import os
-from plotly import graph_objs as go, express as px, subplots as sp
+from plotly import express as px
+from plotly import graph_objs as go
+from plotly import subplots as sp
 
 
 class Vizard:
@@ -114,6 +117,7 @@ class Vizard:
         )
         fig.update_layout(width=700, height=500, bargap=0.1)
         fig.write_image(partner_churn_dist_path)
+        return None
 
     @staticmethod
     def plot_performance_metrics(results: pd.DataFrame, path: Path) -> None:
@@ -126,6 +130,7 @@ class Vizard:
         plt.title("Model Performance")
         plt.savefig(path, format="png")
         plt.close()
+        return None
 
     @staticmethod
     def plot_optuna(
@@ -145,6 +150,7 @@ class Vizard:
             study
         )
         parallel_coordinate.write_image(parallel_coordinate_path)
+        return None
 
     @staticmethod
     def plot_shap(model, X_train: pd.DataFrame, path: Path) -> None:
@@ -155,3 +161,4 @@ class Vizard:
         shap.plots.bar(shap_values, show=False)
         plt.savefig(path, format="png")
         plt.close()
+        return None

@@ -2,15 +2,14 @@
 This script contains all the data utility functions.
 """
 
+import typing as t
 from io import StringIO
 from pathlib import Path
 
 import boto3
 import pandas as pd
 import requests
-
-from pandera import DataFrameSchema, Column, Check, Index, MultiIndex
-import typing as t
+from pandera import Check, Column, DataFrameSchema, Index, MultiIndex
 
 checks: t.Dict[str, t.List[Check]] = {
     "customerID": [],
