@@ -1,7 +1,7 @@
-import pandera as pa
 from pathlib import Path
-import pandas as pd
 
+import pandas as pd
+import pandera as pa
 from schemas import TRAINING_SCHEMA
 
 try:

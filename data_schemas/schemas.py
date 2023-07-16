@@ -1,5 +1,6 @@
-from pandera import DataFrameSchema, Column, Check, Index, MultiIndex
 import typing as t
+
+from pandera import Check, Column, DataFrameSchema, Index, MultiIndex
 
 checks: t.Dict[str, t.List[Check]] = {
     "customerID": [],

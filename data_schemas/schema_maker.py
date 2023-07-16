@@ -1,6 +1,7 @@
+from pathlib import Path
+
 import pandas as pd
 import pandera as pa
-from pathlib import Path
 
 data_schemas_path = Path.cwd() / "data_schemas"
 assert data_schemas_path.is_dir() == True
