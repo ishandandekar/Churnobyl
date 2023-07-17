@@ -10,7 +10,7 @@ import random
 import typing as t
 from datetime import datetime
 from pathlib import Path
-
+from glob import glob
 import boto3
 import numpy as np
 import optuna
@@ -20,7 +20,7 @@ import wandb
 import xgboost as xgb
 import yaml
 from munch import Munch
-from prefect import flow, task
+from prefect import flow, task, artifacts
 from sklearn import (
     ensemble,
     model_selection,
@@ -257,10 +257,10 @@ def get_best_model(
         n_trials=config.n_trials,
     )
     logger.info(f"Best model acquired as type {type_}")
-    path_ = model_dir / f"{type_}_best_.pkl"
-    with open(path_, "wb") as f:
+    best_path_ = model_dir / f"{type_}_best_.pkl"
+    with open(best_path_, "wb") as f:
         pkl.dump(best_model, f)
-    return results, study, best_model, best_params, best_metric
+    return results, study, best_model, best_params, best_metric, best_path_
 
 
 @task(
@@ -310,10 +310,43 @@ def vizard(
     retries=3,
     retry_delay_seconds=3,
 )
-def push_artifacts(logger: logging.Logger):
-    # TODO: Push artifacts to WandB server
+def push_artifacts(
+    config,
+    best_type_,
+    best_metric: float,
+    best_path_: Path,
+    artifact_dir: Path,
+    logs_dir: Path,
+    logger: logging.Logger,
+):
+    # TODO: Sign-in to wandb and prefect workspace
+    wandb.init(project="churnobyl", job_type="pipeline")
+    model_artifact = wandb.Artifact("churnobyl-clf", type="model")
+    model_artifact.add_file(best_path_)
+    wandb.log_artifact(model_artifact)
+    preprocessors_artifact = wandb.Artifact(
+        "churnobyl-ohe-oe-stand", type="preprocessors"
+    )
+    preprocessors_artifact.add_dir(artifact_dir)
+    wandb.log_artifact(preprocessors_artifact)
+    markdown_artifact = f"""
+    ### Model type: {best_type_}
+    ### Model performance: {best_metric}
+    """
+    artifacts.create_markdown_artifact(
+        key="model-report",
+        markdown=markdown_artifact,
+        description="Model summary report",
+    )
+    wandb.finish()
     logger.info("Artifacts have been pushed to project server")
-    ...
+    logger.info("All tasks done. Pipeline has now been completed")
+    s3_resource = boto3.resource("s3")
+    bucket = s3_resource.Bucket("churnobyl")
+    log_files = logs_dir.glob("*.log")
+    for file in log_files:
+        bucket.upload_file(file, f"logs/{file.name}")
+    return None
 
 
 @flow(
@@ -342,13 +375,7 @@ def main_workflow(config_path: Path) -> None:
         artifact_dir=ARTIFACT_DIR,
         logger=logger,
     )
-    (
-        results,
-        study,
-        best_model,
-        best_params,
-        best_metric,
-    ) = get_best_model(
+    (results, study, best_model, best_params, best_metric, best_path_) = get_best_model(
         config=config,
         X_train=X_to_train,
         X_test=X_to_test,
@@ -365,7 +392,6 @@ def main_workflow(config_path: Path) -> None:
         viz_dir=VIZ_DIR,
         logger=logger,
     )
-    logger.info("All processes done. Pipeline has been completed")
 
 
 if __name__ == "__main__":
