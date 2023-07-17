@@ -3,7 +3,7 @@ name: Configure AWS
 on: workflow_dispatch
 
 jobs:
-  test:
+  configure:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
