@@ -1,6 +1,8 @@
 # Churnobyl
 
-[![Tests](https://github.com/ishandandekar/Churnobyl/actions/workflows/tests.yaml/badge.svg)](https://github.com/ishandandekar/Churnobyl/actions/workflows/tests.yaml)[LICENCE](LICENCE)
+[![Tests](https://github.com/ishandandekar/Churnobyl/actions/workflows/tests.yaml/badge.svg)](https://github.com/ishandandekar/Churnobyl/actions/workflows/tests.yaml)
+[![Configure AWS](https://github.com/ishandandekar/Churnobyl/actions/workflows/aws_configure.yaml/badge.svg)](https://github.com/ishandandekar/Churnobyl/actions/workflows/aws_configure.yaml)
+[LICENCE](LICENCE)
 
 > **Warning**: This is a work in progress. Until specified, please do not directly use the code. There will be addtition as well as improvements over the time. Use the code only to get inspiration and not for actual production usage.
 
@@ -24,6 +26,7 @@ Any help is always welcomed. The project is open-source. The key features that a
 - [x] Fill the [`./churnobyl/visualize.py`](./churnobyl/visualize.py)
 - [x] Fill the [`./churnobyl/model.py`](./churnobyl/model.py)
 - [x] Update config file
+- [ ] Sign in to aws/boto3, wandb, prefect workspace
 - [ ] Fill the [`./churnobyl/pipeline.py`](./churnobyl/pipeline.py), to reflect the actual workflow
 - [ ] Add tests for `pytest`
 - [x] Modulize the notebook code into python scripts
