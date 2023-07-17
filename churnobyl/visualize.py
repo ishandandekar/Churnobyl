@@ -1,18 +1,17 @@
-import math
-import os
-import typing as t
+"""
+Contains functions to make plots and visualizations
+"""
 from pathlib import Path
-
 import matplotlib.pyplot as plt
 import optuna
 import pandas as pd
 import shap
 from plotly import express as px
 from plotly import graph_objs as go
-from plotly import subplots as sp
 
 
 class Vizard:
+    # DEV: Add plots for data analysis here
     @staticmethod
     def plot_data_insights(
         df: pd.DataFrame,
@@ -132,6 +131,7 @@ class Vizard:
         plt.close()
         return None
 
+    # DEV: Add `optuna.visualizations` as per need
     @staticmethod
     def plot_optuna(
         study: optuna.Study, param_importance_path: Path, parallel_coordinate_path: Path
@@ -152,6 +152,7 @@ class Vizard:
         parallel_coordinate.write_image(parallel_coordinate_path)
         return None
 
+    # DEV: Add shap plots as per need here
     @staticmethod
     def plot_shap(model, X_train: pd.DataFrame, path: Path) -> None:
         if not str(path).endswith(".png"):

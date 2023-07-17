@@ -3,15 +3,14 @@ This file contains functions and class to run modelling experiments,
 tune the hyperparameters and use shap values
 """
 
-import pickle as pkl
 import typing as t
-from pathlib import Path
 import optuna
 import pandas as pd
 import numpy as np
 import xgboost as xgb
 from sklearn import ensemble, metrics, dummy, neighbors, linear_model, tree, svm
 
+# DEV: Add models with names as key-value pair
 MODEL_DICT: t.Dict[str, t.Tuple] = {
     "dummy": (
         "dummy",
@@ -39,14 +38,31 @@ MODEL_DICT: t.Dict[str, t.Tuple] = {
 
 
 class LearnLab:
+    # DEV: Add metrics if you want
     @staticmethod
-    def run_experiments(model_list, X_train, X_test, y_train, y_test, model_dir: Path):
+    def run_experiments(
+        model_list: list,
+        X_train: pd.DataFrame,
+        X_test: pd.DataFrame,
+        y_train: pd.DataFrame,
+        y_test: pd.DataFrame,
+    ) -> pd.DataFrame:
+        """
+        Function to train a whole lot of models sequentially
+
+        Args:
+            model_list (list): List of models to train
+            X_train (pd.DataFrame): Features on which we want to train the model
+            X_test (pd.DataFrame): Features on which we want to test the model
+            y_train (pd.DataFrame): Target on which we want to train the model
+            y_test (pd.DataFrame): Target on which we want to test the model
+
+        Returns:
+            pd.DataFrame: DataFrame that contains the performance results for all the models in `model_list`
+        """
         results = dict()
         for name, model in model_list:
             model.fit(X_train, y_train)
-            path_ = model_dir / f"{name}.pkl"
-            with open(path_, "wb") as f:
-                pkl.dump(model, f)
             train_predictions = model.predict(X_train)
             test_predictions = model.predict(X_test)
             train_accuracy = metrics.accuracy_score(y_train, train_predictions)
@@ -87,9 +103,14 @@ class LearnLab:
         results = results.sort_values(by=["test_fcore"], ascending=False)
         return results
 
+    # DEV: Add hyperparams for models
     @staticmethod
     def tune_model(
-        X_train, X_test, y_train, y_test, n_trials
+        X_train: pd.DataFrame,
+        X_test: pd.DataFrame,
+        y_train: pd.DataFrame,
+        y_test: pd.DataFrame,
+        n_trials: int,
     ) -> t.Tuple[
         optuna.Study,
         t.Union[ensemble.RandomForestClassifier, xgb.XGBClassifier],
@@ -97,6 +118,10 @@ class LearnLab:
         t.Float | np.ndarray,
         t.Union[t.Literal["RandomForest"], t.Literal["XGBoost"]],
     ]:
+        """
+        Hyperparameter tuning using Optuna
+        """
+
         def tune_random_forest_clf(X_train, X_test, y_train, y_test, n_trials):
             def objective(trial: optuna.Trial) -> float:
                 params = {

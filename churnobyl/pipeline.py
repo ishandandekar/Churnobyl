@@ -1,3 +1,8 @@
+"""
+Pipeline workflow to retrain models on data.
+This file has a whole range of functions that represent tasks in a MLOps retraining process
+"""
+
 import argparse
 import logging
 import pickle as pkl
@@ -47,7 +52,7 @@ def set_config(path: Path) -> Munch:
     name="setup_pipeline",
     description="Setup directories and logging for the pipeline experiment",
 )
-def setup(
+def setup_pipeline(
     config: Munch,
 ) -> t.Tuple[logging.Logger, Path, Path, Path, Path, Path, Path, pa.DataFrameSchema]:
     ROOT_DIR: Path = Path.cwd().parent
@@ -239,7 +244,6 @@ def get_best_model(
         X_test=X_test,
         y_train=y_train,
         y_test=y_test,
-        model_dir=model_dir,
     )
     logger.info("Models have been trained")
     logger.info(
@@ -253,6 +257,9 @@ def get_best_model(
         n_trials=config.n_trials,
     )
     logger.info(f"Best model acquired as type {type_}")
+    path_ = model_dir / f"{type_}_best_.pkl"
+    with open(path_, "wb") as f:
+        pkl.dump(best_model, f)
     return results, study, best_model, best_params, best_metric
 
 
@@ -323,7 +330,7 @@ def main_workflow(config_path: Path) -> None:
         MODEL_DIR,
         ARTIFACT_DIR,
         LOGS_DIR,
-    ) = setup(config=config)
+    ) = setup_pipeline(config=config)
     df = data_loader(schema=TRAINING_SCHEMA, logger=logger)
     X_train, X_test, y_train, y_test = data_splits(config=config, df=df, logger=logger)
     X_to_train, X_to_test, y_to_train, y_to_test = data_transformer(

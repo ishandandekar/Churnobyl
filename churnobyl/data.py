@@ -587,6 +587,7 @@ TRAINING_SCHEMA = DataFrameSchema(
 )
 
 
+# DEV: Change file format other than `.csv` here
 class DataDreamer:
     @staticmethod
     def load_csv_from_dir(dir: Path, columns: list) -> pd.DataFrame:
