@@ -103,14 +103,10 @@ def data_loader(schema: pa.DataFrameSchema, data_dir: t.Optional[Path]) -> pd.Da
         print(err.failure_cases)
         print("\nDataFrame object that failed validation:")
         print(err.data)
+        raise Exception("Schema errors and failure cases")
     df.TotalCharges = df.TotalCharges.replace(to_replace=" ", value="0")
 
     return df
-
-
-# TODO: Validate data using great expectations
-def validate_data(df: pd.DataFrame) -> None:
-    pass
 
 
 @task(
