@@ -47,12 +47,17 @@ Any help is always welcomed. The project is open-source. The key features that a
 
 ### Refs:
 
-- https://stackoverflow.com/questions/52570869/load-yaml-as-nested-objects-instead-of-dictionary-in-python
-- https://www.youtube.com/watch?v=-tU7fuUiq7w&ab_channel=ArjanCodes
-- https://github.com/ishandandekar/misc
-- https://pandera.readthedocs.io/en/stable/checks.html
-- https://gist.github.com/ishandandekar/d9a60b1d7d5b8af9fd1c640e63c8ceb2
-- https://gist.github.com/ishandandekar/fa7dbf05b41e30b8dc492cf18968f12a
+- https://www.deadbear.io/simple-serverless-fastapi-with-aws-lambda/
+- https://www.eliasbrange.dev/posts/deploy-fastapi-on-aws-part-1-lambda-api-gateway/
+- https://github.com/eliasbrange/aws-fastapi/tree/main/lambda-api-gateway
+
+---
+
+- https://www.youtube.com/watch?v=VYk3lwZbHBU&ab_channel=TalhaAnwar
+- https://www.baeldung.com/ops/dockerfile-env-variable
+- https://www.youtube.com/watch?v=9ciujhGdAOs&ab_channel=TechplanetAI
+- https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html
+- https://www.youtube.com/watch?v=M91vXdjve7A&ab_channel=BeABetterDev
 - https://octopus.com/blog/githubactions-docker-ecr
 - https://aws.amazon.com/blogs/compute/using-aws-lambda-extensions-to-send-logs-to-custom-destinations/
 - https://madewithml.com/courses/mlops/testing/
