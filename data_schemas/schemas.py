@@ -7,7 +7,7 @@ checks: t.Dict[str, t.List[Check]] = {
     "gender": [Check.isin(["Male", "Female"])],
     "SeniorCitizen": [Check.isin([0, 1])],
     "Partner": [Check.isin(["Yes", "No"])],
-    "Dependants": [Check.isin(["Yes", "No"])],
+    "Dependents": [Check.isin(["Yes", "No"])],
     "tenure": [
         Check.greater_than_or_equal_to(min_value=0.0),
         Check.less_than_or_equal_to(max_value=72.0),
