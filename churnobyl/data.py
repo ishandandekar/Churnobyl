@@ -16,7 +16,7 @@ checks: t.Dict[str, t.List[Check]] = {
     "gender": [Check.isin(["Male", "Female"])],
     "SeniorCitizen": [Check.isin([0, 1])],
     "Partner": [Check.isin(["Yes", "No"])],
-    "Dependants": [Check.isin(["Yes", "No"])],
+    "Dependents": [Check.isin(["Yes", "No"])],
     "tenure": [
         Check.greater_than_or_equal_to(min_value=0.0),
         Check.less_than_or_equal_to(max_value=72.0),
@@ -44,7 +44,7 @@ checks: t.Dict[str, t.List[Check]] = {
     ],
     "MonthlyCharges": [],
     "TotalCharges": [],
-    "Churn": [Check.isin(["No" "Yes"])],
+    "Churn": [Check.isin(["No", "Yes"])],
 }
 
 CHURN_SCHEMA = DataFrameSchema(
@@ -593,13 +593,13 @@ class DataDreamer:
     def load_csv_from_dir(dir: Path, columns: list) -> pd.DataFrame:
         if dir.is_dir():
             data = pd.DataFrame(columns=columns)
-            paths = dir.glob("*.csv")
+            paths = list(dir.glob("*.csv"))
             if len(paths) == 0:
                 raise Exception(f"No `.csv` present in the directory {dir}")
             for path in paths:
                 df = pd.read_csv(path)
-                if data.columns != df.columns:
-                    raise Exception(f"Column mismatch error for `.csv`: {path}")
+                # if data.columns != df.columns:
+                #     raise Exception(f"Column mismatch error for `.csv`: {path}")
                 data = pd.concat([data, df])
             return data
         else:

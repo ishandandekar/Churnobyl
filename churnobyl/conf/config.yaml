@@ -4,7 +4,7 @@ SEED: 42
 PATH:
   data: data
   viz: figures
-  model: model
+  model: models
   logs: logs
 
 data:
@@ -33,10 +33,9 @@ data:
     - TechSupport
 
 model:
-  n_trials: 100
+  n_trials: 2
   models:
     dummy:
-    knn:
     lr:
     svm:
     rf:

@@ -8,6 +8,7 @@ import logging
 import pickle as pkl
 import random
 import typing as t
+import os
 from datetime import datetime
 from pathlib import Path
 from glob import glob
@@ -32,13 +33,17 @@ from visualize import Vizard
 from model import LearnLab, MODEL_DICT
 
 
+def _custom_combiner(feature, category):
+    return str(feature) + "_" + type(category).__name__ + "_" + str(category)
+
+
 @task(
     name="load_config",
     description="Function to load configuration settings from `.yaml` file",
 )
-def set_config(path: Path) -> Munch:
-    if path.exists():
-        with open(path, "r") as stream:
+def set_config(config_path: Path) -> Munch:
+    if config_path.exists():
+        with open(config_path, "r") as stream:
             try:
                 config = yaml.safe_load(stream)
                 return Munch(config)
@@ -54,36 +59,30 @@ def set_config(path: Path) -> Munch:
 )
 def setup_pipeline(
     config: Munch,
-) -> t.Tuple[logging.Logger, Path, Path, Path, Path, Path, Path, pa.DataFrameSchema]:
-    ROOT_DIR: Path = Path.cwd().parent
+) -> t.Tuple[Path, Path, Path, Path, Path, Path,]:
+    ROOT_DIR: Path = Path.cwd()
+    LOGS_DIR: Path = ROOT_DIR / config.PATH.get("logs")
 
-    date = datetime.today()
-    logger = logging.getLogger(__name__)
-    f_handler = logging.FileHandler(f"{config.paths.logs}/{date}.log").setLevel(
-        logging.INFO
-    )
-    f_format = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
-    f_handler.setFormatter(f_format)
-    logger.addHandler(f_handler)
-    logger.info("Configuration loaded")
+    DATA_DIR: Path = ROOT_DIR / config.PATH.get("data")
+    VIZ_DIR: Path = ROOT_DIR / config.PATH.get("viz")
+    MODEL_DIR: Path = ROOT_DIR / config.PATH.get("model")
+    ARTIFACT_DIR: Path = ROOT_DIR / config.PATH.get("model") / "artifacts"
 
-    DATA_DIR: Path = ROOT_DIR / config.paths.data
-    VIZ_DIR: Path = ROOT_DIR / config.paths.viz
-    MODEL_DIR: Path = ROOT_DIR / config.paths.model
-    ARTIFACT_DIR: Path = ROOT_DIR / config.paths.model / "artifacts"
-    LOGS_DIR: Path = ROOT_DIR / config.paths.logs
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    VIZ_DIR.mkdir(parents=True, exist_ok=True)
+    MODEL_DIR.mkdir(parents=True, exist_ok=True)
+    ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
+    LOGS_DIR.mkdir(parents=True, exist_ok=True)
 
-    logger.info("Setup completed")
     random.seed(config.SEED)
     np.random.seed(config.SEED)
     return (
-        logger,
         ROOT_DIR,
-        DATA_DIR.mkdir(parents=True, exist_ok=True),
-        VIZ_DIR.mkdir(parents=True, exist_ok=True),
-        MODEL_DIR.mkdir(parents=True, exist_ok=True),
-        ARTIFACT_DIR.mkdir(parents=True, exist_ok=True),
-        LOGS_DIR.mkdir(parents=True, exist_ok=True),
+        DATA_DIR,
+        VIZ_DIR,
+        MODEL_DIR,
+        ARTIFACT_DIR,
+        LOGS_DIR,
     )
 
 
@@ -93,12 +92,9 @@ def setup_pipeline(
     retries=3,
     retry_delay_seconds=3,
 )
-def data_loader(
-    schema: pa.DataFrameSchema, data_dir: t.Optional[Path], logger: logging.Logger
-) -> pd.DataFrame:
+def data_loader(schema: pa.DataFrameSchema, data_dir: t.Optional[Path]) -> pd.DataFrame:
     columns = schema.columns.keys()
-    # TODO: Add code to load data
-    df = pd.DataFrame()
+    df = DataDreamer.load_csv_from_dir(dir=data_dir, columns=columns)
     df.TotalCharges = df.TotalCharges.replace(to_replace=" ", value="0")
     try:
         schema.validate(df, lazy=True)
@@ -107,15 +103,21 @@ def data_loader(
         print(err.failure_cases)
         print("\nDataFrame object that failed validation:")
         print(err.data)
-    logger.info("Data has been loaded")
+    df.TotalCharges = df.TotalCharges.replace(to_replace=" ", value="0")
+
     return df
+
+
+# TODO: Validate data using great expectations
+def validate_data(df: pd.DataFrame) -> None:
+    pass
 
 
 @task(
     name="data_split",
     description="Split data into training and test sets",
 )
-def data_splits(config, df: pd.DataFrame, logger: logging.Logger):
+def data_splits(config, df: pd.DataFrame):
     X, y = df.drop(columns=["Churn"]), df[["Churn"]]
     X_train, X_test, y_train, y_test = model_selection.train_test_split(
         X,
@@ -124,7 +126,7 @@ def data_splits(config, df: pd.DataFrame, logger: logging.Logger):
         random_state=config.SEED,
         stratify=y,
     )
-    logger.info("Data has been split")
+
     return X_train, X_test, y_train, y_test
 
 
@@ -139,13 +141,9 @@ def data_transformer(
     y_train,
     y_test,
     artifact_dir: Path,
-    logger: logging.Logger,
 ):
-    def custom_combiner(feature, category):
-        return str(feature) + "_" + type(category).__name__ + "_" + str(category)
-
     scaler = preprocessing.StandardScaler().set_output(transform="pandas")
-    encoder_ohe = preprocessing.OneHotEncoder(feature_name_combiner=custom_combiner)
+    encoder_ohe = preprocessing.OneHotEncoder(feature_name_combiner=_custom_combiner)
     encoder_oe = preprocessing.OrdinalEncoder().set_output(transform="pandas")
     target_encoder = preprocessing.LabelEncoder()
 
@@ -197,7 +195,6 @@ def data_transformer(
         ],
         axis=1,
     )
-    logger.info("Data has been transformed")
 
     preprocessors_names = [
         "encoder_ohe_",
@@ -209,17 +206,17 @@ def data_transformer(
     for name, preprocessor in zip(preprocessors_names, preprocessors):
         path_ = artifact_dir / f"{name}.pkl"
         with open(str(path_), "wb") as f:
-            pkl.dump(preprocessor, f)
-    logger.info("Preprocessors have been saved into a `pickle` file")
+            pkl.dump(preprocessor, f, pkl.HIGHEST_PROTOCOL)
     return X_to_train, X_to_test, y_to_train, y_to_test
 
 
 @task(
     name="make_models",
     description="Fit multiple models on data and tune best models using optuna",
+    retries=1,
 )
 def get_best_model(
-    config, X_train, X_test, y_train, y_test, model_dir: Path, logger: logging.Logger
+    config, X_train, X_test, y_train, y_test, model_dir: Path
 ) -> t.Tuple[
     pd.DataFrame,
     optuna.Study,
@@ -228,11 +225,11 @@ def get_best_model(
     float,
 ]:
     models = list()
-    for model_name in config.model.models:
+    for model_name in config.model.get("models"):
         if model_name == "voting":
             name, voting_model = MODEL_DICT.get(model_name)
             estimators = list()
-            for voting_model_name in config.model.models.voting:
+            for voting_model_name in config.model.get("models").get("voting"):
                 estimators.append(MODEL_DICT.get(voting_model_name))
             params = {"estimators": estimators, "voting": "soft"}
             voting_model = voting_model.set_params(**params)
@@ -245,22 +242,17 @@ def get_best_model(
         y_train=y_train,
         y_test=y_test,
     )
-    logger.info("Models have been trained")
-    logger.info(
-        f"{results.head(1).index.values[0].capitalize()} has been evaluated as the best model"
-    )
     study, best_model, best_params, best_metric, type_ = LearnLab.tune_model(
         X_train=X_train,
         X_test=X_test,
         y_train=y_train,
         y_test=y_test,
-        n_trials=config.n_trials,
+        n_trials=config.model.get("n_trials"),
     )
-    logger.info(f"Best model acquired as type {type_}")
     best_path_ = model_dir / f"{type_}_best_.pkl"
     with open(best_path_, "wb") as f:
         pkl.dump(best_model, f)
-    return results, study, best_model, best_params, best_metric, best_path_
+    return results, study, best_model, best_params, best_metric, best_path_, type_
 
 
 @task(
@@ -274,7 +266,6 @@ def vizard(
     model,
     X_train: pd.DataFrame,
     viz_dir: Path,
-    logger: logging.Logger,
 ) -> None:
     target_dist_path = viz_dir / "target_dist.png"
     contract_dist_path = viz_dir / "contract_dist.png"
@@ -300,7 +291,6 @@ def vizard(
     )
     shap_explainer_path = viz_dir / "shap_explainer.png"
     Vizard.plot_shap(model=model, X_train=X_train, path=shap_explainer_path)
-    logger.info("Plots and visualizations have been drawn")
     return None
 
 
@@ -311,15 +301,15 @@ def vizard(
     retry_delay_seconds=3,
 )
 def push_artifacts(
-    config,
     best_type_,
     best_metric: float,
     best_path_: Path,
     artifact_dir: Path,
+    viz_dir: Path,
     logs_dir: Path,
     logger: logging.Logger,
+    logger_file_handler,
 ):
-    # TODO: Sign-in to wandb and prefect workspace
     wandb.init(project="churnobyl", job_type="pipeline")
     model_artifact = wandb.Artifact("churnobyl-clf", type="model")
     model_artifact.add_file(best_path_)
@@ -329,8 +319,11 @@ def push_artifacts(
     )
     preprocessors_artifact.add_dir(artifact_dir)
     wandb.log_artifact(preprocessors_artifact)
+    plots_artifact = wandb.Artifact("plots", type="visualizations")
+    plots_artifact.add_dir(viz_dir)
+    wandb.log_artifact(plots_artifact)
     markdown_artifact = f"""
-    ### Model type: {best_type_}
+    ### Model saved: {best_type_}
     ### Model performance: {best_metric}
     """
     artifacts.create_markdown_artifact(
@@ -341,11 +334,12 @@ def push_artifacts(
     wandb.finish()
     logger.info("Artifacts have been pushed to project server")
     logger.info("All tasks done. Pipeline has now been completed")
+    logger_file_handler.close()
     s3_resource = boto3.resource("s3")
     bucket = s3_resource.Bucket("churnobyl")
     log_files = logs_dir.glob("*.log")
     for file in log_files:
-        bucket.upload_file(file, f"logs/{file.name}")
+        bucket.upload_file(file, f"train_logs/{file.name}")
     return None
 
 
@@ -356,7 +350,6 @@ def push_artifacts(
 def main_workflow(config_path: Path) -> None:
     config = set_config(config_path=config_path)
     (
-        logger,
         ROOT_DIR,
         DATA_DIR,
         VIZ_DIR,
@@ -364,8 +357,19 @@ def main_workflow(config_path: Path) -> None:
         ARTIFACT_DIR,
         LOGS_DIR,
     ) = setup_pipeline(config=config)
-    df = data_loader(schema=TRAINING_SCHEMA, logger=logger)
-    X_train, X_test, y_train, y_test = data_splits(config=config, df=df, logger=logger)
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
+    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+    file_handler = logging.FileHandler(
+        filename=LOGS_DIR / f"{datetime.now().date()}.log"
+    )
+    file_handler.setFormatter(formatter)
+    logger.addHandler(file_handler)
+    logger.info("Setting up directories and logging")
+    df = data_loader(schema=TRAINING_SCHEMA, data_dir=DATA_DIR)
+    logger.info("Data has been loaded")
+    X_train, X_test, y_train, y_test = data_splits(config=config, df=df)
+    logger.info("Data splits have been made")
     X_to_train, X_to_test, y_to_train, y_to_test = data_transformer(
         config=config,
         X_train=X_train,
@@ -373,9 +377,17 @@ def main_workflow(config_path: Path) -> None:
         y_train=y_train,
         y_test=y_test,
         artifact_dir=ARTIFACT_DIR,
-        logger=logger,
     )
-    (results, study, best_model, best_params, best_metric, best_path_) = get_best_model(
+    logger.info("Data transformers have been applied")
+    (
+        results,
+        study,
+        best_model,
+        best_params,
+        best_metric,
+        best_path_,
+        best_type_,
+    ) = get_best_model(
         config=config,
         X_train=X_to_train,
         X_test=X_to_test,
@@ -383,6 +395,7 @@ def main_workflow(config_path: Path) -> None:
         y_test=y_to_test,
         model_dir=MODEL_DIR,
     )
+    logger.info("Best model has been acquired")
     _ = vizard(
         df=df,
         results=results,
@@ -390,11 +403,23 @@ def main_workflow(config_path: Path) -> None:
         model=best_model,
         X_train=X_to_train,
         viz_dir=VIZ_DIR,
+    )
+    logger.info("Visualizations have been drawn")
+    _ = push_artifacts(
+        best_type_=best_type_,
+        best_metric=best_metric,
+        best_path_=best_path_,
+        artifact_dir=ARTIFACT_DIR,
+        logs_dir=LOGS_DIR,
         logger=logger,
+        logger_file_handler=file_handler,
     )
 
 
 if __name__ == "__main__":
+    assert os.getenv(
+        "WANDB_API_KEY"
+    ), "You must set the WANDB_API_KEY environment variable"
     assert (
         Path.cwd().stem == "churninator"
     ), "Run code from 'churninator', not from 'churnobyl'"
@@ -402,7 +427,7 @@ if __name__ == "__main__":
         prog="Churnzilla-69420",
         description="For config file only",
     )
-    parser.add_argument("--config", default="./config.yaml")
+    parser.add_argument("--config", default="./churnobyl/conf/config.yaml")
     args = parser.parse_args()
     config_path = Path(args.config)
     main_workflow(config_path=config_path)

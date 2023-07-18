@@ -31,7 +31,7 @@ MODEL_DICT: t.Dict[str, t.Tuple] = {
     "abc": ("abc", ensemble.AdaBoostClassifier()),
     "voting": (
         "voting",
-        ensemble.VotingClassifier(),
+        ensemble.VotingClassifier(estimators=[], voting="soft"),
     ),
     "xgb": ("xgb", xgb.XGBClassifier()),
 }
@@ -60,25 +60,26 @@ class LearnLab:
         Returns:
             pd.DataFrame: DataFrame that contains the performance results for all the models in `model_list`
         """
+
         results = dict()
         for name, model in model_list:
             model.fit(X_train, y_train)
             train_predictions = model.predict(X_train)
             test_predictions = model.predict(X_test)
-            train_accuracy = metrics.accuracy_score(y_train, train_predictions)
-            (
-                train_precision,
-                train_recall,
-                train_fscore,
-                _,
-            ) = metrics.precision_recall_fscore_support(y_train, train_predictions)
-            test_accuracy = metrics.accuracy_score(y_test, train_predictions)
-            (
-                test_precision,
-                test_recall,
-                test_fscore,
-                _,
-            ) = metrics.precision_recall_fscore_support(y_test, test_predictions)
+            train_accuracy = metrics.accuracy_score
+            train_precision = metrics.precision_score(
+                y_true=y_train, y_pred=train_predictions
+            )
+            train_recall = metrics.recall_score(
+                y_true=y_train, y_pred=train_predictions
+            )
+            train_fscore = metrics.f1_score(y_true=y_train, y_pred=train_predictions)
+            test_accuracy = metrics.accuracy_score(y_test, test_predictions)
+            test_precision = metrics.precision_score(
+                y_true=y_test, y_pred=test_predictions
+            )
+            test_recall = metrics.recall_score(y_true=y_test, y_pred=test_predictions)
+            test_fscore = metrics.f1_score(y_true=y_test, y_pred=test_predictions)
             results[name] = (
                 train_accuracy,
                 train_precision,
@@ -89,7 +90,7 @@ class LearnLab:
                 test_recall,
                 test_fscore,
             )
-        results = pd.DataFrame.from_dict(results)
+        results = pd.DataFrame.from_dict(results, orient="index")
         results.columns = [
             "train_accuracy",
             "train_precision",
@@ -100,7 +101,7 @@ class LearnLab:
             "test_recall",
             "test_fscore",
         ]
-        results = results.sort_values(by=["test_fcore"], ascending=False)
+        results = results.sort_values(by=["test_fscore"], ascending=False)
         return results
 
     # DEV: Add hyperparams for models
@@ -115,7 +116,7 @@ class LearnLab:
         optuna.Study,
         t.Union[ensemble.RandomForestClassifier, xgb.XGBClassifier],
         t.Dict[str, t.Any],
-        t.Float | np.ndarray,
+        t.Union[float, np.ndarray],
         t.Union[t.Literal["RandomForest"], t.Literal["XGBoost"]],
     ]:
         """

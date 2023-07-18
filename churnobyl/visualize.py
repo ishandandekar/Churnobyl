@@ -3,6 +3,7 @@ Contains functions to make plots and visualizations
 """
 from pathlib import Path
 import matplotlib.pyplot as plt
+from matplotlib import figure
 import optuna
 import pandas as pd
 import shap
@@ -140,7 +141,6 @@ class Vizard:
             raise Exception(f"{param_importance_path} should be a path to `.png`")
         if not str(parallel_coordinate_path).endswith(".png"):
             raise Exception(f"{parallel_coordinate_path} should be a path to `.png`")
-        print("[INFO] Saving plot for param importances")
         param_importances: go.Figure = optuna.visualization.plot_param_importances(
             study
         )
@@ -160,6 +160,7 @@ class Vizard:
         explainer = shap.Explainer(model, X_train)
         shap_values = explainer(X_train)
         shap.plots.bar(shap_values, show=False)
-        plt.savefig(path, format="png")
-        plt.close()
+        fig = plt.gcf()
+        fig.savefig(path, bbox_inches="tight", dpi=300)
+        plt.close(fig)
         return None
