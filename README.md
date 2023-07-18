@@ -1,10 +1,16 @@
 # Churnobyl
 
-[![Tests](https://github.com/ishandandekar/Churnobyl/actions/workflows/tests.yaml/badge.svg)](https://github.com/ishandandekar/Churnobyl/actions/workflows/tests.yaml)
+[![Deploy](https://github.com/ishandandekar/Churnobyl/actions/workflows/deploy.yaml/badge.svg)](https://github.com/ishandandekar/Churnobyl/actions/workflows/deploy.yaml)
+
 [![Configure AWS](https://github.com/ishandandekar/Churnobyl/actions/workflows/aws_configure.yaml/badge.svg)](https://github.com/ishandandekar/Churnobyl/actions/workflows/aws_configure.yaml)
+
+[![Tests](https://github.com/ishandandekar/Churnobyl/actions/workflows/tests.yaml/badge.svg)](https://github.com/ishandandekar/Churnobyl/actions/workflows/tests.yaml)
+
 [LICENCE](LICENCE)
 
 > **Warning**: This is a work in progress. Until specified, please do not directly use the code. There will be addtition as well as improvements over the time. Use the code only to get inspiration and not for actual production usage.
+
+### Milestone (18-7-2023): The pipeline ran completely from start to end. No errors while add artifacts to server too!
 
 ## Contributions
 
@@ -26,12 +32,13 @@ Any help is always welcomed. The project is open-source. The key features that a
 - [x] Fill the [`./churnobyl/visualize.py`](./churnobyl/visualize.py)
 - [x] Fill the [`./churnobyl/model.py`](./churnobyl/model.py)
 - [x] Update config file
-- [ ] Sign in to aws/boto3, wandb, prefect workspace
-- [ ] Fill the [`./churnobyl/pipeline.py`](./churnobyl/pipeline.py), to reflect the actual workflow
+- [x] Add `great_expectations` instead of `pandera`
+- [x] Sign in to prefect workspace
+- [x] Fill the [`./churnobyl/pipeline.py`](./churnobyl/pipeline.py), to reflect the actual workflow
 - [ ] Add tests for `pytest`
 - [x] Modulize the notebook code into python scripts
 - [ ] Run modelling experiments [`notebook`](./notebooks/01-model-experiments.ipynb) one-last-time
-- [ ] Integrate prefect for workflow orchestration
+- [x] Integrate prefect for workflow orchestration
 - [ ] Create `Dockerfile`
 - [ ] Add workflow files using Github Actions
 - [ ] Explore AWS services to think for deployment options
