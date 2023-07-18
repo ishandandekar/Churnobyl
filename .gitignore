@@ -2,3 +2,10 @@ data/
 .venv/
 **/__pycache__
 **/.hypothesis
+**/logs
+**/.log
+**/wandb
+**/models
+**/models/artifacts/
+**/figures
+.env
