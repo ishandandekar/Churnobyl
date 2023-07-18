@@ -22,7 +22,10 @@ jobs:
         run: |
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Setup Wandb and Prefect
+        shell: bash
+        env:
+          WANDB_API: ${{ secrets.WANDB_KEY }}
         run: |
-          wandb login {{ secrets.WANDB_API_KEY }}
+          wandb login "$WANDB_API"
           echo "Wandb login successful"
           prefect cloud login -k {{ secrets.PREFECT_API_KEY_CHURNOBYL }} --workspace ishandandekar/churnobyl
