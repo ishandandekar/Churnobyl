@@ -25,7 +25,8 @@ jobs:
         shell: bash
         env:
           WANDB_API: ${{ secrets.WANDB_KEY }}
+          API_KEY: ${{ secrets.PREFECT_API_KEY_CHURNOBYL }}
         run: |
           wandb login "$WANDB_API"
           echo "Wandb login successful"
-          prefect cloud login -k {{ secrets.PREFECT_API_KEY_CHURNOBYL }} --workspace ishandandekar/churnobyl
+          prefect cloud login -k $API_KEY --workspace ishandandekar/churnobyl
