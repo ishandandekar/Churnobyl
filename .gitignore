@@ -6,6 +6,6 @@ data/
 **/.log
 **/wandb
 **/models
-**/models/artifacts/
+models/artifacts/*.pkl
 **/figures
 .env
