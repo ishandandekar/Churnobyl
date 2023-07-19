@@ -35,7 +35,7 @@ Any help is always welcomed. The project is open-source. The key features that a
 - [x] Add `great_expectations` instead of `pandera`
 - [x] Sign in to prefect workspace
 - [x] Fill the [`./churnobyl/pipeline.py`](./churnobyl/pipeline.py), to reflect the actual workflow
-- [ ] Add tests for `pytest`
+- [x] Add tests for `pytest`
 - [x] Modulize the notebook code into python scripts
 - [ ] Run modelling experiments [`notebook`](./notebooks/01-model-experiments.ipynb) one-last-time
 - [x] Integrate prefect for workflow orchestration
