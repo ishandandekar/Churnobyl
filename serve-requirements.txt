@@ -1,0 +1,4 @@
+fastapi
+wandb
+boto3
+uvicorn
