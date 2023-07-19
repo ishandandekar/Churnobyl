@@ -406,6 +406,7 @@ def main_workflow(config_path: Path) -> None:
         best_metric=best_metric,
         best_path_=best_path_,
         artifact_dir=ARTIFACT_DIR,
+        viz_dir=VIZ_DIR,
         logs_dir=LOGS_DIR,
         logger=logger,
         logger_file_handler=file_handler,
@@ -413,9 +414,6 @@ def main_workflow(config_path: Path) -> None:
 
 
 if __name__ == "__main__":
-    assert os.getenv(
-        "WANDB_API_KEY"
-    ), "You must set the WANDB_API_KEY environment variable"
     assert (
         Path.cwd().stem == "churninator"
     ), "Run code from 'churninator', not from 'churnobyl'"
