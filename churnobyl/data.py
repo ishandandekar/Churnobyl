@@ -19,7 +19,6 @@ checks: t.Dict[str, t.List[Check]] = {
     "Dependents": [Check.isin(["Yes", "No"])],
     "tenure": [
         Check.greater_than_or_equal_to(min_value=0.0),
-        Check.less_than_or_equal_to(max_value=72.0),
     ],
     "PhoneService": [Check.isin(["No", "Yes"])],
     "MultipleLines": [Check.isin(["No", "Yes", "No phone service"])],
