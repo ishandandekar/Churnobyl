@@ -85,3 +85,4 @@ Any help is always welcomed. The project is open-source. The key features that a
 - https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://neptune.ai/blog/ml-model-monitoring-best-tools&ved=2ahUKEwjF06zUrI2AAxVQcGwGHekJDvEQFnoECCUQAQ&usg=AOvVaw0cWnCVHcV7-lAU9ivcr-lf
 - https://retool.com/templates/machine-learning-model-monitoring-dashboard
 - https://docs.dominodatalab.com/en/5.3/user_guide/715969/model-monitoring/
+- https://stackoverflow.com/questions/65602056/how-to-set-and-access-environment-variables-in-python-file-for-streamlit-app
