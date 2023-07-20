@@ -8,7 +8,7 @@ import fastapi
 import wandb
 import boto3
 from serve.schemas import PredictPayload
-from tagifai import predict
+from pathlib import Path
 
 # TODO: Add code for FastAPI and then dockerize
 app = fastapi.FastAPI(
@@ -16,12 +16,44 @@ app = fastapi.FastAPI(
 )
 
 
-@app.on_event("startup")
 def load_artifacts():
-    global artifacts
-    run_id = open(Path(config.CONFIG_DIR, "run_id.txt")).read()
-    artifacts = main.load_artifacts(model_dir=config.MODEL_DIR)
-    logger.info("Ready for inference!")
+    preprocessor_artifact = wandb.use_artifact(
+        "ishandandekar/Churnobyl/churnobyl-ohe-oe-stand:latest", type="preprocessors"
+    )
+    model_artifact = wandb.use_artifact(
+        "ishandandekar/model-registry/churnobyl-binary-clf:latest", type="model"
+    )
+    preprocessor_path = preprocessor_artifact.download(root=".")
+    encoder_oe_path = Path(preprocessor_path) / "encoder_oe_.pkl"
+    encoder_ohe_path = Path(preprocessor_path) / "encoder_ohe_.pkl"
+    scaler_standard_path = Path(preprocessor_path) / "scaler_standard_.pkl"
+    target_encoder_path = Path(preprocessor_path) / "target_encoder_.pkl"
+    model_artifact_dir = model_artifact.download(root=".")
+    models = list(Path(model_artifact_dir).glob("*.pkl"))
+    assert models, "No models found"
+    assert len(models) == 1, "More than one model found"
+    model = models[0]
+    model_path = Path(model_artifact_dir) / model
+    artifacts = {
+        "model": model_path,
+        "encoder_oe": encoder_oe_path,
+        "encoder_ohe": encoder_ohe_path,
+        "scaler_standard": scaler_standard_path,
+        "target_encoder": target_encoder_path,
+    }
+    return artifacts
+
+
+def unpickle(artifacts: t.Dict) -> t.Dict:
+    """
+    Unpickle artifacts
+    """
+    artifacts = {k: pickle.load(open(v, "rb")) for k, v in artifacts.items()}
+    return artifacts
+
+
+artifacts = load_artifacts()
+artifacts = unpickle(artifacts)
 
 
 def construct_response(f):
@@ -71,10 +103,12 @@ def _predict(request: fastapi.Request, payload: PredictPayload) -> t.Dict:
 
 
 # TODO: this
-def predict():
+def predict(request: fastapi.Request, payload: PredictPayload) -> t.Dict:
     """
     API endpoint to get predictions for one single data point
     """
+    # TODO: Log prediction to S3 bucket
+    # TODO: Load Wandb artifacts
     ...
 
 
@@ -83,4 +117,5 @@ def flag():
     """
     API endpoint to flag a prediction. Must contain the predicted label, prediction probability and the actual label
     """
+    # TODO: Log flag to S3 bucket
     ...
