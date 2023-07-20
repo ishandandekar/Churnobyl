@@ -10,3 +10,5 @@ models/
 **/figures
 .env
 artifacts/
+.dashboard-venv/
+.serve-venv/
