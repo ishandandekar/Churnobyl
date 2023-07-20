@@ -10,11 +10,19 @@
 
 > **Warning**: This is a work in progress. Until specified, please do not directly use the code. There will be addtition as well as improvements over the time. Use the code only to get inspiration and not for actual production usage.
 
-### Milestone (18-7-2023): The pipeline ran completely from start to end. No errors while add artifacts to server too!
+### Milestone (18-7-2023): The pipeline ran completely from start to end. No errors while adding artifacts to server too!
 
 ## Contributions
 
 Any help is always welcomed. The project is open-source. The key features that are needed to be updated are marked as TODO in readme as well as in code. If you think there can be any other improvement, please make a PR or an issue, and I'll go over it as soon as possible.
+
+### Ideas for monitoring dashboard:
+
+- Prediction rate:
+- Monthly/daily frequency of requests
+- Flag rate
+- alert after flags cross certain threshold
+- Add probability data
 
 ### TODO:
 
@@ -39,7 +47,10 @@ Any help is always welcomed. The project is open-source. The key features that a
 - [x] Modulize the notebook code into python scripts
 - [ ] Run modelling experiments [`notebook`](./notebooks/01-model-experiments.ipynb) one-last-time
 - [x] Integrate prefect for workflow orchestration
+- [ ] Fill up serving files
 - [ ] Create `Dockerfile`
+- [ ] Deploy a temporary lambda service and API gateway
+- [ ] Create Streamlit dashboard for monitoring
 - [ ] Add workflow files using Github Actions
 - [ ] Explore AWS services to think for deployment options
 - [ ] Try EvidentlyAI model monitoring service
