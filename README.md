@@ -64,6 +64,8 @@ Any help is always welcomed. The project is open-source. The key features that a
 
 ---
 
+- https://medium.com/akava/deploying-containerized-aws-lambda-functions-with-terraform-7147b9815599
+- https://developer.hashicorp.com/terraform/tutorials/aws/lambda-api-gateway
 - https://www.youtube.com/watch?v=VYk3lwZbHBU&ab_channel=TalhaAnwar
 - https://www.baeldung.com/ops/dockerfile-env-variable
 - https://www.youtube.com/watch?v=9ciujhGdAOs&ab_channel=TechplanetAI
