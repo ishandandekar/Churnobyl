@@ -1,0 +1,23 @@
+data:
+  NUM_COLS:
+    - tenure
+    - MonthlyCharges
+    - TotalCharges
+  CAT_COLS_OHE:
+    - PaymentMethod
+    - Contract
+    - InternetService
+  CAT_COLS_OE:
+    - OnlineSecurity
+    - MultipleLines
+    - Dependents
+    - DeviceProtection
+    - StreamingTV
+    - OnlineBackup
+    - gender
+    - SeniorCitizen
+    - PhoneService
+    - Partner
+    - PaperlessBilling
+    - StreamingMovies
+    - TechSupport
