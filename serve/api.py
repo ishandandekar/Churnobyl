@@ -9,6 +9,35 @@ import boto3
 from serve.schemas import PredictPayload
 from pathlib import Path
 from pandera import Check, Column, DataFrameSchema, Index, MultiIndex
+import pandas as pd
+import pandera as pa
+from munch import Munch
+import yaml
+from pydantic import BaseModel
+
+
+class PredEndpointInputSchema(BaseModel):
+    customerID: str
+    gender: str
+    SeniorCitizen: int
+    Partner: str
+    Dependents: str
+    tenure: float
+    PhoneService: str
+    MultipleLines: str
+    InternetService: str
+    OnlineSecurity: str
+    OnlineBackup: str
+    DeviceProtection: str
+    TechSupport: str
+    StreamingTV: str
+    StreamingMovies: str
+    Contract: str
+    PaperlessBilling: str
+    PaymentMethod: str
+    MonthlyCharges: float
+    TotalCharges: str
+
 
 checks: t.Dict[str, t.List[Check]] = {
     "customerID": [],
@@ -44,6 +73,9 @@ checks: t.Dict[str, t.List[Check]] = {
     "MonthlyCharges": [],
     "TotalCharges": [],
     "Churn": [Check.isin(["No", "Yes"])],
+    "actualChurn": [],
+    "predictionChurn": [],
+    "predicted_probaChurn": [],
 }
 
 INPUT_SCHEMA = DataFrameSchema(
@@ -291,6 +323,284 @@ INPUT_SCHEMA = DataFrameSchema(
     description=None,
 )
 
+FLAG_SCHEMA = DataFrameSchema(
+    columns={
+        "customerID": Column(
+            dtype="object",
+            checks=checks.get("customerID"),
+            nullable=False,
+            unique=False,
+            coerce=False,
+            required=True,
+            regex=False,
+            description=None,
+            title=None,
+        ),
+        "gender": Column(
+            dtype="object",
+            checks=checks.get("gender"),
+            nullable=False,
+            unique=False,
+            coerce=False,
+            required=True,
+            regex=False,
+            description=None,
+            title=None,
+        ),
+        "SeniorCitizen": Column(
+            dtype="int64",
+            checks=checks.get("SeniorCitizen"),
+            nullable=False,
+            unique=False,
+            coerce=False,
+            required=True,
+            regex=False,
+            description=None,
+            title=None,
+        ),
+        "Partner": Column(
+            dtype="object",
+            checks=checks.get("Partner"),
+            nullable=False,
+            unique=False,
+            coerce=False,
+            required=True,
+            regex=False,
+            description=None,
+            title=None,
+        ),
+        "Dependents": Column(
+            dtype="object",
+            checks=checks.get("Dependents"),
+            nullable=False,
+            unique=False,
+            coerce=False,
+            required=True,
+            regex=False,
+            description=None,
+            title=None,
+        ),
+        "tenure": Column(
+            dtype="int64",
+            checks=checks.get("tenure"),
+            nullable=False,
+            unique=False,
+            coerce=False,
+            required=True,
+            regex=False,
+            description=None,
+            title=None,
+        ),
+        "PhoneService": Column(
+            dtype="object",
+            checks=checks.get("PhoneService"),
+            nullable=False,
+            unique=False,
+            coerce=False,
+            required=True,
+            regex=False,
+            description=None,
+            title=None,
+        ),
+        "MultipleLines": Column(
+            dtype="object",
+            checks=checks.get("MultipleLines"),
+            nullable=False,
+            unique=False,
+            coerce=False,
+            required=True,
+            regex=False,
+            description=None,
+            title=None,
+        ),
+        "InternetService": Column(
+            dtype="object",
+            checks=checks.get("InternetService"),
+            nullable=False,
+            unique=False,
+            coerce=False,
+            required=True,
+            regex=False,
+            description=None,
+            title=None,
+        ),
+        "OnlineSecurity": Column(
+            dtype="object",
+            checks=checks.get("OnlineSecurity"),
+            nullable=False,
+            unique=False,
+            coerce=False,
+            required=True,
+            regex=False,
+            description=None,
+            title=None,
+        ),
+        "OnlineBackup": Column(
+            dtype="object",
+            checks=checks.get("OnlineBackup"),
+            nullable=False,
+            unique=False,
+            coerce=False,
+            required=True,
+            regex=False,
+            description=None,
+            title=None,
+        ),
+        "DeviceProtection": Column(
+            dtype="object",
+            checks=checks.get("DeviceProtection"),
+            nullable=False,
+            unique=False,
+            coerce=False,
+            required=True,
+            regex=False,
+            description=None,
+            title=None,
+        ),
+        "TechSupport": Column(
+            dtype="object",
+            checks=checks.get("TechSupport"),
+            nullable=False,
+            unique=False,
+            coerce=False,
+            required=True,
+            regex=False,
+            description=None,
+            title=None,
+        ),
+        "StreamingTV": Column(
+            dtype="object",
+            checks=checks.get("StreamingTV"),
+            nullable=False,
+            unique=False,
+            coerce=False,
+            required=True,
+            regex=False,
+            description=None,
+            title=None,
+        ),
+        "StreamingMovies": Column(
+            dtype="object",
+            checks=checks.get("StreamingMovies"),
+            nullable=False,
+            unique=False,
+            coerce=False,
+            required=True,
+            regex=False,
+            description=None,
+            title=None,
+        ),
+        "Contract": Column(
+            dtype="object",
+            checks=checks.get("Contract"),
+            nullable=False,
+            unique=False,
+            coerce=False,
+            required=True,
+            regex=False,
+            description=None,
+            title=None,
+        ),
+        "PaperlessBilling": Column(
+            dtype="object",
+            checks=None,
+            nullable=False,
+            unique=False,
+            coerce=False,
+            required=True,
+            regex=False,
+            description=None,
+            title=None,
+        ),
+        "PaymentMethod": Column(
+            dtype="object",
+            checks=checks.get("PaymentMethod"),
+            nullable=False,
+            unique=False,
+            coerce=False,
+            required=True,
+            regex=False,
+            description=None,
+            title=None,
+        ),
+        "MonthlyCharges": Column(
+            dtype="float64",
+            checks=checks.get("MonthlyCharges"),
+            nullable=False,
+            unique=False,
+            coerce=False,
+            required=True,
+            regex=False,
+            description=None,
+            title=None,
+        ),
+        "TotalCharges": Column(
+            dtype="object",
+            checks=checks.get("TotalCharges"),
+            nullable=False,
+            unique=False,
+            coerce=False,
+            required=True,
+            regex=False,
+            description=None,
+            title=None,
+        ),
+        "actualChurn": Column(
+            dtype="int64",
+            checks=checks.get("actualChurn"),
+            nullable=False,
+            unique=False,
+            coerce=False,
+            required=True,
+            regex=False,
+            description=None,
+            title=None,
+        ),
+        "predictedChurn": Column(
+            dtype="int64",
+            checks=checks.get("predictedChurn"),
+            nullable=False,
+            unique=False,
+            coerce=False,
+            required=True,
+            regex=False,
+            description=None,
+            title=None,
+        ),
+        "predicted_probaChurn": Column(
+            dtype="float64",
+            checks=checks.get("predicted_probaChurn"),
+            nullable=False,
+            unique=False,
+            coerce=False,
+            required=True,
+            regex=False,
+            description=None,
+            title=None,
+        ),
+    },
+    checks=None,
+    index=Index(
+        dtype="int64",
+        checks=[],
+        nullable=False,
+        coerce=False,
+        name=None,
+        description=None,
+        title=None,
+    ),
+    dtype=None,
+    coerce=True,
+    strict=False,
+    name=None,
+    ordered=False,
+    unique=None,
+    report_duplicates="all",
+    unique_column_names=False,
+    title=None,
+    description=None,
+)
+
 
 def construct_response(f):
     """Construct a JSON reponse for an endpoint"""
@@ -310,6 +620,18 @@ def construct_response(f):
         return response
 
     return wrap
+
+
+def set_config(config_path: Path) -> Munch:
+    if config_path.exists():
+        with open(config_path, "r") as stream:
+            try:
+                config = yaml.safe_load(stream)
+                return Munch(config)
+            except yaml.YAMLError as exc:
+                print(exc)
+    else:
+        raise Exception("Path error occured. File does not exist")
 
 
 def load_artifacts():
@@ -348,6 +670,7 @@ def unpickle(artifacts: t.Dict) -> t.Dict:
     return artifacts
 
 
+config = set_config("./serve-config.yaml")
 artifacts = load_artifacts()
 artifacts = unpickle(artifacts)
 
@@ -384,13 +707,70 @@ def _predict(request: fastapi.Request, payload: PredictPayload) -> t.Dict:
 
 
 # TODO: this
-def predict(request: fastapi.Request, payload: PredictPayload) -> t.Dict:
+def predict(input_data: PredEndpointInputSchema) -> t.Dict:
     """
     API endpoint to get predictions for one single data point
     """
     # TODO: Validate data using TRAINING_SCHEMA
     # TODO: Log prediction to S3 bucket
     # TODO: Load Wandb artifacts
+    inputs = {
+        "customerID": input_data.customerID,
+        "gender": input_data.gender,
+        "SeniorCitizen": input_data.SeniorCitizen,
+        "Partner": input_data.Partner,
+        "Dependents": input_data.Dependents,
+        "tenure": input_data.tenure,
+        "PhoneService": input_data.PhoneService,
+        "MultipleLines": input_data.MultipleLines,
+        "InternetService": input_data.InternetService,
+        "OnlineSecurity": input_data.OnlineSecurity,
+        "OnlineBackup": input_data.OnlineBackup,
+        "DeviceProtection": input_data.DeviceProtection,
+        "TechSupport": input_data.TechSupport,
+        "StreamingTV": input_data.StreamingTV,
+        "StreamingMovies": input_data.StreamingMovies,
+        "Contract": input_data.Contract,
+        "PaperlessBilling": input_data.PaperlessBilling,
+        "PaymentMethod": input_data.PaymentMethod,
+        "MonthlyCharges": input_data.MonthlyCharges,
+        "TotalCharges": input_data.TotalCharges,
+    }
+    input_df = pd.DataFrame(inputs)
+    response = {}
+    response["errors"] = {}
+    try:
+        INPUT_SCHEMA.validate(input_df)
+    except pa.errors.SchemaError as err:
+        response["errors"]["schema_failure_cases"] = err.failure_cases
+        response["errors"]["data"] = err.data
+    input_df["TotalCharges"] = input_df["TotalCharges"].replace(
+        to_replace=" ", value="0"
+    )
+    input_ohe = input_df[config.data.get("CAT_COLS_OHE")]
+    input_ohe_trans = artifacts["encoder_ohe"].transform(input_ohe)
+    input_ohe_trans__df = pd.DataFrame(
+        input_ohe_trans.toarray(),
+        columns=artifacts["encoder_ohe"].get_feature_names_out(),
+    )
+    input_oe = input_df[config.data.get("CAT_COLS_OE")]
+    input_oe_trans: pd.DataFrame = artifacts["encoder_oe"].transform(input_oe)
+    input_scale = input_df[config.data.get("NUM_COLS")]
+    input_scale_trans: pd.DataFrame = artifacts["scaler_standard"].transform(
+        input_scale
+    )
+    input_to_predict = pd.concat(
+        [
+            input_ohe_trans__df.reset_index(drop=True),
+            input_oe_trans.reset_index(drop=True),
+            input_scale_trans.reset_index(drop=True),
+        ],
+        axis=1,
+    )
+    prediction = artifacts["model"].predict(input_to_predict)
+    prediction_proba = artifacts["model"].predict_proba(input_to_predict)
+    response["prediction"] = prediction
+    response["prediction_proba"] = prediction_proba
     ...
 
 
