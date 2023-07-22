@@ -47,6 +47,7 @@ Any help is always welcomed. The project is open-source. The key features that a
 - [x] Modulize the notebook code into python scripts
 - [ ] Run modelling experiments [`notebook`](./notebooks/01-model-experiments.ipynb) one-last-time
 - [x] Integrate prefect for workflow orchestration
+- [ ] Add logic for imputing values, or atleast raise error if any
 - [ ] Fill up serving files
 - [ ] Create `Dockerfile`
 - [ ] Deploy a temporary lambda service and API gateway
