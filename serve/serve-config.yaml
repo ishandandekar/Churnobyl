@@ -21,3 +21,6 @@ data:
     - PaperlessBilling
     - StreamingMovies
     - TechSupport
+
+s3:
+  BUCKET_NAME: churnobyl

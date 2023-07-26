@@ -1,6 +1,8 @@
 from datetime import datetime
 from functools import wraps
 import typing as t
+import uuid
+import json
 from http import HTTPStatus
 import pickle
 import fastapi
@@ -14,30 +16,6 @@ import pandera as pa
 from munch import Munch
 import yaml
 from pydantic import BaseModel
-
-
-class PredEndpointInputSchema(BaseModel):
-    customerID: str
-    gender: str
-    SeniorCitizen: int
-    Partner: str
-    Dependents: str
-    tenure: float
-    PhoneService: str
-    MultipleLines: str
-    InternetService: str
-    OnlineSecurity: str
-    OnlineBackup: str
-    DeviceProtection: str
-    TechSupport: str
-    StreamingTV: str
-    StreamingMovies: str
-    Contract: str
-    PaperlessBilling: str
-    PaymentMethod: str
-    MonthlyCharges: float
-    TotalCharges: str
-
 
 checks: t.Dict[str, t.List[Check]] = {
     "customerID": [],
@@ -602,6 +580,55 @@ FLAG_SCHEMA = DataFrameSchema(
 )
 
 
+class PredEndpointInputSchema(BaseModel):
+    customerID: str
+    gender: str
+    SeniorCitizen: int
+    Partner: str
+    Dependents: str
+    tenure: float
+    PhoneService: str
+    MultipleLines: str
+    InternetService: str
+    OnlineSecurity: str
+    OnlineBackup: str
+    DeviceProtection: str
+    TechSupport: str
+    StreamingTV: str
+    StreamingMovies: str
+    Contract: str
+    PaperlessBilling: str
+    PaymentMethod: str
+    MonthlyCharges: float
+    TotalCharges: str
+
+
+class FlagEndpointInputSchema(BaseModel):
+    customerID: str
+    gender: str
+    SeniorCitizen: int
+    Partner: str
+    Dependents: str
+    tenure: float
+    PhoneService: str
+    MultipleLines: str
+    InternetService: str
+    OnlineSecurity: str
+    OnlineBackup: str
+    DeviceProtection: str
+    TechSupport: str
+    StreamingTV: str
+    StreamingMovies: str
+    Contract: str
+    PaperlessBilling: str
+    PaymentMethod: str
+    MonthlyCharges: float
+    TotalCharges: str
+    actualChurn: int
+    predictedChurn: int
+    predicted_probaChurn: float
+
+
 def construct_response(f):
     """Construct a JSON reponse for an endpoint"""
 
@@ -711,9 +738,7 @@ def predict(input_data: PredEndpointInputSchema) -> t.Dict:
     """
     API endpoint to get predictions for one single data point
     """
-    # TODO: Validate data using TRAINING_SCHEMA
     # TODO: Log prediction to S3 bucket
-    # TODO: Load Wandb artifacts
     inputs = {
         "customerID": input_data.customerID,
         "gender": input_data.gender,
@@ -775,15 +800,61 @@ def predict(input_data: PredEndpointInputSchema) -> t.Dict:
 
 
 # TODO: and this
-def flag():
+@app.post("/flag", tags=["Flagging"])
+def flag(flag_data: FlagEndpointInputSchema):
     """
     API endpoint to flag a prediction. Must contain the predicted label, prediction probability and the actual label
     """
-    # TODO: Log flag to S3 bucket
-    ...
+    flag_data = {
+        "customerID": flag_data.customerID,
+        "gender": flag_data.gender,
+        "SeniorCitizen": flag_data.SeniorCitizen,
+        "Partner": flag_data.Partner,
+        "Dependents": flag_data.Dependents,
+        "tenure": flag_data.tenure,
+        "PhoneService": flag_data.PhoneService,
+        "MultipleLines": flag_data.MultipleLines,
+        "InternetService": flag_data.InternetService,
+        "OnlineSecurity": flag_data.OnlineSecurity,
+        "OnlineBackup": flag_data.OnlineBackup,
+        "DeviceProtection": flag_data.DeviceProtection,
+        "TechSupport": flag_data.TechSupport,
+        "StreamingTV": flag_data.StreamingTV,
+        "StreamingMovies": flag_data.StreamingMovies,
+        "Contract": flag_data.Contract,
+        "PaperlessBilling": flag_data.PaperlessBilling,
+        "PaymentMethod": flag_data.PaymentMethod,
+        "MonthlyCharges": flag_data.MonthlyCharges,
+        "TotalCharges": flag_data.TotalCharges,
+        "actualChurn": flag_data.actualChurn,
+        "predictedChurn": flag_data.predictedChurn,
+        "predicted_probaChurn": flag_data.predicted_probaChurn,
+    }
+    flag_df = pd.DataFrame(flag_data)
+    response = dict()
+    try:
+        FLAG_SCHEMA.validate(flag_df)
+        s3 = boto3.client("s3")
 
-
-# TODO: and this
-def data_reservoir():
-    # Add training samples to S3 bucket
-    ...
+        # Generate a unique file name
+        file_name = f"{str(uuid.uuid4())}.json"
+        json_string = json.dumps(flag_data)
+        try:
+            s3_response = s3.put_object(
+                Body=json_string,
+                Bucket=config.s3.get("BUCKET_NAME"),
+                Key="flagged/" + file_name,
+            )
+            if s3_response["ResponseMetadata"]["HTTPStatusCode"] == 200:
+                response["message"] = "Flagged successfully"
+                response["status-code"] = HTTPStatus.OK
+                response["data"] = {"file_name": file_name}
+            else:
+                response["message"] = "Failed to upload `.json` file to S3"
+                response["status-code"] = HTTPStatus.INTERNAL_SERVER_ERROR
+                response["data"] = {}
+        except Exception as e:
+            print(e)
+    except pa.errors.SchemaError as err:
+        response["errors"]["schema_failure_cases"] = err.failure_cases
+        response["errors"]["data"] = err.data
