@@ -1,20 +1,35 @@
 # Churnobyl
 
-[![Deploy](https://github.com/ishandandekar/Churnobyl/actions/workflows/deploy.yaml/badge.svg)](https://github.com/ishandandekar/Churnobyl/actions/workflows/deploy.yaml)
-
-[![Configure AWS](https://github.com/ishandandekar/Churnobyl/actions/workflows/aws_configure.yaml/badge.svg)](https://github.com/ishandandekar/Churnobyl/actions/workflows/aws_configure.yaml)
-
-[![Tests](https://github.com/ishandandekar/Churnobyl/actions/workflows/tests.yaml/badge.svg)](https://github.com/ishandandekar/Churnobyl/actions/workflows/tests.yaml)
+[![Deploy](https://github.com/ishandandekar/Churnobyl/actions/workflows/deploy.yaml/badge.svg)](https://github.com/ishandandekar/Churnobyl/actions/workflows/deploy.yaml) [![Configure AWS](https://github.com/ishandandekar/Churnobyl/actions/workflows/aws_configure.yaml/badge.svg)](https://github.com/ishandandekar/Churnobyl/actions/workflows/aws_configure.yaml)
+<!-- [![Tests](https://github.com/ishandandekar/Churnobyl/actions/workflows/tests.yaml/badge.svg)](https://github.com/ishandandekar/Churnobyl/actions/workflows/tests.yaml) -->
 
 [LICENCE](LICENCE)
 
 > **Warning**: This is a work in progress. Until specified, please do not directly use the code. There will be addtition as well as improvements over the time. Use the code only to get inspiration and not for actual production usage.
 
-### Milestone (18-7-2023): The pipeline ran completely from start to end. No errors while adding artifacts to server too!
 
 ## Contributions
 
 Any help is always welcomed. The project is open-source. The key features that are needed to be updated are marked as TODO in readme as well as in code. If you think there can be any other improvement, please make a PR or an issue, and I'll go over it as soon as possible.
+
+### Steps to develop locally:
+- Join the org!
+- Create a PR
+- Get the keys
+- Notify owners and reviewers of repo/project
+- Push code to branch, some tests must be passes by the branch
+
+### Milestone (18-7-2023): The pipeline ran completely from start to end. No errors while adding artifacts to server too!
+
+### S3 directory structure
+```
+churnobyl/
+├─ api_logs/
+│  ├─ predict_logs/
+│  ├─ flag_logs/
+├─ flagged/
+├─ train_logs/
+```
 
 ### Ideas for monitoring dashboard:
 
@@ -64,6 +79,7 @@ Any help is always welcomed. The project is open-source. The key features that a
 - https://github.com/eliasbrange/aws-fastapi/tree/main/lambda-api-gateway
 
 ---
+- https://docs.aws.amazon.com/AmazonECR/latest/userguide/image-push.html
 
 - https://medium.com/akava/deploying-containerized-aws-lambda-functions-with-terraform-7147b9815599
 - https://developer.hashicorp.com/terraform/tutorials/aws/lambda-api-gateway
