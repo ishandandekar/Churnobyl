@@ -23,7 +23,6 @@ def list_objects_in_folder(bucket_name, folder_name):
     return []
 
 
-# Function to get timestamps of prediction objects
 def get_prediction_timestamps(bucket_name, folder_name):
     s3 = boto3.client("s3")
     response = s3.list_objects_v2(Bucket=bucket_name, Prefix=folder_name)
@@ -41,7 +40,7 @@ def create_daily_frequency_chart(timestamps):
     df = pd.DataFrame({"timestamps": timestamps})
     df["timestamps"] = pd.to_datetime(df["timestamps"])
     df = df[
-        df["timestamps"] >= datetime.now() - timedelta(days=365)
+        df["timestamps"] >= datetime.now() - timedelta(days=365 * 20)
     ]  # Filter data for the past year
     df["date"] = df["timestamps"].dt.date
     daily_counts = df["date"].value_counts().sort_index()
@@ -54,7 +53,6 @@ def create_daily_frequency_chart(timestamps):
     return fig
 
 
-# Streamlit App
 def main():
     # Set up your Streamlit dashboard
     st.set_page_config(
@@ -73,43 +71,21 @@ def main():
     st.title("Churnobyl Predictions Dashboard")
 
     # Replace 'YOUR_BUCKET_NAME' with your actual bucket name
-    bucket_name = "churnobyl"
-    folder_name_predictions = "api_logs/predict_logs"
+    bucket_name = "nyc-tlc"
+    folder_name_predictions = "trip data/"
     folder_name_flagged = "flagged"
 
-    # Get the number of predictions and list prediction objects
     num_predictions = count_objects_in_folder(bucket_name, folder_name_predictions) - 1
     prediction_objects = list_objects_in_folder(bucket_name, folder_name_predictions)
-    prediction_objects.remove(f"{folder_name_predictions}/")
+    # prediction_objects.remove(f"{folder_name_predictions}/")
 
-    # Get the number of flagged items and list flagged objects
-    num_flagged = count_objects_in_folder(bucket_name, folder_name_flagged) - 1
-    flagged_objects = list_objects_in_folder(bucket_name, folder_name_flagged)
-    flagged_objects.remove(f"{folder_name_flagged}/")
+    prediction_timestamps = get_prediction_timestamps(
+        bucket_name, folder_name_predictions
+    )
 
-    # Display the gauge metrics and list of objects
-    col1, col2 = st.columns(2)
-    with col1:
-        st.subheader("Number of Predictions")
-        st.metric(label="", value=f"{num_predictions}")
-        st.subheader("Prediction Objects\n")
-        st.text("\n".join(prediction_objects))
-        # Get timestamps of prediction objects
-        prediction_timestamps = get_prediction_timestamps(
-            bucket_name, folder_name_predictions
-        )
-
-        # Create a Plotly chart to visualize the frequency of predictions on a daily basis
-        fig = create_daily_frequency_chart(prediction_timestamps)
-        st.plotly_chart(fig)
-
-    with col2:
-        st.subheader("Number of Flagged Items")
-        st.metric(label="", value=f"{num_flagged}")
-        st.subheader("Flagged Objects\n")
-        st.text("\n".join(flagged_objects))
-
-    # You can add more gauge metrics or charts as needed
+    # Create a Plotly chart to visualize the frequency of predictions on a daily basis
+    fig = create_daily_frequency_chart(prediction_timestamps)
+    st.plotly_chart(fig)
 
 
 if __name__ == "__main__":
