@@ -77,7 +77,8 @@ churnobyl/
 - https://www.deadbear.io/simple-serverless-fastapi-with-aws-lambda/
 - https://www.eliasbrange.dev/posts/deploy-fastapi-on-aws-part-1-lambda-api-gateway/
 - https://github.com/eliasbrange/aws-fastapi/tree/main/lambda-api-gateway
-
+- https://blog.searce.com/fastapi-container-app-deployment-using-aws-lambda-and-api-gateway-6721904531d0
+- https://www.youtube.com/watch?v=rpVLOVeky6A&ab_channel=VincentStevenson
 ---
 - https://docs.aws.amazon.com/AmazonECR/latest/userguide/image-push.html
 
