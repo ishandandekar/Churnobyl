@@ -9,6 +9,7 @@ import pandas as pd
 import numpy as np
 import xgboost as xgb
 from sklearn import ensemble, metrics, dummy, neighbors, linear_model, tree, svm
+from tqdm.auto import tqdm
 
 # DEV: Add models with names as key-value pair
 MODEL_DICT: t.Dict[str, t.Tuple] = {
@@ -62,7 +63,7 @@ class LearnLab:
         """
 
         results = dict()
-        for name, model in model_list:
+        for name, model in tqdm(model_list):
             model.fit(X_train, y_train)
             train_predictions = model.predict(X_train)
             test_predictions = model.predict(X_test)
