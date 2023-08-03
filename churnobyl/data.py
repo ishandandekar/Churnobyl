@@ -9,7 +9,7 @@ from pathlib import Path
 import boto3
 import pandas as pd
 import requests
-from pandera import Check, Column, DataFrameSchema, Index, MultiIndex
+from pandera import Check, Column, DataFrameSchema, Index
 
 checks: t.Dict[str, t.List[Check]] = {
     "customerID": [],
