@@ -8,7 +8,6 @@ import pickle
 import fastapi
 import wandb
 import boto3
-from serve.schemas import PredictPayload
 from pathlib import Path
 from pandera import Check, Column, DataFrameSchema, Index, MultiIndex
 import pandas as pd
@@ -16,6 +15,7 @@ import pandera as pa
 from munch import Munch
 import yaml
 from pydantic import BaseModel
+import uvicorn
 
 checks: t.Dict[str, t.List[Check]] = {
     "customerID": [],
@@ -649,6 +649,15 @@ def construct_response(f):
     return wrap
 
 
+# FIXME: Add this func to both endpoints
+# def validate_input(input: pd.DataFrame, schema: pa.DataFrameSchema):
+#     """Validate input against schema"""
+#     try:
+#         schema.validate(input)
+#     except pa.errors.SchemaErrors as e:
+#         raise Exception(e)
+
+
 def set_config(config_path: Path) -> Munch:
     if config_path.exists():
         with open(config_path, "r") as stream:
@@ -719,18 +728,18 @@ def _index() -> t.Dict:
     return response
 
 
-@app.post("/predict", tags=["Prediction"])
-@construct_response
-def _predict(request: fastapi.Request, payload: PredictPayload) -> t.Dict:
-    """Predict tags for a list of texts."""
-    texts = [item.text for item in payload.texts]
-    predictions = predict.predict(texts=texts, artifacts=artifacts)
-    response = {
-        "message": HTTPStatus.OK.phrase,
-        "status-code": HTTPStatus.OK,
-        "data": {"predictions": predictions},
-    }
-    return response
+# @app.post("/predict", tags=["Prediction"])
+# @construct_response
+# def _predict(request: fastapi.Request, payload: PredictPayload) -> t.Dict:
+#     """Predict tags for a list of texts."""
+#     texts = [item.text for item in payload.texts]
+#     predictions = predict.predict(texts=texts, artifacts=artifacts)
+#     response = {
+#         "message": HTTPStatus.OK.phrase,
+#         "status-code": HTTPStatus.OK,
+#         "data": {"predictions": predictions},
+#     }
+#     return response
 
 
 # TODO: this
@@ -858,3 +867,7 @@ def flag(flag_data: FlagEndpointInputSchema):
     except pa.errors.SchemaError as err:
         response["errors"]["schema_failure_cases"] = err.failure_cases
         response["errors"]["data"] = err.data
+
+
+if __name__ == "__main__":
+    uvicorn.run(app=app, port=8000, host="0.0.0.0")
