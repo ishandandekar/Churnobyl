@@ -10,7 +10,7 @@ To get started, please follow the guidelines below:
 
 2. **Clone the Repository**: Clone the forked repository to your local machine using the following command:
    ```
-   git clone https://github.com/your-username/MLOPs-Churn-Prediction.git
+   git clone https://github.com/ishandandekar/Churnobyl
    ```
 
 3. **Create a Branch**: Create a new branch on your local repository to work on your changes. Use a descriptive name for the branch that reflects the changes you intend to make.
