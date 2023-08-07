@@ -3,21 +3,32 @@ from sklearn import datasets, model_selection
 import pytest
 from churnobyl.model import MODEL_DICT, LearnLab
 import optuna
+import random
 
 
 @pytest.fixture
 def data():
-    # TODO: Load iris binary data
-    X, y = datasets.load_iris(return_X_y=True)
+    iris = datasets.load_iris()
+
+    X, y = iris.data, iris.target
+    class_to_remove = 2
+
+    # Find indices of samples belonging to the class to remove
+    indices_to_remove = y == class_to_remove
+
+    # Remove the samples of the chosen class
+    X_filtered, y_filtered = X[~indices_to_remove], y[~indices_to_remove]
+
+    # Split the filtered data into training and test sets
     X_train, X_test, y_train, y_test = model_selection.train_test_split(
-        X, y, test_size=0.2, random_state=42
+        X_filtered, y_filtered, test_size=0.2, random_state=42
     )
     return X_train, X_test, y_train, y_test
 
 
 def test_run_experiments(data):
     X_train, X_test, y_train, y_test = data
-    model_list = list(list(MODEL_DICT.values())[0])
+    model_list = list(list(MODEL_DICT.values())[:2])
     results = LearnLab.run_experiments(
         model_list=model_list,
         X_train=X_train,
@@ -27,7 +38,6 @@ def test_run_experiments(data):
     )
     assert isinstance(results, pd.DataFrame)
     assert results.shape[0] == len(model_list)
-    assert results.shape[1] == 8
     assert results.columns.tolist() == [
         "train_accuracy",
         "train_precision",
@@ -45,7 +55,6 @@ def test_tune_model(data):
     (
         study,
         best_model,
-        best_params,
         best_params,
         best_metric,
         best_type_,
