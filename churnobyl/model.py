@@ -169,6 +169,11 @@ class LearnLab:
                     "alpha": trial.suggest_float("alpha", 0.01, 10.0, log=True),
                     "min_child_weight": trial.suggest_int("min_child_weight", 1, 10),
                     "early_stopping_rounds": 10,
+                    "callbacks": [
+                        optuna.integration.XGBoostPruningCallback(
+                            trial, "validation_0-auc"
+                        )
+                    ],
                     "random_state": 42,
                 }
 
@@ -179,11 +184,6 @@ class LearnLab:
                     y_train,
                     eval_set=[(X_test, y_test)],
                     verbose=False,
-                    callbacks=[
-                        optuna.integration.XGBoostPruningCallback(
-                            trial, "validation_0-auc"
-                        )
-                    ],
                 )
 
                 y_pred = model.predict(X_test)
