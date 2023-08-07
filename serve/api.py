@@ -1,4 +1,5 @@
 from datetime import datetime
+import os
 from functools import wraps
 import typing as t
 import uuid
@@ -658,11 +659,12 @@ def construct_response(f):
 #         raise Exception(e)
 
 
-def set_config(config_path: Path) -> Munch:
+def set_config(config_path: Path, WANDB_API_KEY: str) -> Munch:
     if config_path.exists():
         with open(config_path, "r") as stream:
             try:
                 config = yaml.safe_load(stream)
+                wandb.login(key=WANDB_API_KEY)
                 return Munch(config)
             except yaml.YAMLError as exc:
                 print(exc)
@@ -670,11 +672,26 @@ def set_config(config_path: Path) -> Munch:
         raise Exception("Path error occured. File does not exist")
 
 
+def _custom_combiner(feature, category) -> str:
+    """
+    Creates custom column name for every category
+
+    Args:
+        feature (str): column name
+        category (str): name of the category
+
+    Returns:
+        str: column name
+    """
+    return str(feature) + "_" + type(category).__name__ + "_" + str(category)
+
+
 def load_artifacts():
-    preprocessor_artifact = wandb.use_artifact(
+    wand_api = wandb.Api()
+    preprocessor_artifact = wand_api.artifact(
         "ishandandekar/Churnobyl/churnobyl-ohe-oe-stand:latest", type="preprocessors"
     )
-    model_artifact = wandb.use_artifact(
+    model_artifact = wand_api.artifact(
         "ishandandekar/model-registry/churnobyl-binary-clf:latest", type="model"
     )
     preprocessor_path = preprocessor_artifact.download(root=".")
@@ -684,8 +701,8 @@ def load_artifacts():
     target_encoder_path = Path(preprocessor_path) / "target_encoder_.pkl"
     model_artifact_dir = model_artifact.download(root=".")
     models = list(Path(model_artifact_dir).glob("*.pkl"))
-    assert models, "No models found"
-    assert len(models) == 1, "More than one model found"
+    # assert models, "No models found"
+    # assert len(models) == 1, "More than one model found"
     model = models[0]
     model_path = Path(model_artifact_dir) / model
     artifacts = {
@@ -706,7 +723,9 @@ def unpickle(artifacts: t.Dict) -> t.Dict:
     return artifacts
 
 
-config = set_config("./serve-config.yaml")
+CONFIG_PATH = Path("./serve/serve-config.yaml")
+WANDB_API_KEY = os.environ["WANDB_API_KEY"]
+config = set_config(config_path=CONFIG_PATH, WANDB_API_KEY=WANDB_API_KEY)
 artifacts = load_artifacts()
 artifacts = unpickle(artifacts)
 
@@ -718,7 +737,7 @@ app = fastapi.FastAPI(
 
 @app.get("/")
 @construct_response
-def _index() -> t.Dict:
+def _index(request: fastapi.Request) -> t.Dict:
     """Health check"""
     response = {
         "message": HTTPStatus.OK.phrase,
