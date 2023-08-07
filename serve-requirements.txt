@@ -1,6 +1,10 @@
+pandas
+pandera
+scikit-learn
+xgboost
 fastapi
 wandb
 boto3
 uvicorn
-pandas
-pandera
+munch
+pydantic
