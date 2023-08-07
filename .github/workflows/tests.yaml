@@ -28,4 +28,4 @@ jobs:
           aws-secret-access-key: ${{ secrets.CHURNOBYL_SECRET_KEY }}
       - name: Test with pytest
         run: |
-          pytest
+          pytest --ignore=temp
