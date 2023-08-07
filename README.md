@@ -1,14 +1,14 @@
 # Churnobyl
 
 [![Deploy](https://github.com/ishandandekar/Churnobyl/actions/workflows/deploy.yaml/badge.svg)](https://github.com/ishandandekar/Churnobyl/actions/workflows/deploy.yaml) [![Configure AWS](https://github.com/ishandandekar/Churnobyl/actions/workflows/aws_configure.yaml/badge.svg)](https://github.com/ishandandekar/Churnobyl/actions/workflows/aws_configure.yaml)
-<!-- [![Tests](https://github.com/ishandandekar/Churnobyl/actions/workflows/tests.yaml/badge.svg)](https://github.com/ishandandekar/Churnobyl/actions/workflows/tests.yaml) -->
+[![Tests](https://github.com/ishandandekar/Churnobyl/actions/workflows/tests.yaml/badge.svg)](https://github.com/ishandandekar/Churnobyl/actions/workflows/tests.yaml)
 
 [LICENCE](LICENCE)
 
 > **Warning**: This is a work in progress. Until specified, please do not directly use the code. There will be addtition as well as improvements over the time. Use the code only to get inspiration and not for actual production usage.
 
 
-## Contributions
+## [Contributions](./CONTRIBUTING.md)
 
 Any help is always welcomed. The project is open-source. The key features that are needed to be updated are marked as TODO in readme as well as in code. If you think there can be any other improvement, please make a PR or an issue, and I'll go over it as soon as possible.
 
@@ -19,7 +19,11 @@ Any help is always welcomed. The project is open-source. The key features that a
 - Notify owners and reviewers of repo/project
 - Push code to branch, some tests must be passes by the branch
 
-### Milestone (18-7-2023): The pipeline ran completely from start to end. No errors while adding artifacts to server too!
+## Milestone (18-7-2023): The pipeline ran completely from start to end. No errors while adding artifacts to server too!
+## Milestone (7-8-2023): The model serving API WORKED!!!
+
+### Issues:
+- custom transformation functions referrenced in [pipeline](./churnobyl/pipeline.py) need to be written again in [api code](./serve/api.py)
 
 ### S3 directory structure
 ```
@@ -106,3 +110,4 @@ churnobyl/
 - https://retool.com/templates/machine-learning-model-monitoring-dashboard
 - https://docs.dominodatalab.com/en/5.3/user_guide/715969/model-monitoring/
 - https://stackoverflow.com/questions/65602056/how-to-set-and-access-environment-variables-in-python-file-for-streamlit-app
+- https://docs.wandb.ai/guides/artifacts/download-and-use-an-artifact
