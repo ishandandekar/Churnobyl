@@ -610,8 +610,8 @@ class DataDreamer:
             raise Exception(f"The url is not of a `.csv`: {url}")
         response = requests.get(url)
         response.raise_for_status()
-        csv_file = response.content
-        df = pd.read_csv(pd.compat.StringIO(csv_file.decode("utf-8")))
+        csv_file = StringIO(response.text)
+        df = pd.read_csv(csv_file)
         if df.columns.to_list() != columns:
             raise Exception(f"Column mismatch error for `.csv`: {url}")
         return df
