@@ -618,28 +618,32 @@ class DataDreamer:
 
     @staticmethod
     def load_csv_from_aws_s3(
-        bucket_name: str, region: str, session: boto3.Session
-    ) -> pd.DataFrame:
-        # How to create a session?
-        # session = boto3.Session(
-        #     aws_access_key_id='your-access-key',
-        #     aws_secret_access_key='your-secret-key',
-        #     region_name='your-aws-region'
-        # )
+        bucket_name: str, folder_path: str, session: boto3.Session
+    ) -> t.Optional[pd.DataFrame]:
         s3_client = session.client("s3")
-        response = s3_client.list_objects_v2(Bucket=bucket_name)
+        if folder_path == "":
+            s3_url = f"s3://{bucket_name}"
+            objects = s3_client.list_objects_v2(Bucket=bucket_name)
+        else:
+            s3_url = f"s3://{bucket_name}/{folder_path}"
+            objects = s3_client.list_objects_v2(Bucket=bucket_name, Prefix=folder_path)
+
         dataframes: list = list()
-        for obj in response["Contents"]:
-            key: str = obj["Key"]
+        for obj in objects.get("Contents", []):
+            key = obj["Key"]
             if key.endswith(".csv"):
-                response = requests.get(
-                    f"https://{bucket_name}.s3.{region}.amazonaws.com/{key}"
-                )
-                response.raise_for_status()
-                csv_content = response.content.decode("utf-8")
+                file_url = f"{s3_url}/{key}"
+                print(file_url)
+                try:
+                    dataframe = pd.read_csv(file_url)
+                    dataframes.append(dataframe)
+                    print(f"Loaded: {key}")
+                except Exception as e:
+                    print(f"Error loading {key}: {e}")
 
-                df = pd.read_csv(StringIO(csv_content))
-
-                dataframes.append(df)
-        combined_df = pd.concat(dataframes, ignore_index=True)
-        return combined_df
+        # Concatenate all dataframes
+        if len(dataframes) != 0:
+            concatenated_df = pd.concat(dataframes, ignore_index=True)
+            return concatenated_df
+        else:
+            return None
