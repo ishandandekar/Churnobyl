@@ -5,7 +5,7 @@
 
 [LICENCE](LICENCE)
 
-> **Warning**: This is a work in progress. Until specified, please do not directly use the code. There will be addtition as well as improvements over the time. Use the code only to get inspiration and not for actual production usage.
+> **Warning** : This is a work in progress. Until specified, please do not directly use the code. There will be addtition as well as improvements over the time. Use the code only to get inspiration and not for actual production usage.
 
 
 ## [Contributions](./CONTRIBUTING.md)
