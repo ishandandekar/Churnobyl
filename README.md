@@ -1,6 +1,6 @@
 # Churnobyl
 
-[![Deploy](https://github.com/ishandandekar/Churnobyl/actions/workflows/deploy.yaml/badge.svg)](https://github.com/ishandandekar/Churnobyl/actions/workflows/deploy.yaml) [![Configure AWS](https://github.com/ishandandekar/Churnobyl/actions/workflows/aws_configure.yaml/badge.svg)](https://github.com/ishandandekar/Churnobyl/actions/workflows/aws_configure.yaml)
+[![Deploy](https://github.com/ishandandekar/Churnobyl/actions/workflows/deploy.yaml/badge.svg)](https://github.com/ishandandekar/Churnobyl/actions/workflows/deploy.yaml)
 [![Tests](https://github.com/ishandandekar/Churnobyl/actions/workflows/tests.yaml/badge.svg)](https://github.com/ishandandekar/Churnobyl/actions/workflows/tests.yaml)
 
 [LICENCE](LICENCE)
