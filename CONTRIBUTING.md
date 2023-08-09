@@ -1,6 +1,6 @@
-# Contributing to MLOPs Churn Prediction Project
+# Contributing to Churnobyl
 
-Welcome to the MLOPs Churn Prediction project! We are thrilled that you are interested in contributing. Your contributions will play a significant role in helping us predict churn in a telecom company more effectively.
+Welcome to the Churnobyl! We are thrilled that you are interested in contributing. Your contributions will play a significant role in helping us predict churn in a telecom company more effectively.
 
 To get started, please follow the guidelines below:
 
