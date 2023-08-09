@@ -37,42 +37,18 @@ churnobyl/
 
 ### Ideas for monitoring dashboard:
 
-- Prediction rate:
+- Prediction rate
 - Monthly/daily frequency of requests
 - Flag rate
 - alert after flags cross certain threshold
 - Add probability data
 
 ### TODO:
-
-- [x] Setup project
-- [x] Integrate python environment
-- [x] Learn pre-commit and linters
-- [x] Make base notebooks without thinking of optimization
-- [x] Create a `pipeline.py` script
-- [x] Explore and update the files in `./data_schema`
-- [x] Only keep `.yaml` file for schema
-- [x] Figure out preprocessing code present in [`./temp/temp.py`](./temp/temp.py)
-- [x] Run model experiments notebook
-- [x] Add code to save preprocessor and all models into the specified directory
-- [x] Fill the [`./churnobyl/data.py`](./churnobyl/data.py)
-- [x] Fill the [`./churnobyl/visualize.py`](./churnobyl/visualize.py)
-- [x] Fill the [`./churnobyl/model.py`](./churnobyl/model.py)
-- [x] Update config file
-- [x] Add `great_expectations` instead of `pandera`
-- [x] Sign in to prefect workspace
-- [x] Fill the [`./churnobyl/pipeline.py`](./churnobyl/pipeline.py), to reflect the actual workflow
-- [x] Add tests for `pytest`
-- [x] Modulize the notebook code into python scripts
+- [ ] Create S3 bucket and folder
 - [ ] Run modelling experiments [`notebook`](./notebooks/01-model-experiments.ipynb) one-last-time
-- [x] Integrate prefect for workflow orchestration
 - [ ] Add logic for imputing values, or atleast raise error if any
-- [ ] Fill up serving files
-- [ ] Create `Dockerfile`
 - [ ] Deploy a temporary lambda service and API gateway
 - [ ] Create Streamlit dashboard for monitoring
-- [ ] Add workflow files using Github Actions
-- [ ] Explore AWS services to think for deployment options
 - [ ] Try EvidentlyAI model monitoring service
 - [ ] Integrate Streamlit to display graphs
 
