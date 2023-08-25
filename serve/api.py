@@ -587,7 +587,7 @@ class PredEndpointInputSchema(BaseModel):
     SeniorCitizen: int
     Partner: str
     Dependents: str
-    tenure: float
+    tenure: int
     PhoneService: str
     MultipleLines: str
     InternetService: str
@@ -610,7 +610,7 @@ class FlagEndpointInputSchema(BaseModel):
     SeniorCitizen: int
     Partner: str
     Dependents: str
-    tenure: float
+    tenure: int
     PhoneService: str
     MultipleLines: str
     InternetService: str
@@ -747,26 +747,14 @@ def _index(request: fastapi.Request) -> t.Dict:
     return response
 
 
-# @app.post("/predict", tags=["Prediction"])
-# @construct_response
-# def _predict(request: fastapi.Request, payload: PredictPayload) -> t.Dict:
-#     """Predict tags for a list of texts."""
-#     texts = [item.text for item in payload.texts]
-#     predictions = predict.predict(texts=texts, artifacts=artifacts)
-#     response = {
-#         "message": HTTPStatus.OK.phrase,
-#         "status-code": HTTPStatus.OK,
-#         "data": {"predictions": predictions},
-#     }
-#     return response
-
-
 # TODO: this
+@app.get("/predict", tags=["Prediction"])
 def predict(input_data: PredEndpointInputSchema) -> t.Dict:
     """
     API endpoint to get predictions for one single data point
     """
-    # TODO: Log prediction to S3 bucket
+    s3 = boto3.client("s3")
+
     inputs = {
         "customerID": input_data.customerID,
         "gender": input_data.gender,
@@ -789,42 +777,58 @@ def predict(input_data: PredEndpointInputSchema) -> t.Dict:
         "MonthlyCharges": input_data.MonthlyCharges,
         "TotalCharges": input_data.TotalCharges,
     }
-    input_df = pd.DataFrame(inputs)
+    input_df = pd.DataFrame(inputs, index=[0])
+    file_name = f"{str(uuid.uuid4())}.json"
     response = {}
     response["errors"] = {}
     try:
         INPUT_SCHEMA.validate(input_df)
+        input_df["TotalCharges"] = input_df["TotalCharges"].replace(
+            to_replace=" ", value="0"
+        )
+        input_ohe = input_df[config.data.get("CAT_COLS_OHE")]
+        input_ohe_trans = artifacts["encoder_ohe"].transform(input_ohe)
+        input_ohe_trans__df = pd.DataFrame(
+            input_ohe_trans.toarray(),
+            columns=artifacts["encoder_ohe"].get_feature_names_out(),
+        )
+        input_oe = input_df[config.data.get("CAT_COLS_OE")]
+        input_oe_trans: pd.DataFrame = artifacts["encoder_oe"].transform(input_oe)
+        input_scale = input_df[config.data.get("NUM_COLS")]
+        input_scale_trans: pd.DataFrame = artifacts["scaler_standard"].transform(
+            input_scale
+        )
+        input_to_predict = pd.concat(
+            [
+                input_ohe_trans__df.reset_index(drop=True),
+                input_oe_trans.reset_index(drop=True),
+                input_scale_trans.reset_index(drop=True),
+            ],
+            axis=1,
+        )
+        prediction = artifacts["model"].predict(input_to_predict)
+        prediction_proba = artifacts["model"].predict_proba(input_to_predict)
+        response["prediction"] = prediction
+        response["prediction_proba"] = prediction_proba
+        response["inputs"] = inputs
+        json_string = json.dumps(response)
+        s3_response = s3.put_object(
+            Body=json_string,
+            Bucket=config.data.get("BUCKET_NAME"),
+            Key="api_logs/predict_logs/" + file_name,
+        )
+        if s3_response["ResponseMetadata"]["HTTPStatusCode"] == 200:
+            response["message"] = "Prediction logged successfully"
+            response["status-code"] = HTTPStatus.OK
+            response["data"] = {"file_name": file_name}
+        else:
+            response["message"] = "Prediction logging failed"
+            response["status-code"] = HTTPStatus.INTERNAL_SERVER_ERROR
+            response["data"] = {}
+
     except pa.errors.SchemaError as err:
         response["errors"]["schema_failure_cases"] = err.failure_cases
         response["errors"]["data"] = err.data
-    input_df["TotalCharges"] = input_df["TotalCharges"].replace(
-        to_replace=" ", value="0"
-    )
-    input_ohe = input_df[config.data.get("CAT_COLS_OHE")]
-    input_ohe_trans = artifacts["encoder_ohe"].transform(input_ohe)
-    input_ohe_trans__df = pd.DataFrame(
-        input_ohe_trans.toarray(),
-        columns=artifacts["encoder_ohe"].get_feature_names_out(),
-    )
-    input_oe = input_df[config.data.get("CAT_COLS_OE")]
-    input_oe_trans: pd.DataFrame = artifacts["encoder_oe"].transform(input_oe)
-    input_scale = input_df[config.data.get("NUM_COLS")]
-    input_scale_trans: pd.DataFrame = artifacts["scaler_standard"].transform(
-        input_scale
-    )
-    input_to_predict = pd.concat(
-        [
-            input_ohe_trans__df.reset_index(drop=True),
-            input_oe_trans.reset_index(drop=True),
-            input_scale_trans.reset_index(drop=True),
-        ],
-        axis=1,
-    )
-    prediction = artifacts["model"].predict(input_to_predict)
-    prediction_proba = artifacts["model"].predict_proba(input_to_predict)
-    response["prediction"] = prediction
-    response["prediction_proba"] = prediction_proba
-    ...
 
 
 # TODO: and this
@@ -871,7 +875,7 @@ def flag(flag_data: FlagEndpointInputSchema):
             s3_response = s3.put_object(
                 Body=json_string,
                 Bucket=config.s3.get("BUCKET_NAME"),
-                Key="flagged/" + file_name,
+                Key="api_logs/flag_logs/" + file_name,
             )
             if s3_response["ResponseMetadata"]["HTTPStatusCode"] == 200:
                 response["message"] = "Flagged successfully"
