@@ -6,6 +6,7 @@ on:
   push:
     paths:
       - tests/**
+      - churnobyl/**
   pull_request:
     types: [review_requested]
 
