@@ -10,6 +10,8 @@ import shap
 from plotly import express as px
 from plotly import graph_objs as go
 
+plt.switch_backend("agg")
+
 
 class Vizard:
     # DEV: Add plots for data analysis here
