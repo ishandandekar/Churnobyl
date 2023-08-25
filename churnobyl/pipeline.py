@@ -306,18 +306,18 @@ def push_artifacts(
     logger: logging.Logger,
     logger_file_handler,
 ):
-    wandb.init(project="churnobyl", job_type="pipeline")
+    run = wandb.init(project="churnobyl", job_type="pipeline")
     model_artifact = wandb.Artifact("churnobyl-clf", type="model")
     model_artifact.add_file(best_path_)
-    wandb.log_artifact(model_artifact)
+    run.log_artifact(model_artifact)
     preprocessors_artifact = wandb.Artifact(
         "churnobyl-ohe-oe-stand", type="preprocessors"
     )
     preprocessors_artifact.add_dir(artifact_dir)
-    wandb.log_artifact(preprocessors_artifact)
+    run.log_artifact(preprocessors_artifact)
     plots_artifact = wandb.Artifact("plots", type="visualizations")
     plots_artifact.add_dir(viz_dir)
-    wandb.log_artifact(plots_artifact)
+    run.log_artifact(plots_artifact)
     markdown_artifact = f"""
     ### Model saved: {best_type_}
     ### Model performance: {best_metric}
@@ -335,6 +335,8 @@ def push_artifacts(
     bucket = s3_resource.Bucket("churnobyl")
     log_files = logs_dir.glob("*.log")
     for file in log_files:
+        if file != datetime.now().date():
+            continue
         bucket.upload_file(file, f"train_logs/{file.name}")
     return None
 
