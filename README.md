@@ -10,7 +10,7 @@
 
 ## [Contributions](./CONTRIBUTING.md)
 
-Any help is always welcomed. The project is open-source. The key features that are needed to be updated are marked as TODO in readme as well as in code. If you think there can be any other improvement, please make a PR or an issue, and I'll go over it as soon as possible.
+Any help is always welcomed. The project is open-sourced. The key features that are needed to be updated are marked as TODO in readme as well as in code. Some issues accoring to the authors of the project are highlighted in the README itself. If you think there can be any other improvement, please make a PR or an issue, and I'll go over it as soon as possible.
 
 ### Steps to develop locally:
 - Join the org!
@@ -24,6 +24,10 @@ Any help is always welcomed. The project is open-source. The key features that a
 
 ### Issues:
 - custom transformation functions referrenced in [pipeline](./churnobyl/pipeline.py) need to be written again in [api code](./serve/api.py)
+- The pipeline isn't entirely automated. The hyperparameter-tuning still only tunes random forest and XGBoost models. This needs to converted into a `.yaml` configuration that can be set in the [churnobyl\conf\config.yaml](./churnobyl/conf/config.yaml)
+- The API serving code can be still be optimized. There is too much code that might seem to complicate things. Better serving solutions still need to be tested.
+- The code for monitoring can be a pain. Creating a branch for the Streamlit dashboard is one of the solutions.
+- For setting up configuration variables right now, `.yaml` seems the way to go. Some other ways like using a `.env` file can also be a method that can be benefiticial for setting up AWS credentials locally.
 
 ### S3 directory structure
 ```
