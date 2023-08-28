@@ -8,10 +8,8 @@ import logging
 import pickle as pkl
 import random
 import typing as t
-import os
 from datetime import datetime
 from pathlib import Path
-from glob import glob
 import boto3
 import numpy as np
 import optuna
@@ -28,9 +26,9 @@ from sklearn import (
     preprocessing,
 )
 
-from data import TRAINING_SCHEMA, DataDreamer
-from visualize import Vizard
-from model import LearnLab, MODEL_DICT
+from churnobyl.data import TRAINING_SCHEMA, DataDreamer
+from churnobyl.visualize import Vizard
+from churnobyl.model import LearnLab, MODEL_DICT
 
 
 def _custom_combiner(feature, category):
@@ -42,6 +40,18 @@ def _custom_combiner(feature, category):
     description="Function to load configuration settings from `.yaml` file",
 )
 def set_config(config_path: Path) -> Munch:
+    """
+    Sets up configuration variables for pipeline using `.yaml` file
+
+    Args:
+        config_path (Path): Path for the `.yaml` file
+
+    Raises:
+        Exception: If the `.yaml` file is not present at `arg: config_path`
+
+    Returns:
+        Munch: object for better config variable calling
+    """
     if config_path.exists():
         with open(config_path, "r") as stream:
             try:
@@ -60,6 +70,15 @@ def set_config(config_path: Path) -> Munch:
 def setup_pipeline(
     config: Munch,
 ) -> t.Tuple[Path, Path, Path, Path, Path, Path,]:
+    """
+    Creates directories and sets random seed for reproducibility
+
+    Args:
+        config (Munch): Configuraton variable mapping
+
+    Returns:
+        t.Tuple[Path, Path, Path, Path, Path, Path,]: Paths for all the directories
+    """
     ROOT_DIR: Path = Path.cwd()
     LOGS_DIR: Path = ROOT_DIR / config.PATH.get("logs")
 
@@ -93,6 +112,20 @@ def setup_pipeline(
     retry_delay_seconds=3,
 )
 def data_loader(schema: pa.DataFrameSchema, data_dir: t.Optional[Path]) -> pd.DataFrame:
+    """
+    Loads data from functions mentioned by the developer,
+    Also validates data based on schema
+
+    Args:
+        schema (pa.DataFrameSchema): Data validation schema
+        data_dir (t.Optional[Path]): Directory where all `.csv` files are stored
+
+    Raises:
+        Exception: If the data does not match the schema
+
+    Returns:
+        pd.DataFrame: concatenated data that now be split into train and test sets
+    """
     columns = schema.columns.keys()
     df = DataDreamer.load_csv_from_dir(dir=data_dir, columns=columns)
     df.TotalCharges = df.TotalCharges.replace(to_replace=" ", value="0")
@@ -104,8 +137,6 @@ def data_loader(schema: pa.DataFrameSchema, data_dir: t.Optional[Path]) -> pd.Da
         print("\nDataFrame object that failed validation:")
         print(err.data)
         raise Exception("Schema errors and failure cases")
-    df.TotalCharges = df.TotalCharges.replace(to_replace=" ", value="0")
-
     return df
 
 
@@ -113,7 +144,17 @@ def data_loader(schema: pa.DataFrameSchema, data_dir: t.Optional[Path]) -> pd.Da
     name="data_split",
     description="Split data into training and test sets",
 )
-def data_splits(config, df: pd.DataFrame):
+def data_splits(config: Munch, df: pd.DataFrame):
+    """
+    Splits the data into train and test sets
+
+    Args:
+        config (Munch): configuration mapping
+        df (pd.DataFrame): Data that is needed to be split
+
+    Returns:
+        Training features, test features, train labels, test labels
+    """
     X, y = df.drop(columns=["Churn"]), df[["Churn"]]
     X_train, X_test, y_train, y_test = model_selection.train_test_split(
         X,
@@ -138,6 +179,9 @@ def data_transformer(
     y_test,
     artifact_dir: Path,
 ):
+    """
+    Applies transformation like scaling and encoding to data
+    """
     scaler = preprocessing.StandardScaler().set_output(transform="pandas")
     encoder_ohe = preprocessing.OneHotEncoder(feature_name_combiner=_custom_combiner)
     encoder_oe = preprocessing.OrdinalEncoder().set_output(transform="pandas")
@@ -220,6 +264,20 @@ def get_best_model(
     t.Dict,
     float,
 ]:
+    """
+    Trains multiple models as mentioned in `arg: config` and tunes random forest and XGBoost model
+
+    Args:
+        config (_type_): Configuration mapping
+        X_train (_type_): Training features
+        X_test (_type_): Test features
+        y_train (_type_): Training labels
+        y_test (_type_): Test labels
+        model_dir (Path): Directories where the tuned models should be stored
+
+    Returns:
+        t.Tuple[ pd.DataFrame, optuna.Study, t.Union[ensemble.RandomForestClassifier, xgb.XGBClassifier], t.Dict, float, ]: Gives results of training, tuning experiment, best model, best model's hyperparameters, metric performance of the best model, path of the best model, type of the model i.e. random forest or XGBoost
+    """
     models = list()
     for model_name in config.model.get("models"):
         if model_name == "voting":
@@ -263,6 +321,17 @@ def vizard(
     X_train: pd.DataFrame,
     viz_dir: Path,
 ) -> None:
+    """
+    Creates plots and visualizations for data analysis, results of training and hyper-parameter tuning
+
+    Args:
+        df (pd.DataFrame): Data for this pipeline
+        results (pd.DataFrame): Training results
+        study (optuna.Study): Results of hyper-parameter tuning
+        model (_type_): Either Random Forest or XGBoost
+        X_train (pd.DataFrame): Training features
+        viz_dir (Path): Directories to store all these visualizations
+    """
     target_dist_path = viz_dir / "target_dist.png"
     contract_dist_path = viz_dir / "contract_dist.png"
     payment_dist_path = viz_dir / "payment_dist.png"
@@ -306,6 +375,9 @@ def push_artifacts(
     logger: logging.Logger,
     logger_file_handler,
 ):
+    """
+    Pushes various artifacts such as log files, visualizations and models to respective servers and storage spaces
+    """
     run = wandb.init(project="churnobyl", job_type="pipeline")
     model_artifact = wandb.Artifact("churnobyl-clf", type="model")
     model_artifact.add_file(best_path_)
@@ -335,9 +407,8 @@ def push_artifacts(
     bucket = s3_resource.Bucket("churnobyl")
     log_files = logs_dir.glob("*.log")
     for file in log_files:
-        if file != datetime.now().date():
-            continue
-        bucket.upload_file(file, f"train_logs/{file.name}")
+        if file == datetime.now().date():
+            bucket.upload_file(file, f"train_logs/{file.name}")
     return None
 
 
@@ -346,6 +417,12 @@ def push_artifacts(
     description="Pipeline for automated ml workflow",
 )
 def main_workflow(config_path: Path) -> None:
+    """
+    Entire pipeline, uses native Python logging
+
+    Args:
+        config_path (Path): Path for config file
+    """
     config = set_config(config_path=config_path)
     (
         ROOT_DIR,
