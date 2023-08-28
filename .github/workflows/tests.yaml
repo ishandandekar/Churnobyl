@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3.5.3
+        uses: actions/checkout@v3.6.0
       - name: Setup Python
         uses: actions/setup-python@v4.7.0
         with:
@@ -24,7 +24,7 @@ jobs:
         run: |
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Configure AWS Credentials For GitHub Actions
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v3
         with:
           aws-region: us-east-2
           aws-access-key-id: ${{ secrets.CHURNOBYL_ACCESS_KEY }}
