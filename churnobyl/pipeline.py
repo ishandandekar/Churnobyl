@@ -25,10 +25,10 @@ from sklearn import (
     model_selection,
     preprocessing,
 )
-
-from churnobyl.data import TRAINING_SCHEMA, DataDreamer
-from churnobyl.visualize import Vizard
-from churnobyl.model import LearnLab, MODEL_DICT
+import numpy.typing as npt
+from data import TRAINING_SCHEMA, DataDreamer
+from visualize import Vizard
+from model import LearnLab, MODEL_DICT
 
 
 def _custom_combiner(feature, category):
@@ -178,13 +178,13 @@ def data_transformer(
     y_train,
     y_test,
     artifact_dir: Path,
-):
+) -> t.Tuple[pd.DataFrame, pd.DataFrame, npt.ArrayLike, npt.ArrayLike]:
     """
     Applies transformation like scaling and encoding to data
     """
     scaler = preprocessing.StandardScaler().set_output(transform="pandas")
     encoder_ohe = preprocessing.OneHotEncoder(feature_name_combiner=_custom_combiner)
-    encoder_oe = preprocessing.OrdinalEncoder().set_output(transform="pandas")
+    encoder_oe = preprocessing.OrdinalEncoder()
     target_encoder = preprocessing.LabelEncoder()
 
     # One-hot encoding
@@ -203,9 +203,15 @@ def data_transformer(
     # Ordinal Encoder
     X_oe__train = X_train[config.data.get("CAT_COLS_OE")]
     encoder_oe.fit(X_oe__train)
-    X_oe_trans__train: pd.DataFrame = encoder_oe.transform(X_oe__train)
+    X_oe_trans__train = encoder_oe.transform(X_oe__train)
+    X_oe_trans__train = pd.DataFrame(
+        X_oe_trans__train, columns=config.data.get("CAT_COLS_OE")
+    )
     X_oe__test = X_test[config.data.get("CAT_COLS_OE")]
-    X_oe_trans__test: pd.DataFrame = encoder_oe.transform(X_oe__test)
+    X_oe_trans__test = encoder_oe.transform(X_oe__test)
+    X_oe_trans__test: pd.DataFrame = pd.DataFrame(
+        X_oe_trans__test, columns=config.data.get("CAT_COLS_OE")
+    )
 
     # Scale
     X_scale__train = X_train[config.data.get("NUM_COLS")]
@@ -354,8 +360,8 @@ def vizard(
         param_importance_path=param_importance_path,
         parallel_coordinate_path=parallel_coordinate_path,
     )
-    shap_explainer_path = viz_dir / "shap_explainer.png"
-    Vizard.plot_shap(model=model, X_train=X_train, path=shap_explainer_path)
+    # shap_explainer_path = viz_dir / "shap_explainer.png"
+    # Vizard.plot_shap(model=model, X_train=X_train, path=shap_explainer_path)
     return None
 
 
@@ -374,22 +380,24 @@ def push_artifacts(
     logs_dir: Path,
     logger: logging.Logger,
     logger_file_handler,
-):
+) -> None:
     """
     Pushes various artifacts such as log files, visualizations and models to respective servers and storage spaces
     """
-    run = wandb.init(project="churnobyl", job_type="pipeline")
-    model_artifact = wandb.Artifact("churnobyl-clf", type="model")
-    model_artifact.add_file(best_path_)
-    run.log_artifact(model_artifact)
-    preprocessors_artifact = wandb.Artifact(
-        "churnobyl-ohe-oe-stand", type="preprocessors"
-    )
-    preprocessors_artifact.add_dir(artifact_dir)
-    run.log_artifact(preprocessors_artifact)
-    plots_artifact = wandb.Artifact("plots", type="visualizations")
-    plots_artifact.add_dir(viz_dir)
-    run.log_artifact(plots_artifact)
+
+    with wandb.init(project="churnobyl", job_type="pipeline") as run:
+        model_artifact = wandb.Artifact("churnobyl-clf", type="model")
+        model_artifact.add_file(best_path_)
+        run.log_artifact(model_artifact)
+        preprocessors_artifact = wandb.Artifact(
+            "churnobyl-ohe-oe-stand", type="preprocessors"
+        )
+        preprocessors_artifact.add_dir(artifact_dir)
+        run.log_artifact(preprocessors_artifact)
+        plots_artifact = wandb.Artifact("plots", type="visualizations")
+        plots_artifact.add_dir(viz_dir)
+        run.log_artifact(plots_artifact)
+
     markdown_artifact = f"""
     ### Model saved: {best_type_}
     ### Model performance: {best_metric}
@@ -399,7 +407,6 @@ def push_artifacts(
         markdown=markdown_artifact,
         description="Model summary report",
     )
-    wandb.finish()
     logger.info("Artifacts have been pushed to project server")
     logger.info("All tasks done. Pipeline has now been completed")
     logger_file_handler.close()
@@ -407,8 +414,7 @@ def push_artifacts(
     bucket = s3_resource.Bucket("churnobyl")
     log_files = logs_dir.glob("*.log")
     for file in log_files:
-        if file == datetime.now().date():
-            bucket.upload_file(file, f"train_logs/{file.name}")
+        bucket.upload_file(file, f"train_logs/{file.name}")
     return None
 
 
