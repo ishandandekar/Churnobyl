@@ -28,7 +28,9 @@ Any help is always welcomed. The project is open-sourced. The key features that 
 ## Milestone (7-8-2023): The model serving API WORKED!!!
 
 ### Issues:
-- The pipeline cant seem to log preprocessors, still have to figure this out
+- Have commented out the SHAP plots, it raises an error when RandomForest is the best one
+- Suddenly, since 2 3 runs RandomForest is now the best model, dont know how this changed.
+- Wandb cant seem to log preprocessors, still have to figure this out
 - custom transformation functions referrenced in [pipeline](./churnobyl/pipeline.py) need to be written again in [api code](./serve/api.py)
 - There is no code for imputing values in pipeline. **This has been set aside temporalily**
 - The pipeline isn't entirely automated. The hyperparameter-tuning still only tunes random forest and XGBoost models. This needs to converted into a `.yaml` configuration that can be set in the [./churnobyl/conf/config.yaml](./churnobyl/conf/config.yaml)
