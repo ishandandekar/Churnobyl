@@ -3,7 +3,7 @@ Contains functions to make plots and visualizations
 """
 from pathlib import Path
 import matplotlib.pyplot as plt
-from matplotlib import figure
+import numpy as np
 import optuna
 import pandas as pd
 import shap
@@ -24,6 +24,20 @@ class Vizard:
         isp_gender_churn_dist_path: Path,
         partner_churn_dist_path: Path,
     ) -> None:
+        """
+        Creates plots and visualizations based on data for analysis
+
+        Args:
+            df (pd.DataFrame): Data (should contain both train and test set)
+            target_dist_path (Path): Path for target distribution plot
+            contract_dist_path (Path): Path for `contract` column plot
+            payment_dist_path (Path): Path for `payment_method` column plot
+            isp_gender_churn_dist_path (Path): Path for internet service and gender plot
+            partner_churn_dist_path (Path): Path for partner w.r.t. churn plot
+
+        Raises:
+            Exception: when paths given are not for `.png` file
+        """
         for path in [
             target_dist_path,
             contract_dist_path,
@@ -123,6 +137,16 @@ class Vizard:
 
     @staticmethod
     def plot_performance_metrics(results: pd.DataFrame, path: Path) -> None:
+        """
+        Creates plot for performance of ML models
+
+        Args:
+            results (pd.DataFrame): DataFrame with metric results for ML models
+            path (Path): Path to save the plot
+
+        Raises:
+            Exception: when `arg:path` is not for a `.png` file
+        """
         if not str(path).endswith(".png"):
             raise Exception(f"{path} should be a path to `.png`")
         plt.figure(figsize=(10, 6))
@@ -155,14 +179,14 @@ class Vizard:
         return None
 
     # DEV: Add shap plots as per need here
-    @staticmethod
-    def plot_shap(model, X_train: pd.DataFrame, path: Path) -> None:
-        if not str(path).endswith(".png"):
-            raise Exception(f"{path} should be a path to `.png`")
-        explainer = shap.Explainer(model, X_train)
-        shap_values = explainer(X_train)
-        shap.plots.bar(shap_values, show=False)
-        fig = plt.gcf()
-        fig.savefig(path, bbox_inches="tight", dpi=300)
-        plt.close(fig)
-        return None
+    # @staticmethod
+    # def plot_shap(model, X_train: pd.DataFrame, path: Path) -> None:
+    #     if not str(path).endswith(".png"):
+    #         raise Exception(f"{path} should be a path to `.png`")
+    #     explainer = shap.Explainer(model, X_train)
+    #     shap_values = explainer.shap_values(np.array(X_train), check_additivity=False)
+    #     shap.plots.bar(shap_values, show=False)
+    #     fig = plt.gcf()
+    #     fig.savefig(path, bbox_inches="tight", dpi=300)
+    #     plt.close(fig)
+    #     return None
