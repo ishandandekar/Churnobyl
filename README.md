@@ -26,11 +26,13 @@ Any help is always welcomed. The project is open-sourced. The key features that 
 
 ## Milestone (18-7-2023): The pipeline ran completely from start to end. No errors while adding artifacts to server too!
 ## Milestone (7-8-2023): The model serving API WORKED!!!
+## Milestone (19-9-2023): I finally figured out the `encoder_oe` error. **FINALLY**
 
 ### Issues:
 - Have commented out the SHAP plots, it raises an error when RandomForest is the best one
 - Suddenly, since 2 3 runs RandomForest is now the best model, dont know how this changed.
 - Wandb cant seem to log preprocessors, still have to figure this out
+    > Did some experimentation, `wandb` is only logging the new preprocessors, only if I delete the previous versions, idk what other fix there is. But this'll have to do right now. I'll have to figure out the `encoder_oe` stuff before I tackle this.
 - custom transformation functions referrenced in [pipeline](./churnobyl/pipeline.py) need to be written again in [api code](./serve/api.py)
 - There is no code for imputing values in pipeline. **This has been set aside temporalily**
 - The pipeline isn't entirely automated. The hyperparameter-tuning still only tunes random forest and XGBoost models. This needs to converted into a `.yaml` configuration that can be set in the [./churnobyl/conf/config.yaml](./churnobyl/conf/config.yaml)
