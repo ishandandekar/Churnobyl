@@ -13,6 +13,7 @@
 Any help is always welcomed. The project is open-sourced. The key features that are needed to be updated are marked as TODO in readme as well as in code. Some issues accoring to the authors of the project are highlighted in the README itself. If you think there can be any other improvement, please make a PR or an issue, and I'll go over it as soon as possible.
 
 ## Future additions:
+- Add more configurations that can be changed by the "DEV". For example, add config for hyperparameter tuning, like specifying the model and its params
 - Minimize human intervention. The pipeline must run automatically, if the production metric goes below a certain threshold
 - Up the cloud infra using tools like Terraform or Ansible
 - Using self-hosted runners instead of Github appointed, to gain more control over functioning and logging of the pipeline
@@ -27,6 +28,7 @@ Any help is always welcomed. The project is open-sourced. The key features that 
 ## Milestone (18-7-2023): The pipeline ran completely from start to end. No errors while adding artifacts to server too!
 ## Milestone (7-8-2023): The model serving API WORKED!!!
 ## Milestone (19-9-2023): I finally figured out the `encoder_oe` error. **FINALLY**
+## Milestone (20-9-2023): A full forward pass from making the dataframe to preprocessing it, to predicting using a model worked... omfg, i am so done
 
 ### Issues:
 - Have commented out the SHAP plots, it raises an error when RandomForest is the best one
@@ -39,6 +41,7 @@ Any help is always welcomed. The project is open-sourced. The key features that 
 - The API serving code can be still be optimized. There is too much code that might seem to complicate things. Better serving solutions still need to be tested.
 - The code for monitoring can be a pain. Creating a branch for the Streamlit dashboard is one of the solutions.
 - For setting up configuration variables right now, `.yaml` seems the way to go. Some other ways like using a `.env` file can also be a method that can be benefiticial for setting up AWS credentials locally.
+- Uploading `.log` files can become a conflict when there are multiple developers
 - DEV notes are still needed to be added for future MLEs
 
 ### S3 directory structure
