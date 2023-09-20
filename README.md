@@ -63,12 +63,15 @@ churnobyl/
 - Add probability data
 
 ### TODO:
+- [ ] See into FastAPI and pydantic compatibility
+- [ ] Refer the [prototype](./temp/predict_prototype.py) for the API
 - [ ] Look into EKS cluster to display monitoring
 - [ ] Create Streamlit dashboard for monitoring
 - [ ] Integrate Streamlit to display graphs
 
 ### Refs:
 
+- https://www.ravirajag.dev/blog/mlops-monitoring
 - https://www.deadbear.io/simple-serverless-fastapi-with-aws-lambda/
 - https://www.eliasbrange.dev/posts/deploy-fastapi-on-aws-part-1-lambda-api-gateway/
 - https://github.com/eliasbrange/aws-fastapi/tree/main/lambda-api-gateway
