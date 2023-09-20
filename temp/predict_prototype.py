@@ -89,11 +89,11 @@ def unpickle(artifacts: t.Dict) -> t.Dict:
     return artifacts
 
 
-CONFIG_PATH = Path("./serve/serve-config.yaml")
-WANDB_API_KEY = ...
-config = set_config(config_path=CONFIG_PATH, WANDB_API_KEY=WANDB_API_KEY)
-artifacts = load_artifacts()
-artifacts = unpickle(artifacts)
+# CONFIG_PATH = Path("./serve/serve-config.yaml")
+# WANDB_API_KEY = ...
+# config = set_config(config_path=CONFIG_PATH, WANDB_API_KEY=WANDB_API_KEY)
+# artifacts = load_artifacts()
+# artifacts = unpickle(artifacts)
 
 checks: t.Dict[str, t.List[Check]] = {
     "customerID": [],
@@ -509,8 +509,6 @@ def main():
     }
 
     df: pd.DataFrame = pd.DataFrame(payload, index=[0])
-
-    # TODO: CHECK FOR DATA VALIDATY
     try:
         INPUT_SCHEMA.validate(df, lazy=True)
     except pa.errors.SchemaErrors as err:
