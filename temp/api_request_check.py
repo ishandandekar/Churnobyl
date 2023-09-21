@@ -1,20 +1,21 @@
 import requests
 import json
 import pandas as pd
+from requests import Response
 
-
-url = "http://localhost:8000"
+url = "http://localhost:8000/"
 
 try:
-    response = requests.get(url)
+    response: Response = requests.get(url)
     if response.status_code == 200:
         print("Request was successful!")
         print("Response content:")
-        print(response.text)
+        print(response.json())
     else:
         print(f"Request failed with status code: {response.status_code}")
 except requests.exceptions.RequestException as e:
     print("An error occurred:", e)
+
 
 PREDICT_URL = "http://localhost:8000/predict"
 
@@ -46,22 +47,14 @@ try:
         "MonthlyCharges": 29.85,
         "TotalCharges": "29.85",
     }
-    payload = json.dumps(payload)
+    # payload = json.dumps(payload)
     headers = {"Content-Type": "application/json"}
-    response = requests.get(PREDICT_URL, data=payload, headers=headers)
+    response = requests.get(PREDICT_URL, json=payload, headers=headers)
     if response.status_code == 200:
         print("Request was successful!")
         print("Response content:")
-        print(response.text)
+        print(response.json())
     else:
         print(f"Request failed with status code: {response.status_code}")
 except requests.exceptions.RequestException as e:
     print("An error occurred:", e)
-
-
-def main():
-    ...
-
-
-if __name__ == "__main__":
-    main()
