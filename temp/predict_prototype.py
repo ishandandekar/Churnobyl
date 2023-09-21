@@ -25,19 +25,6 @@ import xgboost as xgb
 warnings.simplefilter("ignore")
 
 
-def set_config(config_path: Path, WANDB_API_KEY: str) -> Munch:
-    if config_path.exists():
-        with open(config_path, "r") as stream:
-            try:
-                config = yaml.safe_load(stream)
-                wandb.login(key=WANDB_API_KEY)
-                return Munch(config)
-            except yaml.YAMLError as exc:
-                print(exc)
-    else:
-        raise Exception("Path error occured. File does not exist")
-
-
 def _custom_combiner(feature, category) -> str:
     """
     Creates custom column name for every category
@@ -472,17 +459,17 @@ class PredEndpointInputSchema(BaseModel):
 
 def main():
     encoder_oe: preprocessing.OrdinalEncoder = pickle.load(
-        open("./models/artifacts/encoder_oe_.pkl", "rb")
+        open("./encoder_oe_.pkl", "rb")
     )
     encoder_ohe: preprocessing.OneHotEncoder = pickle.load(
-        open("./models/artifacts/encoder_ohe_.pkl", "rb")
+        open("./encoder_ohe_.pkl", "rb")
     )
     scaler_stand: preprocessing.StandardScaler = pickle.load(
-        open("./models/artifacts/scaler_standard_.pkl", "rb")
+        open("./scaler_standard_.pkl", "rb")
     )
 
     model: t.Union[ensemble.RandomForestClassifier, xgb.XGBClassifier] = pickle.load(
-        open("./models/XGBoost_best_.pkl", "rb")
+        open("./XGBoost_best_.pkl", "rb")
     )
 
     payload = {
@@ -507,8 +494,9 @@ def main():
         "MonthlyCharges": 29.85,
         "TotalCharges": "29.85",
     }
+    payload = {k: [v] for k, v in payload.items()}
 
-    df: pd.DataFrame = pd.DataFrame(payload, index=[0])
+    df: pd.DataFrame = pd.DataFrame.from_dict(payload)
     try:
         INPUT_SCHEMA.validate(df, lazy=True)
     except pa.errors.SchemaErrors as err:
@@ -517,8 +505,6 @@ def main():
         print("\nDataFrame object that failed validation:")
         print(err.data)
         raise Exception("Schema errors and failure cases")
-
-    exit()
 
     CAT_COLS_OE = [
         "OnlineSecurity",
@@ -542,9 +528,12 @@ def main():
     CAT_COLS_OHE = ["PaymentMethod", "Contract", "InternetService"]
     X_ohe__test = df[CAT_COLS_OHE].values
     X_ohe_trans__test = encoder_ohe.transform(X_ohe__test)
+    print(X_ohe_trans__test)
     X_ohe_trans__test = pd.DataFrame(
         X_ohe_trans__test.toarray(), columns=encoder_ohe.get_feature_names_out()
     )
+    print("===" * 4)
+    print(X_ohe_trans__test)
 
     NUM_COLS = ["tenure", "MonthlyCharges", "TotalCharges"]
     X_scaled__test = df[NUM_COLS].values
@@ -563,7 +552,9 @@ def main():
     model_prediction_proba = (
         model.predict_proba(input_to_predict.values).squeeze().tolist()
     )
-    model_prediction = model.predict(input_to_predict.values).squeeze()
+    model_prediction = model.predict(input_to_predict.values).squeeze().tolist()
+    print(type(model_prediction_proba))
+    print(type(model_prediction))
     print(model_prediction_proba)
     print(model_prediction)
     # _ = predict(PredEndpointInputSchema(**payload))
