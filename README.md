@@ -5,20 +5,22 @@
 
 [LICENCE](LICENCE)
 
-> **Warning** : This is a work in progress. Until specified, please do not directly use the code. There will be addtition as well as improvements over the time. Use the code only to get inspiration and not for actual production usage.
-
+> [!WARNING]
+> This is a work in progress. Until specified, please do not directly use the code. There will be addtition as well as improvements over the time. Use the code only to get inspiration and not for actual production usage.
 
 ## [Contributions](./CONTRIBUTING.md)
 
 Any help is always welcomed. The project is open-sourced. The key features that are needed to be updated are marked as TODO in readme as well as in code. Some issues accoring to the authors of the project are highlighted in the README itself. If you think there can be any other improvement, please make a PR or an issue, and I'll go over it as soon as possible.
 
 ## Future additions:
+
 - Add more configurations that can be changed by the "DEV". For example, add config for hyperparameter tuning, like specifying the model and its params
 - Minimize human intervention. The pipeline must run automatically, if the production metric goes below a certain threshold
 - Up the cloud infra using tools like Terraform or Ansible
 - Using self-hosted runners instead of Github appointed, to gain more control over functioning and logging of the pipeline
 
 ### Steps to develop locally:
+
 - Join the org!
 - Create a PR
 - Get the keys
@@ -26,15 +28,21 @@ Any help is always welcomed. The project is open-sourced. The key features that 
 - Push code to branch, some tests must be passes by the branch
 
 ## Milestone (18-7-2023): The pipeline ran completely from start to end. No errors while adding artifacts to server too!
+
 ## Milestone (7-8-2023): The model serving API WORKED!!!
+
 ## Milestone (19-9-2023): I finally figured out the `encoder_oe` error. **FINALLY**
+
 ## Milestone (20-9-2023): A full forward pass from making the dataframe to preprocessing it, to predicting using a model worked... omfg, i am so done
 
+## Milestone (21-9-2023): DUDE DOCKERIZE A TEMP APPLICATION WITH ALL `WANDB` STUFF WORKED LESSSGOOOOOOO!!!. I just have to work the logging the response json to s3 bucket. Other than that everything is finally done. Also, yeah, this image is taking a lot of space.
+
 ### Issues:
+
 - Have commented out the SHAP plots, it raises an error when RandomForest is the best one
 - Suddenly, since 2 3 runs RandomForest is now the best model, dont know how this changed.
 - Wandb cant seem to log preprocessors, still have to figure this out
-    > Did some experimentation, `wandb` is only logging the new preprocessors, only if I delete the previous versions, idk what other fix there is. But this'll have to do right now. I'll have to figure out the `encoder_oe` stuff before I tackle this.
+  > Did some experimentation, `wandb` is only logging the new preprocessors, only if I delete the previous versions, idk what other fix there is. But this'll have to do right now. I'll have to figure out the `encoder_oe` stuff before I tackle this.
 - custom transformation functions referrenced in [pipeline](./churnobyl/pipeline.py) need to be written again in [api code](./serve/api.py)
 - There is no code for imputing values in pipeline. **This has been set aside temporalily**
 - The pipeline isn't entirely automated. The hyperparameter-tuning still only tunes random forest and XGBoost models. This needs to converted into a `.yaml` configuration that can be set in the [./churnobyl/conf/config.yaml](./churnobyl/conf/config.yaml)
@@ -45,6 +53,7 @@ Any help is always welcomed. The project is open-sourced. The key features that 
 - DEV notes are still needed to be added for future MLEs
 
 ### S3 directory structure
+
 ```
 churnobyl/
 ├─ api_logs/
@@ -63,6 +72,7 @@ churnobyl/
 - Add probability data
 
 ### TODO:
+
 - [ ] See into FastAPI and pydantic compatibility
 - [ ] Refer the [prototype](./temp/predict_prototype.py) for the API
 - [ ] Look into EKS cluster to display monitoring
@@ -77,7 +87,9 @@ churnobyl/
 - https://github.com/eliasbrange/aws-fastapi/tree/main/lambda-api-gateway
 - https://blog.searce.com/fastapi-container-app-deployment-using-aws-lambda-and-api-gateway-6721904531d0
 - https://www.youtube.com/watch?v=rpVLOVeky6A&ab_channel=VincentStevenson
+
 ---
+
 - https://docs.aws.amazon.com/AmazonECR/latest/userguide/image-push.html
 
 - https://medium.com/akava/deploying-containerized-aws-lambda-functions-with-terraform-7147b9815599
