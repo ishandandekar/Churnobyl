@@ -1,0 +1,8 @@
+{
+  "message": "OK",
+  "method": "GET",
+  "status-code": 200,
+  "timestamp": "2023-09-21T11:30:20.244083",
+  "url": "http://localhost:8000/predict",
+  "data": "{'customerID':{'0':'7590-VHVEG'},'gender':{'0':'Female'},'SeniorCitizen':{'0':0},'Partner':{'0':'Yes'},'Dependents':{'0':'No'},'tenure':{'0':1},'PhoneService':{'0':'No'},'MultipleLines':{'0':'No phone service'},'InternetService':{'0':'DSL'},'OnlineSecurity':{'0':'No'},'OnlineBackup':{'0':'Yes'},'DeviceProtection':{'0':'No'},'TechSupport':{'0':'No'},'StreamingTV':{'0':'No'},'StreamingMovies':{'0':'No'},'Contract':{'0':'Month-to-month'},'PaperlessBilling':{'0':'Yes'},'PaymentMethod':{'0':'Electronic check'},'MonthlyCharges':{'0':29.85},'TotalCharges':{'0':'29.85'}}"
+}
