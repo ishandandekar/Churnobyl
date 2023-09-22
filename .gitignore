@@ -13,3 +13,4 @@ artifacts/
 .dashboard-venv/
 .serve-venv/
 docker-commands
+docker_push_commands.png
