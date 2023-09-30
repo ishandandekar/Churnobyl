@@ -39,9 +39,9 @@ def test_load_csv_from_dir():
 
 
 def test_load_csv_from_url():
-    URL_passes = "https://raw.githubusercontent.com/jbrownlee/Datasets/master/monthly-mean-temp.csv"
+    URL_passes = "https://gist.githubusercontent.com/ishandandekar/545301e423d84f5407af75a482d56b5a/raw/3721bcdb5d4ff091ab5652c2dec25f83b1a0a6b1/toy_dataset.csv"
     URL_fails = "https://abc123.com"
-    COLS_passes = ["Month", "Temperature"]
+    COLS_passes = ["x", "y"]
     COLS_fails = ["hi", "why are you looking here"]
 
     with pytest.raises(Exception) as e_info:
