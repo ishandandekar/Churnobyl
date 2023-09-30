@@ -5,8 +5,8 @@ data/
 **/logs
 **/.log
 **/wandb
-**/models
-models/
+**/models/
+**/model/
 **/figures
 .env
 artifacts/
@@ -14,3 +14,4 @@ artifacts/
 .serve-venv/
 docker-commands
 docker_push_commands.png
+**/*.pkl
