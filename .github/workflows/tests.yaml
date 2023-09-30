@@ -22,7 +22,7 @@ jobs:
           python-version: "3.9"
       - name: Install dependancies
         run: |
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          make install_reqs
       - name: Configure AWS Credentials For GitHub Actions
         uses: aws-actions/configure-aws-credentials@v3
         with:
@@ -31,4 +31,4 @@ jobs:
           aws-secret-access-key: ${{ secrets.CHURNOBYL_SECRET_KEY }}
       - name: Test with pytest
         run: |
-          pytest --ignore=temp
+          make test
