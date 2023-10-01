@@ -190,6 +190,7 @@ def data_transformer(
     # One-hot encoding
     X_ohe__train = X_train[config.data.get("CAT_COLS_OHE")]
     encoder_ohe.fit(X_ohe__train)
+
     X_ohe_trans__train = encoder_ohe.transform(X_ohe__train)
     X_ohe_trans_df__train: pd.DataFrame = pd.DataFrame(
         X_ohe_trans__train.toarray(), columns=encoder_ohe.get_feature_names_out()
@@ -202,13 +203,14 @@ def data_transformer(
 
     # Ordinal Encoder
     X_oe__train = X_train[config.data.get("CAT_COLS_OE")]
-    encoder_oe.fit(X_oe__train)
-    X_oe_trans__train = encoder_oe.transform(X_oe__train)
+    encoder_oe.fit(X_oe__train.values)
+
+    X_oe_trans__train = encoder_oe.transform(X_oe__train.values)
     X_oe_trans__train = pd.DataFrame(
         X_oe_trans__train, columns=config.data.get("CAT_COLS_OE")
     )
     X_oe__test = X_test[config.data.get("CAT_COLS_OE")]
-    X_oe_trans__test = encoder_oe.transform(X_oe__test)
+    X_oe_trans__test = encoder_oe.transform(X_oe__test.values)
     X_oe_trans__test: pd.DataFrame = pd.DataFrame(
         X_oe_trans__test, columns=config.data.get("CAT_COLS_OE")
     )
@@ -216,12 +218,14 @@ def data_transformer(
     # Scale
     X_scale__train = X_train[config.data.get("NUM_COLS")]
     scaler.fit(X_scale__train)
+
     X_scale_trans__train: pd.DataFrame = scaler.transform(X_scale__train)
     X_scale__test = X_test[config.data.get("NUM_COLS")]
     X_scale_trans__test: pd.DataFrame = scaler.transform(X_scale__test)
 
     # Encode target variable
     target_encoder.fit(y_train)
+
     y_to_train = target_encoder.transform(y_train)
     y_to_test = target_encoder.transform(y_test)
 
@@ -242,6 +246,7 @@ def data_transformer(
         axis=1,
     )
 
+    # Saving preprocessors as `.pkl` files
     preprocessors_names = [
         "encoder_ohe_",
         "encoder_oe_",
@@ -253,6 +258,7 @@ def data_transformer(
         path_ = artifact_dir / f"{name}.pkl"
         with open(str(path_), "wb") as f:
             pkl.dump(preprocessor, f, pkl.HIGHEST_PROTOCOL)
+
     return X_to_train, X_to_test, y_to_train, y_to_test
 
 
@@ -501,7 +507,7 @@ def main_workflow(config_path: Path) -> None:
 if __name__ == "__main__":
     assert (
         Path.cwd().stem == "churninator"
-    ), "Run code from 'churninator', not from 'churnobyl'"
+    ), "Run code from 'churninator', not from `churnobyl`"
     parser = argparse.ArgumentParser(
         prog="Churnzilla-69420",
         description="For config file only",
