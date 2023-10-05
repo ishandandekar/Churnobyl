@@ -53,7 +53,3 @@ All reports will be reviewed and treated confidentially. We will investigate the
 This Code of Conduct applies to all interactions within the Churnobyl project, including but not limited to GitHub repositories, issue discussions, pull requests, project meetings, and any other project-related activities.
 
 By participating in this project, you are expected to uphold and adhere to this Code of Conduct.
-
----
-
-Note: The above Code of Conduct is a generic template and can be customized to reflect the specific needs and values of your project. Ensure to provide contact information where participants can report any issues or concerns related to the Code of Conduct.
