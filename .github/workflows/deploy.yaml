@@ -19,14 +19,13 @@ jobs:
         with:
           python-version: "3.9"
       - name: Install dependancies
+        shell: bash
         run: |
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          make install_reqs
       - name: Setup Wandb and Prefect
         shell: bash
         env:
           WANDB_API: ${{ secrets.WANDB_KEY }}
           API_KEY: ${{ secrets.PREFECT_API_KEY_CHURNOBYL }}
         run: |
-          wandb login "$WANDB_API"
-          echo "Wandb login successful"
-          prefect cloud login -k $API_KEY --workspace ishandandekar/churnobyl
+          make setup_workspace
