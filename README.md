@@ -8,6 +8,9 @@
 > [!WARNING]
 > This is a work in progress. Until specified, please do not directly use the code. There will be addtition as well as improvements over the time. Use the code only to get inspiration and not for actual production usage.
 
+> [!INFO]
+> Author(s) have stopped working on the project. The next development cycle is scheduled after 5th December. You can still contribute, but the features or improvements won't be reviewed until then.
+
 ## [Contributions](./CONTRIBUTING.md)
 
 Any help is always welcomed. The project is open-sourced. The key features that are needed to be updated are marked as TODO in readme as well as in code. Some issues accoring to the authors of the project are highlighted in the README itself. If you think there can be any other improvement, please make a PR or an issue, and I'll go over it as soon as possible.
@@ -35,7 +38,7 @@ Any help is always welcomed. The project is open-sourced. The key features that 
 
 ## Milestone (20-9-2023): A full forward pass from making the dataframe to preprocessing it, to predicting using a model worked... omfg, i am so done
 
-## Milestone (21-9-2023): DUDE DOCKERIZE A TEMP APPLICATION WITH ALL `WANDB` STUFF WORKED LESSSGOOOOOOO!!!. I just have to work the logging the response json to s3 bucket. Other than that everything is finally done. Also, yeah, this image is taking a lot of space.
+## Milestone (21-9-2023): DUDE DOCKERIZE A TEMP APPLICATION WITH ALL `WANDB` STUFF WORKED LESSSGOOOOOOO!!!. Just have to work the logging the response json to s3 bucket. Other than that everything is finally done. Also, yeah, this image is taking a lot of space.
 
 ### Issues:
 
@@ -73,7 +76,9 @@ churnobyl/
 
 ### TODO:
 
-- [ ] See into FastAPI and pydantic compatibility
+- [ ] Replace Munch with [box](https://pypi.org/project/python-box/)
+- [ ] Look into [Hopsworks](https://docs.hopsworks.ai/3.4/concepts/mlops/registry/) for model registry and deployment
+- [ ] Try another way to package model so that one program downloads the best transformer and predictor and another script just with inference/prediction function this then gets packged into a Docker image.
 - [ ] Refer the [prototype](./temp/predict_prototype.py) for the API
 - [ ] Look into EKS cluster to display monitoring
 - [ ] Create Streamlit dashboard for monitoring
@@ -81,6 +86,7 @@ churnobyl/
 
 ### Refs:
 
+- https://github.com/ricardo-vaca/serverless-fastapi
 - https://www.ravirajag.dev/blog/mlops-monitoring
 - https://www.deadbear.io/simple-serverless-fastapi-with-aws-lambda/
 - https://www.eliasbrange.dev/posts/deploy-fastapi-on-aws-part-1-lambda-api-gateway/
