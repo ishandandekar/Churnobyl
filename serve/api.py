@@ -95,35 +95,36 @@ def _index(request: fastapi.Request) -> t.Dict:
 
 
 # TODO: this
-@app.get("/predict", tags=["Prediction"])
+@app.post("/predict", tags=["Prediction"])
 def predict(input_data: sutil.PredEndpointInputSchema) -> t.Dict:
     """
     API endpoint to get predictions for one single data point
     """
     s3 = boto3.client("s3")
 
-    inputs = {
-        "customerID": input_data.customerID,
-        "gender": input_data.gender,
-        "SeniorCitizen": input_data.SeniorCitizen,
-        "Partner": input_data.Partner,
-        "Dependents": input_data.Dependents,
-        "tenure": input_data.tenure,
-        "PhoneService": input_data.PhoneService,
-        "MultipleLines": input_data.MultipleLines,
-        "InternetService": input_data.InternetService,
-        "OnlineSecurity": input_data.OnlineSecurity,
-        "OnlineBackup": input_data.OnlineBackup,
-        "DeviceProtection": input_data.DeviceProtection,
-        "TechSupport": input_data.TechSupport,
-        "StreamingTV": input_data.StreamingTV,
-        "StreamingMovies": input_data.StreamingMovies,
-        "Contract": input_data.Contract,
-        "PaperlessBilling": input_data.PaperlessBilling,
-        "PaymentMethod": input_data.PaymentMethod,
-        "MonthlyCharges": input_data.MonthlyCharges,
-        "TotalCharges": input_data.TotalCharges,
-    }
+    # inputs = {
+    #     "customerID": input_data.customerID,
+    #     "gender": input_data.gender,
+    #     "SeniorCitizen": input_data.SeniorCitizen,
+    #     "Partner": input_data.Partner,
+    #     "Dependents": input_data.Dependents,
+    #     "tenure": input_data.tenure,
+    #     "PhoneService": input_data.PhoneService,
+    #     "MultipleLines": input_data.MultipleLines,
+    #     "InternetService": input_data.InternetService,
+    #     "OnlineSecurity": input_data.OnlineSecurity,
+    #     "OnlineBackup": input_data.OnlineBackup,
+    #     "DeviceProtection": input_data.DeviceProtection,
+    #     "TechSupport": input_data.TechSupport,
+    #     "StreamingTV": input_data.StreamingTV,
+    #     "StreamingMovies": input_data.StreamingMovies,
+    #     "Contract": input_data.Contract,
+    #     "PaperlessBilling": input_data.PaperlessBilling,
+    #     "PaymentMethod": input_data.PaymentMethod,
+    #     "MonthlyCharges": input_data.MonthlyCharges,
+    #     "TotalCharges": input_data.TotalCharges,
+    # }
+    inputs = input_data.dict()
     input_df = pd.DataFrame(inputs, index=[0])
     file_name = f"{str(uuid.uuid4())}.json"
     response = {}
