@@ -8,7 +8,7 @@
 > [!WARNING]
 > This is a work in progress. Until specified, please do not directly use the code. There will be addtition as well as improvements over the time. Use the code only to get inspiration and not for actual production usage.
 
-> [!INFO]
+> [!IMPORTANT]
 > Author(s) have stopped working on the project. The next development cycle is scheduled after 5th December. You can still contribute, but the features or improvements won't be reviewed until then.
 
 ## [Contributions](./CONTRIBUTING.md)
@@ -78,6 +78,7 @@ churnobyl/
 
 - [ ] Replace Munch with [box](https://pypi.org/project/python-box/)
 - [ ] Look into [Hopsworks](https://docs.hopsworks.ai/3.4/concepts/mlops/registry/) for model registry and deployment
+- [ ] https://aws.amazon.com/blogs/compute/deploying-machine-learning-models-with-serverless-templates/
 - [ ] Try another way to package model so that one program downloads the best transformer and predictor and another script just with inference/prediction function this then gets packged into a Docker image.
 - [ ] Refer the [prototype](./temp/predict_prototype.py) for the API
 - [ ] Look into EKS cluster to display monitoring
