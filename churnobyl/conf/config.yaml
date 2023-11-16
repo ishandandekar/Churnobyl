@@ -43,7 +43,7 @@ model:
     dt:
     abc:
     voting:
-    - gb
-    - lr
-    - abc
+      - gb
+      - lr
+      - abc
     xgb:
