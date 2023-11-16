@@ -1,6 +1,6 @@
 FROM python:3.9
 
-WORKDIR /fastapi-app
+WORKDIR /app
 
 COPY serve-requirements.txt .
 
