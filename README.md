@@ -77,9 +77,11 @@ churnobyl/
 ### TODO:
 
 - [ ] Replace Munch with [box](https://pypi.org/project/python-box/)
+- [ ] Test out how you can upload data from python to AWS S3 bucket. [link for yt video](https://www.youtube.com/watch?v=vXiZO1c5Sk0)
 - [ ] Look into [Hopsworks](https://docs.hopsworks.ai/3.4/concepts/mlops/registry/) for model registry and deployment
 - [ ] https://aws.amazon.com/blogs/compute/deploying-machine-learning-models-with-serverless-templates/
 - [ ] Try another way to package model so that one program downloads the best transformer and predictor and another script just with inference/prediction function this then gets packged into a Docker image.
+- [ ] Another idea is to setup a new separate repository for flagged data and monitoring, this could make things easier for api deployment as well as maintenence.
 - [ ] Refer the [prototype](./temp/predict_prototype.py) for the API
 - [ ] Look into EKS cluster to display monitoring
 - [ ] Create Streamlit dashboard for monitoring
