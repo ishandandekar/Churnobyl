@@ -68,7 +68,7 @@ def test_tune_model(data):
 
 
 def test_modelFactory():
-    keys = ModelFactory.keys()
+    keys = list(ModelFactory.keys())
     model_idx = [tup[0] for tup in ModelFactory.values()]
     models = [tup[1] for tup in ModelFactory.values()]
     assert keys == model_idx
