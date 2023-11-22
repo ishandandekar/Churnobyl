@@ -8,11 +8,11 @@ import optuna
 import pandas as pd
 import numpy as np
 import xgboost as xgb
-from sklearn import ensemble, metrics, dummy, neighbors, linear_model, tree, svm
+from sklearn import ensemble, metrics, dummy, neighbors, linear_model, tree, svm, base
 from tqdm.auto import tqdm
 
 # DEV: Add models with names as key-value pair
-MODEL_DICT: t.Dict[str, t.Tuple] = {
+ModelFactory: t.Dict[str, t.Tuple[str, base.BaseEstimator]] = {
     "dummy": (
         "dummy",
         dummy.DummyClassifier(strategy="most_frequent"),
