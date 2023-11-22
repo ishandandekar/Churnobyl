@@ -1,9 +1,9 @@
 import pandas as pd
 from sklearn import datasets, model_selection
 import pytest
-from churnobyl.model import MODEL_DICT, LearnLab
+from churnobyl.model import ModelFactory, LearnLab
 import optuna
-import random
+from sklearn.base import BaseEstimator
 
 
 @pytest.fixture
@@ -28,7 +28,7 @@ def data():
 
 def test_run_experiments(data):
     X_train, X_test, y_train, y_test = data
-    model_list = list(list(MODEL_DICT.values())[:2])
+    model_list = list(list(ModelFactory.values())[:2])
     results = LearnLab.run_experiments(
         model_list=model_list,
         X_train=X_train,
@@ -65,3 +65,12 @@ def test_tune_model(data):
     assert isinstance(best_params, dict)
     assert isinstance(best_metric, float)
     assert isinstance(best_type_, str)
+
+
+def test_modelFactory():
+    keys = ModelFactory.keys()
+    model_idx = [tup[0] for tup in ModelFactory.values()]
+    models = [tup[1] for tup in ModelFactory.values()]
+    assert keys == model_idx
+    for model in models:
+        assert isinstance(model, BaseEstimator)
