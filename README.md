@@ -77,6 +77,7 @@ churnobyl/
 ### TODO:
 
 - [ ] Replace Munch with [box](https://pypi.org/project/python-box/)
+- [x] Use prefect logger rather than python logging
 - [ ] Test out how you can upload data from python to AWS S3 bucket. [link for yt video](https://www.youtube.com/watch?v=vXiZO1c5Sk0)
 - [x] Try this out in a separate test [chatGPT link](https://chat.openai.com/share/feae4706-1d7c-4d63-935f-31657f201215). Check out hte `misc` repo for the successful script.
 - [ ] Switch to [`cloudpickle`](https://github.com/cloudpipe/cloudpickle) for pickle serialization.
@@ -89,6 +90,7 @@ churnobyl/
 - [ ] Look into EKS cluster to display monitoring
 - [ ] Create Streamlit dashboard for monitoring
 - [ ] Integrate Streamlit to display graphs
+- [ ] Write a report on the project explaining all the components
 
 ### Refs:
 
@@ -130,3 +132,15 @@ churnobyl/
 - https://docs.dominodatalab.com/en/5.3/user_guide/715969/model-monitoring/
 - https://stackoverflow.com/questions/65602056/how-to-set-and-access-environment-variables-in-python-file-for-streamlit-app
 - https://docs.wandb.ai/guides/artifacts/download-and-use-an-artifact
+
+### Notes for the report
+
+- The report should have these topics
+  - Abstract
+  - Motive
+  - Problem statement
+  - Data
+  - Approach for modelling experiments
+  - Conclusion
+  - Appendix
+- https://excalidraw.com/ for diagrams
