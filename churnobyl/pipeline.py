@@ -19,7 +19,7 @@ import wandb
 import xgboost as xgb
 import yaml
 from munch import Munch
-from prefect import flow, task, artifacts
+from prefect import flow, task, artifacts, get_run_logger
 from sklearn import (
     ensemble,
     model_selection,
@@ -28,7 +28,7 @@ from sklearn import (
 import numpy.typing as npt
 from data import TRAINING_SCHEMA, DataDreamer
 from visualize import Vizard
-from model import LearnLab, MODEL_DICT
+from model import LearnLab, ModelFactory
 
 
 def _custom_combiner(feature, category):
@@ -293,14 +293,14 @@ def get_best_model(
     models = list()
     for model_name in config.model.get("models"):
         if model_name == "voting":
-            name, voting_model = MODEL_DICT.get(model_name)
+            name, voting_model = ModelFactory.get(model_name)
             estimators = list()
             for voting_model_name in config.model.get("models").get("voting"):
-                estimators.append(MODEL_DICT.get(voting_model_name))
+                estimators.append(ModelFactory.get(voting_model_name))
             params = {"estimators": estimators, "voting": "soft"}
             voting_model = voting_model.set_params(**params)
             models.append((name, voting_model))
-        models.append(MODEL_DICT.get(model_name))
+        models.append(ModelFactory.get(model_name))
     results: pd.DataFrame = LearnLab.run_experiments(
         model_list=models,
         X_train=X_train,
@@ -384,8 +384,8 @@ def push_artifacts(
     artifact_dir: Path,
     viz_dir: Path,
     logs_dir: Path,
-    logger: logging.Logger,
-    logger_file_handler,
+    # logger: logging.Logger,
+    # logger_file_handler,
 ) -> None:
     """
     Pushes various artifacts such as log files, visualizations and models to respective servers and storage spaces
@@ -413,9 +413,10 @@ def push_artifacts(
         markdown=markdown_artifact,
         description="Model summary report",
     )
+    logger = get_run_logger()
     logger.info("Artifacts have been pushed to project server")
     logger.info("All tasks done. Pipeline has now been completed")
-    logger_file_handler.close()
+    # logger_file_handler.close()
     s3_resource = boto3.resource("s3")
     bucket = s3_resource.Bucket("churnobyl")
     log_files = logs_dir.glob("*.log")
@@ -444,14 +445,15 @@ def main_workflow(config_path: Path) -> None:
         ARTIFACT_DIR,
         LOGS_DIR,
     ) = setup_pipeline(config=config)
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
-    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
-    file_handler = logging.FileHandler(
-        filename=LOGS_DIR / f"{datetime.now().date()}.log"
-    )
-    file_handler.setFormatter(formatter)
-    logger.addHandler(file_handler)
+    # logger = logging.getLogger(__name__)
+    # logger.setLevel(logging.INFO)
+    # formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+    # file_handler = logging.FileHandler(
+    #     filename=LOGS_DIR / f"{datetime.now().date()}.log"
+    # )
+    # file_handler.setFormatter(formatter)
+    # logger.addHandler(file_handler)
+    logger = get_run_logger()
     logger.info("Setting up directories and logging")
     df = data_loader(schema=TRAINING_SCHEMA, data_dir=DATA_DIR)
     logger.info("Data has been loaded")
@@ -499,8 +501,8 @@ def main_workflow(config_path: Path) -> None:
         artifact_dir=ARTIFACT_DIR,
         viz_dir=VIZ_DIR,
         logs_dir=LOGS_DIR,
-        logger=logger,
-        logger_file_handler=file_handler,
+        # logger=logger,
+        # logger_file_handler=file_handler,
     )
 
 
