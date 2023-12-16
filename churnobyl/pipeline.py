@@ -16,7 +16,7 @@ import pandera as pa
 import wandb
 import xgboost as xgb
 import yaml
-from munch import Munch
+from box import Box
 from prefect import flow, task, artifacts, get_run_logger
 from sklearn import (
     ensemble,
@@ -37,7 +37,7 @@ def _custom_combiner(feature, category):
     name="load_config",
     description="Function to load configuration settings from `.yaml` file",
 )
-def set_config(config_path: Path) -> Munch:
+def set_config(config_path: Path) -> Box:
     """
     Sets up configuration variables for pipeline using `.yaml` file
 
@@ -54,9 +54,10 @@ def set_config(config_path: Path) -> Munch:
         with open(config_path, "r") as stream:
             try:
                 config = yaml.safe_load(stream)
-                return Munch(config)
+                return Box(config)
             except yaml.YAMLError as exc:
                 print(exc)
+                return None
     else:
         raise Exception("Path error occured. File does not exist")
 
@@ -66,7 +67,7 @@ def set_config(config_path: Path) -> Munch:
     description="Setup directories and logging for the pipeline experiment",
 )
 def setup_pipeline(
-    config: Munch,
+    config: Box,
 ) -> t.Tuple[Path, Path, Path, Path, Path, Path,]:
     """
     Creates directories and sets random seed for reproducibility
@@ -78,12 +79,12 @@ def setup_pipeline(
         t.Tuple[Path, Path, Path, Path, Path, Path,]: Paths for all the directories
     """
     ROOT_DIR: Path = Path.cwd()
-    LOGS_DIR: Path = ROOT_DIR / config.PATH.get("logs")
+    LOGS_DIR: Path = ROOT_DIR / config.PATH.logs
 
-    DATA_DIR: Path = ROOT_DIR / config.PATH.get("data")
-    VIZ_DIR: Path = ROOT_DIR / config.PATH.get("viz")
-    MODEL_DIR: Path = ROOT_DIR / config.PATH.get("model")
-    ARTIFACT_DIR: Path = ROOT_DIR / config.PATH.get("model") / "artifacts"
+    DATA_DIR: Path = ROOT_DIR / config.PATH.data
+    VIZ_DIR: Path = ROOT_DIR / config.PATH.viz
+    MODEL_DIR: Path = ROOT_DIR / config.PATH.model
+    ARTIFACT_DIR: Path = ROOT_DIR / config.PATH.model / "artifacts"
 
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     VIZ_DIR.mkdir(parents=True, exist_ok=True)
@@ -142,7 +143,7 @@ def data_loader(schema: pa.DataFrameSchema, data_dir: t.Optional[Path]) -> pd.Da
     name="data_split",
     description="Split data into training and test sets",
 )
-def data_splits(config: Munch, df: pd.DataFrame):
+def data_splits(config: Box, df: pd.DataFrame):
     """
     Splits the data into train and test sets
 
@@ -170,11 +171,11 @@ def data_splits(config: Munch, df: pd.DataFrame):
     description="Transform data into numerical encoding using preprocessors",
 )
 def data_transformer(
-    config: Munch,
-    X_train,
-    X_test,
-    y_train,
-    y_test,
+    config: Box,
+    X_train: pd.DataFrame,
+    X_test: pd.DataFrame,
+    y_train: pd.DataFrame,
+    y_test: pd.DataFrame,
     artifact_dir: Path,
 ) -> t.Tuple[pd.DataFrame, pd.DataFrame, npt.ArrayLike, npt.ArrayLike]:
     """
