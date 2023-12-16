@@ -15,3 +15,4 @@ artifacts/
 docker-commands
 docker_push_commands.png
 **/*.pkl
+.mypy_cache/
