@@ -4,13 +4,11 @@ This file has a whole range of functions that represent tasks in a MLOps retrain
 """
 
 import argparse
-import logging
-import pickle as pkl
 import random
 import typing as t
-from datetime import datetime
 from pathlib import Path
 import boto3
+import cloudpickle as cpickle
 import numpy as np
 import optuna
 import pandas as pd
@@ -257,7 +255,7 @@ def data_transformer(
     for name, preprocessor in zip(preprocessors_names, preprocessors):
         path_ = artifact_dir / f"{name}.pkl"
         with open(str(path_), "wb") as f:
-            pkl.dump(preprocessor, f, pkl.HIGHEST_PROTOCOL)
+            cpickle.dumps(preprocessor, f)
 
     return X_to_train, X_to_test, y_to_train, y_to_test
 
@@ -317,7 +315,7 @@ def get_best_model(
     )
     best_path_ = model_dir / f"{type_}_best_.pkl"
     with open(best_path_, "wb") as f:
-        pkl.dump(best_model, f)
+        cpickle.dump(best_model, f)
     return results, study, best_model, best_params, best_metric, best_path_, type_
 
 
@@ -417,11 +415,11 @@ def push_artifacts(
     logger.info("Artifacts have been pushed to project server")
     logger.info("All tasks done. Pipeline has now been completed")
     # logger_file_handler.close()
-    s3_resource = boto3.resource("s3")
-    bucket = s3_resource.Bucket("churnobyl")
-    log_files = logs_dir.glob("*.log")
-    for file in log_files:
-        bucket.upload_file(file, f"train_logs/{file.name}")
+    # s3_resource = boto3.resource("s3")
+    # bucket = s3_resource.Bucket("churnobyl")
+    # log_files = logs_dir.glob("*.log")
+    # for file in log_files:
+    #     bucket.upload_file(file, f"train_logs/{file.name}")
     return None
 
 
