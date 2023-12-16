@@ -76,14 +76,14 @@ churnobyl/
 
 ### TODO:
 
-- [ ] Replace Munch with [box](https://pypi.org/project/python-box/)
+- [x] Replace Munch with [box](https://pypi.org/project/python-box/)
 - [x] Use prefect logger rather than python logging
 - [ ] Test out how you can upload data from python to AWS S3 bucket. [link for yt video](https://www.youtube.com/watch?v=vXiZO1c5Sk0)
 - [x] Try this out in a separate test [chatGPT link](https://chat.openai.com/share/feae4706-1d7c-4d63-935f-31657f201215). Check out hte `misc` repo for the successful script.
-- [ ] Switch to [`cloudpickle`](https://github.com/cloudpipe/cloudpickle) for pickle serialization.
+- [x] Switch to [`cloudpickle`](https://github.com/cloudpipe/cloudpickle) for pickle serialization.
 - [ ] Look into [Hopsworks](https://docs.hopsworks.ai/3.4/concepts/mlops/registry/) for model registry and deployment
 - [ ] https://www.youtube.com/watch?v=XEZ7Hx2NrO8 & https://stackoverflow.com/questions/62664183/mlflow-find-model-version-with-best-metric-using-python-code
-- [ ] https://aws.amazon.com/blogs/compute/deploying-machine-learning-models-with-serverless-templates/
+- [x] https://aws.amazon.com/blogs/compute/deploying-machine-learning-models-with-serverless-templates/. DOES NOT WORK FFS
 - [ ] Try another way to package model so that one program downloads the best transformer and predictor and another script just with inference/prediction function this then gets packged into a Docker image.
 - [ ] Another idea is to setup a new separate repository for flagged data and monitoring, this could make things easier for api deployment as well as maintenence.
 - [ ] Refer the [prototype](./temp/predict_prototype.py) for the API
