@@ -91,18 +91,21 @@ class LearnLab:
                 test_recall,
                 test_fscore,
             )
-        results = pd.DataFrame.from_dict(results, orient="index")
-        results.columns = [
-            "train_accuracy",
-            "train_precision",
-            "train_recall",
-            "train_fscore",
-            "test_accuracy",
-            "test_precision",
-            "test_recall",
-            "test_fscore",
-        ]
-        results = results.sort_values(by=["test_fscore"], ascending=False)
+        results: pd.DataFrame = pd.DataFrame.from_dict(
+            results,
+            orient="index",
+            columns=[
+                "train_accuracy",
+                "train_precision",
+                "train_recall",
+                "train_fscore",
+                "test_accuracy",
+                "test_precision",
+                "test_recall",
+                "test_fscore",
+            ],
+        ).sort_values(by=["test_fscore"], ascending=False)
+
         return results
 
     # DEV: Add hyperparams for models
