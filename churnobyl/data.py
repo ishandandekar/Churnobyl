@@ -443,8 +443,8 @@ TRAINING_SCHEMA = DataFrameSchema(
         ),
         "OnlineBackup": Column(
             dtype="object",
-            checks=None,
-            nullable=checks.get("OnlineBackup"),
+            checks=checks.get("OnlineBackup"),
+            nullable=False,
             unique=False,
             coerce=False,
             required=True,
