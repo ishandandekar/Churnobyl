@@ -8,6 +8,34 @@ PATH:
   logs: logs
 
 data:
+  load:
+    strategy: dir
+    args:
+      dir: data
+      columns:
+        - customerID
+        - gender
+        - SeniorCitizen
+        - Partner
+        - Dependents
+        - tenure
+        - PhoneService
+        - MultipleLines
+        - InternetService
+        - OnlineSecurity
+        - OnlineBackup
+        - DeviceProtection
+        - TechSupport
+        - StreamingTV
+        - Contract
+        - PaperlessBilling
+        - PaymentMethod
+        - MonthlyCharges
+        - TotalCharges
+        - Churn
+  split:
+    ratio: 0.1
+    stratify: True
   train_test_split: 0.1
   NUM_COLS:
     - tenure
