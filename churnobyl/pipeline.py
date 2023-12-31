@@ -143,7 +143,9 @@ def data_loader(schema: pa.DataFrameSchema, data_dir: t.Optional[Path]) -> pd.Da
     name="data_split",
     description="Split data into training and test sets",
 )
-def data_splits(config: Box, df: pd.DataFrame):
+def data_splits(
+    config: Box, df: pd.DataFrame
+) -> t.Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
     Splits the data into train and test sets
 
@@ -444,14 +446,6 @@ def main_workflow(config_path: Path) -> None:
         ARTIFACT_DIR,
         LOGS_DIR,
     ) = setup_pipeline(config=config)
-    # logger = logging.getLogger(__name__)
-    # logger.setLevel(logging.INFO)
-    # formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
-    # file_handler = logging.FileHandler(
-    #     filename=LOGS_DIR / f"{datetime.now().date()}.log"
-    # )
-    # file_handler.setFormatter(formatter)
-    # logger.addHandler(file_handler)
     logger = get_run_logger()
     logger.info("Setting up directories and logging")
     df = data_loader(schema=TRAINING_SCHEMA, data_dir=DATA_DIR)
