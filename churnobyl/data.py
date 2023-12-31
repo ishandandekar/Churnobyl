@@ -1,15 +1,16 @@
 """
 This script contains all the data utility functions.
 """
-
+from dataclasses import dataclass
+from abc import ABC, abstractmethod
 import typing as t
 from io import StringIO
 from pathlib import Path
-
 import boto3
 import pandas as pd
 import requests
 from pandera import Check, Column, DataFrameSchema, Index
+
 
 checks: t.Dict[str, t.List[Check]] = {
     "customerID": [],
@@ -586,47 +587,68 @@ TRAINING_SCHEMA = DataFrameSchema(
 )
 
 
-# DEV: Change file format other than `.csv` here
-class DataDreamer:
-    @staticmethod
-    def load_csv_from_dir(dir: Path, columns: list) -> pd.DataFrame:
-        if dir.is_dir():
-            data = pd.DataFrame(columns=columns)
-            paths = list(dir.glob("*.csv"))
+class DataLoaderStrategy(ABC):
+    @abstractmethod
+    def __call__(self) -> pd.DataFrame:
+        """
+        Load data
+        """
+
+
+@dataclass
+class DirDataLoaderStrategy(DataLoaderStrategy):
+    dir: t.Union[Path, str]
+    columns: list[str]
+
+    def __call__(self) -> pd.DataFrame:
+        if isinstance(self.dir, str):
+            self.dir = Path(self.dir)
+        if self.dir.is_dir():
+            data = pd.DataFrame(columns=self.columns)
+            paths = list(self.dir.glob("*.csv"))
             if len(paths) == 0:
                 raise Exception(f"No `.csv` present in the directory {dir}")
             for path in paths:
                 df = pd.read_csv(path)
-                # if data.columns != df.columns:
-                #     raise Exception(f"Column mismatch error for `.csv`: {path}")
                 data = pd.concat([data, df])
             return data
         else:
             raise Exception("Path provided is not a directory")
 
-    @staticmethod
-    def load_csv_from_url(url: str, columns: list) -> pd.DataFrame:
-        if not url.endswith(".csv"):
-            raise Exception(f"The url is not of a `.csv`: {url}")
-        response = requests.get(url)
+
+@dataclass
+class UrlDataLoaderStrategy(DataLoaderStrategy):
+    url: str
+    columns: list[str]
+
+    def __call__(self) -> pd.DataFrame:
+        if not self.url.endswith(".csv"):
+            raise Exception(f"The url is not of a `.csv`: {self.url}")
+        response = requests.get(self.url)
         response.raise_for_status()
         csv_file = StringIO(response.text)
         df = pd.read_csv(csv_file)
-        if df.columns.to_list() != columns:
-            raise Exception(f"Column mismatch error for `.csv`: {url}")
+        if df.columns.to_list() != self.columns:
+            raise Exception(f"Column mismatch error for `.csv`: {self.url}")
         return df
 
-    @staticmethod
-    def load_csv_from_aws_s3(
-        bucket_name: str, folder_path: str, session: boto3.Session
-    ) -> t.Optional[pd.DataFrame]:
-        s3_client = session.client("s3")
-        if folder_path == "":
-            s3_url = f"s3://{bucket_name}"
-            objects = s3_client.list_objects_v2(Bucket=bucket_name)
+
+@dataclass
+class AwsS3DataLoaderStrategy(DataLoaderStrategy):
+    bucket_name: str
+    folder_path: str
+    session: boto3.Session
+
+    def __call__(self) -> pd.DataFrame:
+        s3_client = self.session.client("s3")
+        if self.folder_path == "":
+            s3_url = f"s3://{self.bucket_name}"
+            objects = s3_client.list_objects_v2(Bucket=self.bucket_name)
         else:
-            s3_url = f"s3://{bucket_name}/{folder_path}"
-            objects = s3_client.list_objects_v2(Bucket=bucket_name, Prefix=folder_path)
+            s3_url = f"s3://{self.bucket_name}/{self.folder_path}"
+            objects = s3_client.list_objects_v2(
+                Bucket=self.bucket_name, Prefix=self.folder_path
+            )
 
         dataframes: list = list()
         for obj in objects.get("Contents", []):
@@ -641,9 +663,15 @@ class DataDreamer:
                 except Exception as e:
                     print(f"Error loading {key}: {e}")
 
-        # Concatenate all dataframes
-        if len(dataframes) != 0:
-            concatenated_df = pd.concat(dataframes, ignore_index=True)
-            return concatenated_df
-        else:
-            return None
+        if len(dataframes) == 0:
+            raise Exception(
+                "No data found. Check the contents in the bucket and folder"
+            )
+        return pd.concat(dataframes, ignore_index=True)
+
+
+DataLoaderStrategyFactory: t.Dict[str, t.Type[DataLoaderStrategy]] = {
+    "dir": DirDataLoaderStrategy,
+    "url": UrlDataLoaderStrategy,
+    "aws_s3": AwsS3DataLoaderStrategy,
+}
