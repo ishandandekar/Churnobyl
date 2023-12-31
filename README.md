@@ -77,14 +77,14 @@ churnobyl/
 ### TODO:
 
 - [ ] Test out how you can upload data from python to AWS S3 bucket. [link for yt video](https://www.youtube.com/watch?v=vXiZO1c5Sk0)
-- [x] Try this out in a separate test [chatGPT link](https://chat.openai.com/share/feae4706-1d7c-4d63-935f-31657f201215). Check out hte `misc` repo for the successful script.
 - [ ] Look into [Hopsworks](https://docs.hopsworks.ai/3.4/concepts/mlops/registry/) for model registry and deployment
 - [ ] https://www.youtube.com/watch?v=XEZ7Hx2NrO8 & https://stackoverflow.com/questions/62664183/mlflow-find-model-version-with-best-metric-using-python-code
 - [x] https://aws.amazon.com/blogs/compute/deploying-machine-learning-models-with-serverless-templates/. DOES NOT WORK FFS
 - [ ] Try another way to package model so that one program downloads the best transformer and predictor and another script just with inference/prediction function this then gets packged into a Docker image.
 - [x] Modify code in a way that even params for the models are taken from the `.yaml` itself. UPDATE THE CODE!, see [code](https://github.com/ishandandekar/misc/blob/main/model_trainerEngine/main.py)
-- [ ] Modify hyparams to be taken from yaml rather getting hardcoded from the program. This is a much awaited feature
-- [ ] Use Strategy pattern to modify data loaders using `.yaml` configuration itself
+- [x] Modify hyparams to be taken from yaml rather getting hardcoded from the program. This is a much awaited feature
+- [x] Use Strategy pattern to modify data loaders using `.yaml` configuration itself
+- [ ] Incorporate newly developed data loading and model training/tuning logic engines in the code. For ref [data code](https://github.com/ishandandekar/misc/tree/main/data_loaderEngine) and [model training/tuning](https://github.com/ishandandekar/misc/tree/main/model_trainerEngine)
 - [ ] Another idea is to setup a new separate repository for flagged data and monitoring, this could make things easier for api deployment as well as maintenence.
 - [ ] Refer the [prototype](./temp/predict_prototype.py) for the API
 - [ ] Look into EKS cluster to display monitoring
