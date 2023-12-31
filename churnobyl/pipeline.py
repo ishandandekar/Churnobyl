@@ -24,7 +24,7 @@ from sklearn import (
     preprocessing,
 )
 import numpy.typing as npt
-from data import TRAINING_SCHEMA, DataDreamer
+from data import TRAINING_SCHEMA, DataLoaderStrategyFactory
 from visualize import Vizard
 from model import LearnLab, ModelFactory
 
@@ -80,13 +80,10 @@ def setup_pipeline(
     """
     ROOT_DIR: Path = Path.cwd()
     LOGS_DIR: Path = ROOT_DIR / config.PATH.logs
-
-    DATA_DIR: Path = ROOT_DIR / config.PATH.data
     VIZ_DIR: Path = ROOT_DIR / config.PATH.viz
     MODEL_DIR: Path = ROOT_DIR / config.PATH.model
     ARTIFACT_DIR: Path = ROOT_DIR / config.PATH.model / "artifacts"
 
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
     VIZ_DIR.mkdir(parents=True, exist_ok=True)
     MODEL_DIR.mkdir(parents=True, exist_ok=True)
     ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
@@ -96,7 +93,6 @@ def setup_pipeline(
     np.random.seed(config.SEED)
     return (
         ROOT_DIR,
-        DATA_DIR,
         VIZ_DIR,
         MODEL_DIR,
         ARTIFACT_DIR,
@@ -110,14 +106,14 @@ def setup_pipeline(
     retries=3,
     retry_delay_seconds=3,
 )
-def data_loader(schema: pa.DataFrameSchema, data_dir: t.Optional[Path]) -> pd.DataFrame:
+def data_loader(config: Box, schema: pa.DataFrameSchema) -> pd.DataFrame:
     """
     Loads data from functions mentioned by the developer,
     Also validates data based on schema
 
     Args:
-        schema (pa.DataFrameSchema): Data validation schema
-        data_dir (t.Optional[Path]): Directory where all `.csv` files are stored
+        config (Box): Configuration
+        schema (pa.DataFrameSchema): Training data schema
 
     Raises:
         Exception: If the data does not match the schema
@@ -125,18 +121,19 @@ def data_loader(schema: pa.DataFrameSchema, data_dir: t.Optional[Path]) -> pd.Da
     Returns:
         pd.DataFrame: concatenated data that now be split into train and test sets
     """
-    columns = schema.columns.keys()
-    df = DataDreamer.load_csv_from_dir(dir=data_dir, columns=columns)
-    df.TotalCharges = df.TotalCharges.replace(to_replace=" ", value="0")
+    data: pd.DataFrame = DataLoaderStrategyFactory.get(config.data.load.strategy)(
+        **config.data.load.args
+    )()
+    data["TotalCharges"] = data["TotalCharges"].replace(to_replace=" ", value="0")
     try:
-        schema.validate(df, lazy=True)
+        schema.validate(data, lazy=True)
     except pa.errors.SchemaErrors as err:
         print("Schema errors and failure cases:")
         print(err.failure_cases)
         print("\nDataFrame object that failed validation:")
         print(err.data)
         raise Exception("Schema errors and failure cases")
-    return df
+    return data
 
 
 @task(
@@ -157,13 +154,21 @@ def data_splits(
         Training features, test features, train labels, test labels
     """
     X, y = df.drop(columns=["Churn"]), df[["Churn"]]
-    X_train, X_test, y_train, y_test = model_selection.train_test_split(
-        X,
-        y,
-        test_size=config.data.get("train_test_split"),
-        random_state=config.SEED,
-        stratify=y,
-    )
+    if config.data.split.stratify:
+        X_train, X_test, y_train, y_test = model_selection.train_test_split(
+            X,
+            y,
+            test_size=config.data.split.ratio,
+            random_state=config.SEED,
+            stratify=y,
+        )
+    else:
+        X_train, X_test, y_train, y_test = model_selection.train_test_split(
+            X,
+            y,
+            test_size=config.data.split.ratio,
+            random_state=config.SEED,
+        )
 
     return X_train, X_test, y_train, y_test
 
@@ -289,7 +294,7 @@ def get_best_model(
         model_dir (Path): Directories where the tuned models should be stored
 
     Returns:
-        t.Tuple[ pd.DataFrame, optuna.Study, t.Union[ensemble.RandomForestClassifier, xgb.XGBClassifier], t.Dict, float, ]: Gives results of training, tuning experiment, best model, best model's hyperparameters, metric performance of the best model, path of the best model, type of the model i.e. random forest or XGBoost
+        t.Tuple[ pd.DataFrame, optuna.Study, t.Union[ensemble.RandomForestClassifier, xgb.XGBClassifier], t.Dict, float]: Gives results of training, tuning experiment, best model, best model's hyperparameters, metric performance of the best model, path of the best model, type of the model i.e. random forest or XGBoost
     """
     models = list()
     for model_name in config.model.get("models"):
@@ -440,7 +445,6 @@ def main_workflow(config_path: Path) -> None:
     config = set_config(config_path=config_path)
     (
         ROOT_DIR,
-        DATA_DIR,
         VIZ_DIR,
         MODEL_DIR,
         ARTIFACT_DIR,
@@ -448,7 +452,7 @@ def main_workflow(config_path: Path) -> None:
     ) = setup_pipeline(config=config)
     logger = get_run_logger()
     logger.info("Setting up directories and logging")
-    df = data_loader(schema=TRAINING_SCHEMA, data_dir=DATA_DIR)
+    df = data_loader(config=config, schema=TRAINING_SCHEMA)
     logger.info("Data has been loaded")
     X_train, X_test, y_train, y_test = data_splits(config=config, df=df)
     logger.info("Data splits have been made")
