@@ -8,9 +8,6 @@
 > [!WARNING]
 > This is a work in progress. Until specified, please do not directly use the code. There will be addtition as well as improvements over the time. Use the code only to get inspiration and not for actual production usage.
 
-> [!IMPORTANT]
-> Author(s) have stopped working on the project. The next development cycle is scheduled after 5th December. You can still contribute, but the features or improvements won't be reviewed until then.
-
 ## [Contributions](./CONTRIBUTING.md)
 
 Any help is always welcomed. The project is open-sourced. The key features that are needed to be updated are marked as TODO in readme as well as in code. Some issues accoring to the authors of the project are highlighted in the README itself. If you think there can be any other improvement, please make a PR or an issue, and I'll go over it as soon as possible.
@@ -79,12 +76,15 @@ churnobyl/
 - [ ] Test out how you can upload data from python to AWS S3 bucket. [link for yt video](https://www.youtube.com/watch?v=vXiZO1c5Sk0)
 - [ ] Look into [Hopsworks](https://docs.hopsworks.ai/3.4/concepts/mlops/registry/) for model registry and deployment
 - [ ] https://www.youtube.com/watch?v=XEZ7Hx2NrO8 & https://stackoverflow.com/questions/62664183/mlflow-find-model-version-with-best-metric-using-python-code
-- [x] https://aws.amazon.com/blogs/compute/deploying-machine-learning-models-with-serverless-templates/. DOES NOT WORK FFS
+- [x] https://aws.amazon.com/blogs/compute/deploying-machine-learning-models-with-serverless-templates/ DOES NOT WORK FFS
 - [ ] Try another way to package model so that one program downloads the best transformer and predictor and another script just with inference/prediction function this then gets packged into a Docker image.
 - [x] Modify code in a way that even params for the models are taken from the `.yaml` itself. UPDATE THE CODE!, see [code](https://github.com/ishandandekar/misc/blob/main/model_trainerEngine/main.py)
 - [x] Modify hyparams to be taken from yaml rather getting hardcoded from the program. This is a much awaited feature
 - [x] Use Strategy pattern to modify data loaders using `.yaml` configuration itself
 - [ ] Incorporate newly developed data loading and model training/tuning logic engines in the code. For ref [data code](https://github.com/ishandandekar/misc/tree/main/data_loaderEngine) and [model training/tuning](https://github.com/ishandandekar/misc/tree/main/model_trainerEngine)
+- [ ] Write `exceptions.py` maybe for better error catching
+- [ ] Rename `pipeline.py` to `engine.py`? maybe
+- [ ] Write func to validate `.yaml` conf
 - [ ] Another idea is to setup a new separate repository for flagged data and monitoring, this could make things easier for api deployment as well as maintenence.
 - [ ] Refer the [prototype](./temp/predict_prototype.py) for the API
 - [ ] Look into EKS cluster to display monitoring
