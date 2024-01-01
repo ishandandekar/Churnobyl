@@ -5,7 +5,6 @@ PATH:
   data: data
   viz: figures
   model: models
-  logs: logs
 
 data:
   load:
@@ -61,17 +60,66 @@ data:
     - TechSupport
 
 model:
-  n_trials: 2
-  models:
-    dummy:
-    lr:
-    svm:
-    rf:
-    gb:
-    dt:
-    abc:
-    voting:
-      - gb
-      - lr
-      - abc
-    xgb:
+  train:
+    models:
+      - lr:
+          params:
+            penalty: l2
+            C: 0.9
+            fit_intercept: False
+      - knn:
+          params:
+            n_neighbors: 3
+            weights: distance
+            algorithm: auto
+      - svm:
+          params:
+            C: 0.9
+            kernel: rbf
+            degree: 4
+            gamma: auto
+      - voting:
+          params:
+            estimators:
+              - knn:
+                  params:
+                    n_neighbors: 5
+              - svm:
+                  params:
+                    C: 0.9
+              - lr:
+                  params:
+                    C: 1
+                    solver: liblinear
+            voting: hard
+  tune:
+    models:
+      - lr:
+          params:
+            max_iter:
+              strategy: int
+              args:
+                high: 7
+                low: 3
+            C:
+              params:
+                strategy: float
+                args:
+                  high: 2
+                  low: 1.9
+                  step: 0.05
+      - svm:
+          params:
+            C:
+              strategy: float
+              args:
+                high: 2.0
+                low: 1.8
+                step: 0.05
+            kernel:
+              strategy: cat
+              args:
+                choices:
+                  - linear
+                  - rbf
+    n_trials: 2
