@@ -7,26 +7,23 @@ import argparse
 import random
 import typing as t
 from pathlib import Path
-import boto3
 import cloudpickle as cpickle
 import numpy as np
 import optuna
 import pandas as pd
 import pandera as pa
 import wandb
-import xgboost as xgb
 import yaml
 from box import Box
 from prefect import flow, task, artifacts, get_run_logger
 from sklearn import (
-    ensemble,
     model_selection,
     preprocessing,
 )
 import numpy.typing as npt
 from data import TRAINING_SCHEMA, DataLoaderStrategyFactory
 from visualize import Vizard
-from model import LearnLab, ModelFactory
+from model import LearnLab, ModelEngineOutput
 
 
 def _custom_combiner(feature, category):
@@ -79,7 +76,6 @@ def setup_pipeline(
         t.Tuple[Path, Path, Path, Path, Path, Path,]: Paths for all the directories
     """
     ROOT_DIR: Path = Path.cwd()
-    LOGS_DIR: Path = ROOT_DIR / config.PATH.logs
     VIZ_DIR: Path = ROOT_DIR / config.PATH.viz
     MODEL_DIR: Path = ROOT_DIR / config.PATH.model
     ARTIFACT_DIR: Path = ROOT_DIR / config.PATH.model / "artifacts"
@@ -87,7 +83,6 @@ def setup_pipeline(
     VIZ_DIR.mkdir(parents=True, exist_ok=True)
     MODEL_DIR.mkdir(parents=True, exist_ok=True)
     ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
-    LOGS_DIR.mkdir(parents=True, exist_ok=True)
 
     random.seed(config.SEED)
     np.random.seed(config.SEED)
@@ -96,7 +91,6 @@ def setup_pipeline(
         VIZ_DIR,
         MODEL_DIR,
         ARTIFACT_DIR,
-        LOGS_DIR,
     )
 
 
@@ -273,58 +267,49 @@ def data_transformer(
     description="Fit multiple models on data and tune best models using optuna",
     retries=1,
 )
-def get_best_model(
-    config, X_train, X_test, y_train, y_test, model_dir: Path
-) -> t.Tuple[
-    pd.DataFrame,
-    optuna.Study,
-    t.Union[ensemble.RandomForestClassifier, xgb.XGBClassifier],
-    t.Dict,
-    float,
-]:
+def model_engine(
+    config: Box,
+    X_train: pd.DataFrame,
+    X_test: pd.DataFrame,
+    y_train: npt.ArrayLike,
+    y_test: npt.ArrayLike,
+    model_dir: Path,
+) -> ModelEngineOutput:
     """
-    Trains multiple models as mentioned in `arg: config` and tunes random forest and XGBoost model
+    Trains and tunes models based on `args: config`
 
     Args:
-        config (_type_): Configuration mapping
-        X_train (_type_): Training features
-        X_test (_type_): Test features
-        y_train (_type_): Training labels
-        y_test (_type_): Test labels
-        model_dir (Path): Directories where the tuned models should be stored
+        config (Box): Configuration mapping for training and tuning
+        X_train (pd.DataFrame): Training features
+        X_test (pd.DataFrame): Test features
+        y_train (npt.ArrayLike): Training labels
+        y_test (npt.ArrayLike): Test labels
+        model_dir (Path): Directory to store tuned models
 
     Returns:
-        t.Tuple[ pd.DataFrame, optuna.Study, t.Union[ensemble.RandomForestClassifier, xgb.XGBClassifier], t.Dict, float]: Gives results of training, tuning experiment, best model, best model's hyperparameters, metric performance of the best model, path of the best model, type of the model i.e. random forest or XGBoost
+        ModelEngineOutput: Output class for training results, tuner output and paths for the tuned models
     """
-    models = list()
-    for model_name in config.model.get("models"):
-        if model_name == "voting":
-            name, voting_model = ModelFactory.get(model_name)
-            estimators = list()
-            for voting_model_name in config.model.get("models").get("voting"):
-                estimators.append(ModelFactory.get(voting_model_name))
-            params = {"estimators": estimators, "voting": "soft"}
-            voting_model = voting_model.set_params(**params)
-            models.append((name, voting_model))
-        models.append(ModelFactory.get(model_name))
-    results: pd.DataFrame = LearnLab.run_experiments(
-        model_list=models,
+    results: pd.DataFrame = LearnLab.train_experiments(
+        config=config.model.train,
         X_train=X_train,
         X_test=X_test,
         y_train=y_train,
         y_test=y_test,
     )
-    study, best_model, best_params, best_metric, type_ = LearnLab.tune_model(
+    tuner = LearnLab.tune_models(
+        config=config.model.tune,
         X_train=X_train,
         X_test=X_test,
         y_train=y_train,
         y_test=y_test,
-        n_trials=config.model.get("n_trials"),
     )
-    best_path_ = model_dir / f"{type_}_best_.pkl"
-    with open(best_path_, "wb") as f:
-        cpickle.dump(best_model, f)
-    return results, study, best_model, best_params, best_metric, best_path_, type_
+    best_paths = list()
+    for model, name in zip(tuner.best_models, tuner.names):
+        path_ = model_dir / f"{name}_tuned_.pkl"
+        with open(path_, "wb") as f_out:
+            cpickle.dump(model, f_out)
+        best_paths.append(path_)
+    return ModelEngineOutput(results=results, tuner=tuner, paths=best_paths)
 
 
 @task(
@@ -335,8 +320,6 @@ def vizard(
     df: pd.DataFrame,
     results: pd.DataFrame,
     study: optuna.Study,
-    model,
-    X_train: pd.DataFrame,
     viz_dir: Path,
 ) -> None:
     """
@@ -346,8 +329,6 @@ def vizard(
         df (pd.DataFrame): Data for this pipeline
         results (pd.DataFrame): Training results
         study (optuna.Study): Results of hyper-parameter tuning
-        model (_type_): Either Random Forest or XGBoost
-        X_train (pd.DataFrame): Training features
         viz_dir (Path): Directories to store all these visualizations
     """
     target_dist_path = viz_dir / "target_dist.png"
@@ -372,8 +353,6 @@ def vizard(
         param_importance_path=param_importance_path,
         parallel_coordinate_path=parallel_coordinate_path,
     )
-    # shap_explainer_path = viz_dir / "shap_explainer.png"
-    # Vizard.plot_shap(model=model, X_train=X_train, path=shap_explainer_path)
     return None
 
 
@@ -384,14 +363,11 @@ def vizard(
     retry_delay_seconds=3,
 )
 def push_artifacts(
-    best_type_,
+    best_model_name,
     best_metric: float,
     best_path_: Path,
     artifact_dir: Path,
     viz_dir: Path,
-    logs_dir: Path,
-    # logger: logging.Logger,
-    # logger_file_handler,
 ) -> None:
     """
     Pushes various artifacts such as log files, visualizations and models to respective servers and storage spaces
@@ -411,7 +387,7 @@ def push_artifacts(
         run.log_artifact(plots_artifact)
 
     markdown_artifact = f"""
-    ### Model saved: {best_type_}
+    ### Model saved: {best_model_name}
     ### Model performance: {best_metric}
     """
     artifacts.create_markdown_artifact(
@@ -422,12 +398,6 @@ def push_artifacts(
     logger = get_run_logger()
     logger.info("Artifacts have been pushed to project server")
     logger.info("All tasks done. Pipeline has now been completed")
-    # logger_file_handler.close()
-    # s3_resource = boto3.resource("s3")
-    # bucket = s3_resource.Bucket("churnobyl")
-    # log_files = logs_dir.glob("*.log")
-    # for file in log_files:
-    #     bucket.upload_file(file, f"train_logs/{file.name}")
     return None
 
 
@@ -448,7 +418,6 @@ def main_workflow(config_path: Path) -> None:
         VIZ_DIR,
         MODEL_DIR,
         ARTIFACT_DIR,
-        LOGS_DIR,
     ) = setup_pipeline(config=config)
     logger = get_run_logger()
     logger.info("Setting up directories and logging")
@@ -465,15 +434,7 @@ def main_workflow(config_path: Path) -> None:
         artifact_dir=ARTIFACT_DIR,
     )
     logger.info("Data transformers have been applied")
-    (
-        results,
-        study,
-        best_model,
-        best_params,
-        best_metric,
-        best_path_,
-        best_type_,
-    ) = get_best_model(
+    model_engined_output = model_engine(
         config=config,
         X_train=X_to_train,
         X_test=X_to_test,
@@ -484,22 +445,19 @@ def main_workflow(config_path: Path) -> None:
     logger.info("Best model has been acquired")
     _ = vizard(
         df=df,
-        results=results,
-        study=study,
-        model=best_model,
+        results=model_engined_output.results,
+        study=model_engined_output.tuner.studies[0],
+        model=model_engined_output.tuner.best_models[0],
         X_train=X_to_train,
         viz_dir=VIZ_DIR,
     )
     logger.info("Visualizations have been drawn")
     _ = push_artifacts(
-        best_type_=best_type_,
-        best_metric=best_metric,
-        best_path_=best_path_,
+        best_type_=model_engined_output.tuner.names[0],
+        best_metric=model_engined_output.tuner.best_metrics[0],
+        best_path_=model_engined_output.paths[0],
         artifact_dir=ARTIFACT_DIR,
         viz_dir=VIZ_DIR,
-        logs_dir=LOGS_DIR,
-        # logger=logger,
-        # logger_file_handler=file_handler,
     )
 
 
@@ -508,7 +466,7 @@ if __name__ == "__main__":
         Path.cwd().stem == "churninator"
     ), "Run code from 'churninator', not from `churnobyl`"
     parser = argparse.ArgumentParser(
-        prog="Churnzilla-69420",
+        prog="Churnobyl-69420",
         description="For config file only",
     )
     parser.add_argument("--config", default="./churnobyl/conf/config.yaml")
