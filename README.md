@@ -51,6 +51,7 @@ Any help is always welcomed. The project is open-sourced. The key features that 
 - For setting up configuration variables right now, `.yaml` seems the way to go. Some other ways like using a `.env` file can also be a method that can be benefiticial for setting up AWS credentials locally.
 - Uploading `.log` files can become a conflict when there are multiple developers
 - DEV notes are still needed to be added for future MLEs
+- Model training doesn't support `StackingClassifier`
 
 ### S3 directory structure
 
@@ -82,6 +83,7 @@ churnobyl/
 - [x] Modify hyparams to be taken from yaml rather getting hardcoded from the program. This is a much awaited feature
 - [x] Use Strategy pattern to modify data loaders using `.yaml` configuration itself
 - [ ] Incorporate newly developed data loading and model training/tuning logic engines in the code. For ref [data code](https://github.com/ishandandekar/misc/tree/main/data_loaderEngine) and [model training/tuning](https://github.com/ishandandekar/misc/tree/main/model_trainerEngine)
+- [ ] Update tests for this new integration
 - [ ] Write `exceptions.py` maybe for better error catching
 - [ ] Rename `pipeline.py` to `engine.py`? maybe
 - [ ] Write func to validate `.yaml` conf
