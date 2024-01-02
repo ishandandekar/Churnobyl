@@ -82,7 +82,11 @@ churnobyl/
 - [x] Modify code in a way that even params for the models are taken from the `.yaml` itself. UPDATE THE CODE!, see [code](https://github.com/ishandandekar/misc/blob/main/model_trainerEngine/main.py)
 - [x] Modify hyparams to be taken from yaml rather getting hardcoded from the program. This is a much awaited feature
 - [x] Use Strategy pattern to modify data loaders using `.yaml` configuration itself
-- [ ] Incorporate newly developed data loading and model training/tuning logic engines in the code. For ref [data code](https://github.com/ishandandekar/misc/tree/main/data_loaderEngine) and [model training/tuning](https://github.com/ishandandekar/misc/tree/main/model_trainerEngine)
+- [x] Incorporate newly developed data loading and model training/tuning logic engines in the code. For ref [data code](https://github.com/ishandandekar/misc/tree/main/data_loaderEngine) and [model training/tuning](https://github.com/ishandandekar/misc/tree/main/model_trainerEngine)
+- [ ] Migrate data loading to `polars` rather than pandas. [code](https://github.com/ishandandekar/misc/blob/main/polars_dataloader/load.py)
+- [ ] Check if polars and pandera are compatible for data validation. [code](https://github.com/ishandandekar/misc/blob/main/polars_dataloader/load.py)
+- [ ] Write DataEngine in `churnobyl/data.py`. Use `ColumnTransformer` within transform function. [code](https://github.com/ishandandekar/misc/blob/main/col_transformer_engine/main.py)
+- [ ] Split training and tuning into two new functions
 - [ ] Update tests for this new integration
 - [ ] Write `exceptions.py` maybe for better error catching
 - [ ] Rename `pipeline.py` to `engine.py`? maybe
