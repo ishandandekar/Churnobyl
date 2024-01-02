@@ -3,15 +3,15 @@ This file contains functions and class to run modelling experiments,
 tune the hyperparameters and use shap values
 """
 
-from pathlib import Path
 import typing as t
 from dataclasses import dataclass
-from box import Box, BoxList
+from pathlib import Path
+
 import optuna
 import pandas as pd
 import xgboost as xgb
-from sklearn import ensemble, metrics, dummy, neighbors, linear_model, tree, svm, base
-from tqdm.auto import tqdm
+from box import Box, BoxList
+from sklearn import base, dummy, ensemble, linear_model, metrics, neighbors, svm, tree
 
 # DEV: Add models with names as key-value pair
 ModelFactory: t.Dict[str, t.Union[xgb.XGBClassifier, base.BaseEstimator]] = {
@@ -37,6 +37,7 @@ class TunerOutput:
     best_parameters: list[dict]
     best_metrics: list[float]
     names: list[str]
+
 
 @dataclass
 class ModelEngineOutput:
@@ -167,7 +168,19 @@ class LearnLab:
             best_parameters.append(best_params)
             best_metrics.append(best_metric)
             names.append(model_name)
-        sorted_studies, sorted_best_models, sorted_best_parameters, sorted_best_metrics, sorted_names = zip(*sorted(zip(studies, best_metrics, best_parameters, best_metrics, names), key=lambda x: x[3], reverse=True)))
+        (
+            sorted_studies,
+            sorted_best_models,
+            sorted_best_parameters,
+            sorted_best_metrics,
+            sorted_names,
+        ) = zip(
+            *sorted(
+                zip(studies, best_metrics, best_parameters, best_metrics, names),
+                key=lambda x: x[3],
+                reverse=True,
+            )
+        )
         return TunerOutput(
             studies=sorted_studies,
             best_models=sorted_best_models,

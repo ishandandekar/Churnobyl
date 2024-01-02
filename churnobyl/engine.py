@@ -7,23 +7,22 @@ import argparse
 import random
 import typing as t
 from pathlib import Path
+
 import cloudpickle as cpickle
 import numpy as np
+import numpy.typing as npt
 import optuna
 import pandas as pd
 import pandera as pa
 import wandb
 import yaml
 from box import Box
-from prefect import flow, task, artifacts, get_run_logger
-from sklearn import (
-    model_selection,
-    preprocessing,
-)
-import numpy.typing as npt
+from prefect import artifacts, flow, get_run_logger, task
+from sklearn import model_selection, preprocessing
+
 from data import TRAINING_SCHEMA, DataLoaderStrategyFactory
-from visualize import Vizard
 from model import LearnLab, ModelEngineOutput
+from visualize import Vizard
 
 
 def _custom_combiner(feature, category):
@@ -65,7 +64,7 @@ def set_config(config_path: Path) -> Box:
 )
 def setup_pipeline(
     config: Box,
-) -> t.Tuple[Path, Path, Path, Path, Path, Path,]:
+) -> t.Tuple[Path, Path, Path, Path,]:
     """
     Creates directories and sets random seed for reproducibility
 
@@ -375,22 +374,22 @@ def push_artifacts(
 
     with wandb.init(project="churnobyl", job_type="pipeline") as run:
         model_artifact = wandb.Artifact("churnobyl-clf", type="model")
-        model_artifact.add_file(best_path_)
+        model_artifact.add_file(str(best_path_))
         run.log_artifact(model_artifact)
         preprocessors_artifact = wandb.Artifact(
             "churnobyl-ohe-oe-stand", type="preprocessors"
         )
-        preprocessors_artifact.add_dir(artifact_dir)
+        preprocessors_artifact.add_dir(str(artifact_dir))
         run.log_artifact(preprocessors_artifact)
         plots_artifact = wandb.Artifact("plots", type="visualizations")
-        plots_artifact.add_dir(viz_dir)
+        plots_artifact.add_dir(str(viz_dir))
         run.log_artifact(plots_artifact)
 
     markdown_artifact = f"""
     ### Model saved: {best_model_name}
     ### Model performance: {best_metric}
     """
-    artifacts.create_markdown_artifact(
+    _ = artifacts.create_markdown_artifact(
         key="model-report",
         markdown=markdown_artifact,
         description="Model summary report",

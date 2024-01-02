@@ -2,15 +2,16 @@
 Contains functions to make plots and visualizations
 """
 from pathlib import Path
+
 import matplotlib.pyplot as plt
 import numpy as np
 import optuna
 import pandas as pd
-import shap
 from plotly import express as px
 from plotly import graph_objs as go
 
 plt.switch_backend("agg")
+plt.ioff()
 
 
 class Vizard:
