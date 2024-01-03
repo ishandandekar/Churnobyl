@@ -2,7 +2,6 @@
 SEED: 42
 
 PATH:
-  data: data
   viz: figures
   model: models
 
@@ -11,55 +10,36 @@ data:
     strategy: dir
     args:
       dir: data
-      columns:
-        - customerID
-        - gender
-        - SeniorCitizen
-        - Partner
-        - Dependents
-        - tenure
-        - PhoneService
-        - MultipleLines
-        - InternetService
-        - OnlineSecurity
-        - OnlineBackup
-        - DeviceProtection
-        - TechSupport
-        - StreamingTV
-        - Contract
-        - PaperlessBilling
-        - PaymentMethod
-        - MonthlyCharges
-        - TotalCharges
-        - Churn
   split:
     ratio: 0.1
     stratify: True
-  train_test_split: 0.1
-  NUM_COLS:
-    - tenure
-    - MonthlyCharges
-    - TotalCharges
-  CAT_COLS_OHE:
-    - PaymentMethod
-    - Contract
-    - InternetService
-  CAT_COLS_OE:
-    - OnlineSecurity
-    - MultipleLines
-    - Dependents
-    - DeviceProtection
-    - StreamingTV
-    - OnlineBackup
-    - gender
-    - SeniorCitizen
-    - PhoneService
-    - Partner
-    - PaperlessBilling
-    - StreamingMovies
-    - TechSupport
+  transform:
+    scale:
+      - tenure
+      - MonthlyCharges
+      - TotalCharges
 
-model:
+    dummy:
+      - PaymentMethod
+      - Contract
+      - InternetService
+
+    ordinal:
+      - OnlineSecurity
+      - MultipleLines
+      - Dependents
+      - DeviceProtection
+      - StreamingTV
+      - OnlineBackup
+      - gender
+      - SeniorCitizen
+      - PhoneService
+      - Partner
+      - PaperlessBilling
+      - StreamingMovies
+      - TechSupport
+
+  model:
   train:
     models:
       - lr:
