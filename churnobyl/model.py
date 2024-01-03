@@ -124,6 +124,7 @@ class LearnLab:
                 pl.col("test_recall"),
                 pl.col("test_fscore"),
             )
+            .sort("test_fscore", descending=True)
             .collect()
         )
 
