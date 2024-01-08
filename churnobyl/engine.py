@@ -4,45 +4,18 @@ This file has a whole range of functions that represent tasks in a MLOps retrain
 """
 
 import argparse
-import random
 import typing as t
 from pathlib import Path
 
-import numpy as np
-import optuna
 import polars as pl
 import wandb
-import yaml
 from box import Box
 from prefect import artifacts, flow, get_run_logger, task
 
 from data import DataEngine, TransformerOutput
 from model import LearnLab, TunerOutput
+from utils import Pilot
 from visualize import Vizard
-
-
-@task(
-    name="load_config",
-    description="Function to load configuration settings from `.yaml` file",
-)
-def set_config(config_path: Path) -> Box:
-    """
-    Sets up configuration variables for pipeline using `.yaml` file
-
-    Args:
-        config_path (Path): Path for the `.yaml` file
-
-    Raises:
-        Exception: If the `.yaml` file is not present at `arg: config_path`
-
-    Returns:
-        Munch: object for better config variable calling
-    """
-    if config_path.exists():
-        with open(config_path, "r") as stream:
-            return Box(yaml.safe_load(stream=stream))
-    else:
-        raise Exception("Path error occured. File does not exist")
 
 
 @task(
@@ -50,34 +23,18 @@ def set_config(config_path: Path) -> Box:
     description="Setup directories and logging for the pipeline experiment",
 )
 def setup_pipeline(
-    config: Box,
-) -> t.Tuple[Path, Path, Path, Path,]:
+    config_filepath: str,
+) -> t.Tuple[Box, Path, Path, Path, Path,]:
     """
     Creates directories and sets random seed for reproducibility
 
     Args:
-        config (Munch): Configuraton variable mapping
+        config_filepath (str): Configuraton yaml path
 
     Returns:
         t.Tuple[Path, Path, Path, Path, Path, Path,]: Paths for all the directories
     """
-    ROOT_DIR: Path = Path.cwd()
-    VIZ_DIR: Path = ROOT_DIR / config.PATH.viz
-    MODEL_DIR: Path = ROOT_DIR / config.PATH.model
-    ARTIFACT_DIR: Path = ROOT_DIR / config.PATH.model / "artifacts"
-
-    VIZ_DIR.mkdir(parents=True, exist_ok=True)
-    MODEL_DIR.mkdir(parents=True, exist_ok=True)
-    ARTIFACT_DIR.mkdir(parents=True, exist_ok=True)
-
-    random.seed(config.SEED)
-    np.random.seed(config.SEED)
-    return (
-        ROOT_DIR,
-        VIZ_DIR,
-        MODEL_DIR,
-        ARTIFACT_DIR,
-    )
+    return Pilot.setup(filepath=config_filepath)
 
 
 @task(
@@ -104,6 +61,7 @@ def data_loader(config: Box) -> pl.DataFrame:
     return DataEngine.load(config.data.load)
 
 
+@task(name="data_validator", description="Validate data to fit the schema")
 def data_validator(data) -> pl.DataFrame:
     return DataEngine.validate(data)
 
@@ -113,7 +71,8 @@ def data_validator(data) -> pl.DataFrame:
     description="Split data into training and test sets",
 )
 def data_splits(
-    config: Box, data: pl.DataFrame
+    config: Box,
+    data: pl.DataFrame,
 ) -> t.Tuple[pl.DataFrame, pl.DataFrame, pl.DataFrame, pl.DataFrame]:
     """
     Splits the data into train and test sets
@@ -125,7 +84,7 @@ def data_splits(
     Returns:
         Training features, test features, train labels, test labels
     """
-    return DataEngine.split(config.data.split, data=data)
+    return DataEngine.split(config.data.split, data=data, seed=config.SEED)
 
 
 @task(
@@ -176,10 +135,9 @@ def tune_models(
     name="make_plots_and_viz",
     description="Create visualizations for model explainability and data analysis",
 )
-def vizard(
+def visualize_insights(
     df: pl.DataFrame,
-    results: pl.DataFrame,
-    study: optuna.Study,
+    tuner: TunerOutput,
     viz_dir: Path,
 ) -> None:
     """
@@ -187,32 +145,13 @@ def vizard(
 
     Args:
         df (pd.DataFrame): Data for this pipeline
-        results (pd.DataFrame): Training results
-        study (optuna.Study): Results of hyper-parameter tuning
         viz_dir (Path): Directories to store all these visualizations
     """
-    target_dist_path = viz_dir / "target_dist.png"
-    contract_dist_path = viz_dir / "contract_dist.png"
-    payment_dist_path = viz_dir / "payment_dist.png"
-    isp_gender_churn_dist_path = viz_dir / "isp_gender_churn_dist.png"
-    partner_churn_dist_path = viz_dir / "partner_churn_dist.png"
-    Vizard.plot_data_insights(
-        df=df,
-        target_dist_path=target_dist_path,
-        contract_dist_path=contract_dist_path,
-        payment_dist_path=payment_dist_path,
-        isp_gender_churn_dist_path=isp_gender_churn_dist_path,
-        partner_churn_dist_path=partner_churn_dist_path,
-    )
-    performance_metrics_path = viz_dir / "performance_metrics.png"
-    Vizard.plot_performance_metrics(results=results, path=performance_metrics_path)
-    param_importance_path = viz_dir / "param_importance.png"
-    parallel_coordinate_path = viz_dir / "parallel_coordinate.png"
-    Vizard.plot_optuna(
-        study=study,
-        param_importance_path=param_importance_path,
-        parallel_coordinate_path=parallel_coordinate_path,
-    )
+
+    Vizard.plot_target_dist(df=df, directory=viz_dir)
+    Vizard.plot_cust_info(df=df, viz_dir=viz_dir)
+    Vizard.plot_num_dist(df=df, viz_dir=viz_dir)
+    Vizard.plot_optuna(tuner.studies[0])
     return None
 
 
@@ -265,25 +204,25 @@ def push_artifacts(
     name="Churnobyl_retraining_pipeline_workflow",
     description="Pipeline for automated ml workflow",
 )
-def main_workflow(config_path: Path) -> None:
+def workflow(config_path: str) -> None:
     """
     Entire pipeline, uses native Python logging
 
     Args:
         config_path (Path): Path for config file
     """
-    config = set_config(config_path=config_path)
     (
+        config,
         ROOT_DIR,
         VIZ_DIR,
         MODEL_DIR,
         ARTIFACT_DIR,
-    ) = setup_pipeline(config=config)
+    ) = setup_pipeline(config_filepath=config_path)
     logger = get_run_logger()
     logger.info("Setting up directories and logging")
     df = data_loader(config=config)
     logger.info("Data has been loaded")
-    X_train, X_test, y_train, y_test = data_splits(config=config, df=df)
+    X_train, X_test, y_train, y_test = data_splits(config=config, data=df)
     logger.info("Data splits have been made")
     transformed_ds = data_transformer(
         config=config,
@@ -296,23 +235,20 @@ def main_workflow(config_path: Path) -> None:
     logger.info("Data transformers have been applied")
 
     results = train_models(config=config, transformed_ds=transformed_ds)
-    tuned = tune_models(
+    tuner = tune_models(
         config=config, transformed_ds=transformed_ds, model_dir=MODEL_DIR
     )
     logger.info("Best model has been acquired")
-    _ = vizard(
+    _ = visualize_insights(
         df=df,
-        results=results,
-        study=tuned.studies[0],
-        model=tuned.best_models[0],
-        X_train=transformed_ds.X_train,
+        tuned=tuner,
         viz_dir=VIZ_DIR,
     )
     logger.info("Visualizations have been drawn")
     _ = push_artifacts(
-        best_type_=tuned.names[0],
-        best_metric=tuned.best_metrics[0],
-        best_path_=tuned.best_paths[0],
+        best_type_=tuner.names[0],
+        best_metric=tuner.best_metrics[0],
+        best_path_=tuner.best_paths[0],
         artifact_dir=ARTIFACT_DIR,
         viz_dir=VIZ_DIR,
     )
@@ -328,5 +264,4 @@ if __name__ == "__main__":
     )
     parser.add_argument("--config", default="./churnobyl/conf/config.yaml")
     args = parser.parse_args()
-    config_path = Path(args.config)
-    main_workflow(config_path=config_path)
+    workflow(config_path=args.config)
