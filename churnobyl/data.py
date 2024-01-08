@@ -329,21 +329,19 @@ class DirDataLoaderStrategy(BaseDataLoaderStrategy):
         if self.dir.is_dir():
 
             def _read(path) -> pl.DataFrame:
-                return (
-                    pl.scan_csv(path, dtypes={"TotalCharges": pl.String})
-                    .with_columns(
-                        pl.col("TotalCharges")
-                        .str.replace(pattern=" ", value="0")
-                        .alias("TotalCharges")
-                    )
-                    .collect()
+                return pl.scan_csv(
+                    path, dtypes={"TotalCharges": pl.String}
+                ).with_columns(
+                    pl.col("TotalCharges")
+                    .str.replace(pattern=" ", value="0")
+                    .alias("TotalCharges")
                 )
 
             paths = list(self.dir.glob("*.csv"))
             if len(paths) == 0:
                 raise Exception(f"No `.csv` present in the directory {dir}")
 
-            return pl.concat(list(map(_read, paths)), how="vertical")
+            return pl.concat(list(map(_read, paths)), how="vertical").concat()
         else:
             raise Exception("Path provided is not a directory")
 
