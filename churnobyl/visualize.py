@@ -1,193 +1,96 @@
 """
 Contains functions to make plots and visualizations
 """
+import warnings
 from pathlib import Path
 
 import matplotlib.pyplot as plt
-import numpy as np
 import optuna
-import pandas as pd
-from plotly import express as px
-from plotly import graph_objs as go
+import polars as pl
+import seaborn as sns
 
+warnings.simplefilter("ignore")
 plt.switch_backend("agg")
 plt.ioff()
 
 
 class Vizard:
-    # DEV: Add plots for data analysis here
+    # DEV: Add `optuna.visualizations` as per need
     @staticmethod
-    def plot_data_insights(
-        df: pd.DataFrame,
-        target_dist_path: Path,
-        contract_dist_path: Path,
-        payment_dist_path: Path,
-        isp_gender_churn_dist_path: Path,
-        partner_churn_dist_path: Path,
+    def plot_optuna_study(
+        study: optuna.Study,
+        viz_dir: Path,
     ) -> None:
-        """
-        Creates plots and visualizations based on data for analysis
+        _ = optuna.visualization.plot_param_importances(study).write_image(
+            viz_dir / "param_importance.png"
+        )
+        return None
 
-        Args:
-            df (pd.DataFrame): Data (should contain both train and test set)
-            target_dist_path (Path): Path for target distribution plot
-            contract_dist_path (Path): Path for `contract` column plot
-            payment_dist_path (Path): Path for `payment_method` column plot
-            isp_gender_churn_dist_path (Path): Path for internet service and gender plot
-            partner_churn_dist_path (Path): Path for partner w.r.t. churn plot
-
-        Raises:
-            Exception: when paths given are not for `.png` file
-        """
-        for path in [
-            target_dist_path,
-            contract_dist_path,
-            payment_dist_path,
-            isp_gender_churn_dist_path,
-            partner_churn_dist_path,
-        ]:
-            if not str(path).endswith(".png"):
-                raise Exception(f"{path} should be a path to `.png`")
-
-        # Target distribution
+    @staticmethod
+    def plot_target_dist(df: pl.DataFrame, directory: Path) -> None:
         fig = plt.figure(figsize=(10, 6))
         ax = fig.add_subplot(111)
-        churn_response = df["Churn"].value_counts(normalize=True)
-        churn_response.plot(kind="bar", ax=ax, color=["#101820", "#FEE715"])
+        churn_response = (
+            df.select(pl.col("Churn"))
+            .to_series()
+            .value_counts(sort=True, parallel=True)
+        )
+        ax.bar(
+            x=churn_response.select("Churn").to_numpy().squeeze(),
+            height=churn_response.select("count").to_numpy().squeeze(),
+            color=["#FDB0C0", "#4A0100"],
+        )
+
         ax.set_title(
             "Proportion of observations of the response variable",
             fontsize=17,
-            loc="left",
+            loc="center",
         )
         ax.set_xlabel("churn", fontsize=14)
         ax.set_ylabel("proportion of observations", fontsize=13)
         ax.tick_params(rotation="auto")
-        plt.savefig(target_dist_path, format="png")
-        plt.close()
-
-        fig = px.histogram(
-            df,
-            x="Churn",
-            color="Contract",
-            barmode="group",
-            title="<b>Customer contract distribution<b>",
-        )
-        fig.update_layout(width=700, height=500, bargap=0.2)
-        fig.write_image(contract_dist_path)
-
-        labels = df["PaymentMethod"].unique()
-        values = df["PaymentMethod"].value_counts()
-
-        fig = go.Figure(data=[go.Pie(labels=labels, values=values, hole=0.3)])
-        fig.update_layout(title_text="<b>Payment Method Distribution</b>")
-        fig.write_image(payment_dist_path)
-
-        fig = go.Figure()
-
-        fig.add_trace(
-            go.Bar(
-                x=[
-                    ["Churn:No", "Churn:No", "Churn:Yes", "Churn:Yes"],
-                    ["Female", "Male", "Female", "Male"],
-                ],
-                y=[965, 992, 219, 240],
-                name="DSL",
-            )
-        )
-
-        fig.add_trace(
-            go.Bar(
-                x=[
-                    ["Churn:No", "Churn:No", "Churn:Yes", "Churn:Yes"],
-                    ["Female", "Male", "Female", "Male"],
-                ],
-                y=[889, 910, 664, 633],
-                name="Fiber optic",
-            )
-        )
-
-        fig.add_trace(
-            go.Bar(
-                x=[
-                    ["Churn:No", "Churn:No", "Churn:Yes", "Churn:Yes"],
-                    ["Female", "Male", "Female", "Male"],
-                ],
-                y=[690, 717, 56, 57],
-                name="No Internet",
-            )
-        )
-
-        fig.update_layout(
-            title_text="<b>Churn Distribution w.r.t. Internet Service and Gender</b>"
-        )
-
-        fig.write_image(isp_gender_churn_dist_path)
-
-        color_map = {"Yes": "#FFA15A", "No": "#00CC96"}
-        fig = px.histogram(
-            df,
-            x="Churn",
-            color="Partner",
-            barmode="group",
-            title="<b>Chrun distribution w.r.t. Partners</b>",
-            color_discrete_map=color_map,
-        )
-        fig.update_layout(width=700, height=500, bargap=0.1)
-        fig.write_image(partner_churn_dist_path)
-        return None
-
-    @staticmethod
-    def plot_performance_metrics(results: pd.DataFrame, path: Path) -> None:
-        """
-        Creates plot for performance of ML models
-
-        Args:
-            results (pd.DataFrame): DataFrame with metric results for ML models
-            path (Path): Path to save the plot
-
-        Raises:
-            Exception: when `arg:path` is not for a `.png` file
-        """
-        if not str(path).endswith(".png"):
-            raise Exception(f"{path} should be a path to `.png`")
-        plt.figure(figsize=(10, 6))
-        results.plot.barh(xlim=(0, 1), alpha=0.9)
-        plt.ylabel("Models")
-        plt.xlabel("Metrics")
-        plt.title("Model Performance")
-        plt.savefig(path, format="png")
+        plt.savefig(directory / "target_dist.png", format="png")
         plt.close()
         return None
 
-    # DEV: Add `optuna.visualizations` as per need
     @staticmethod
-    def plot_optuna(
-        study: optuna.Study, param_importance_path: Path, parallel_coordinate_path: Path
-    ) -> None:
-        if not str(param_importance_path).endswith(".png"):
-            raise Exception(f"{param_importance_path} should be a path to `.png`")
-        if not str(parallel_coordinate_path).endswith(".png"):
-            raise Exception(f"{parallel_coordinate_path} should be a path to `.png`")
-        param_importances: go.Figure = optuna.visualization.plot_param_importances(
-            study
-        )
-        param_importances.write_image(param_importance_path)
-
-        parallel_coordinate: go.Figure = optuna.visualization.plot_parallel_coordinate(
-            study
-        )
-        parallel_coordinate.write_image(parallel_coordinate_path)
+    def plot_cust_info(df: pl.DataFrame, viz_dir: Path) -> None:
+        colors = ["#E94B3C", "#2D2926"]
+        l1 = ["gender", "SeniorCitizen", "Partner", "Dependents"]
+        _ = plt.subplots(nrows=2, ncols=2, figsize=(12, 10))
+        for i in range(len(l1)):
+            plt.subplot(2, 2, i + 1)
+            ax = sns.countplot(
+                x=l1[i],
+                data=df.to_pandas(),
+                hue="Churn",
+                palette=colors,
+                edgecolor="black",
+            )
+            for rect in ax.patches:
+                ax.text(
+                    rect.get_x() + rect.get_width() / 2,
+                    rect.get_height() + 2,
+                    rect.get_height(),
+                    horizontalalignment="center",
+                    fontsize=11,
+                )
+            title = l1[i].capitalize() + " vs Churn"
+            plt.title(title)
+        plt.suptitle("Customer information")
+        plt.savefig(viz_dir / "cust_info.png", format="png")
+        plt.close()
         return None
 
-    # DEV: Add shap plots as per need here
-    # @staticmethod
-    # def plot_shap(model, X_train: pd.DataFrame, path: Path) -> None:
-    #     if not str(path).endswith(".png"):
-    #         raise Exception(f"{path} should be a path to `.png`")
-    #     explainer = shap.Explainer(model, X_train)
-    #     shap_values = explainer.shap_values(np.array(X_train), check_additivity=False)
-    #     shap.plots.bar(shap_values, show=False)
-    #     fig = plt.gcf()
-    #     fig.savefig(path, bbox_inches="tight", dpi=300)
-    #     plt.close(fig)
-    #     return None
+    @staticmethod
+    def plot_num_dist(df: pl.DataFrame, viz_dir: Path) -> None:
+        num_features = ["tenure", "MonthlyCharges", "TotalCharges"]
+        _, _ = plt.subplots(nrows=1, ncols=3, figsize=(11, 5))
+        for i in range(len(num_features)):
+            plt.subplot(1, 3, i + 1)
+        sns.distplot(df[num_features[i]], color="#778da9")
+        title = "Distribution : " + num_features[i]
+        plt.title(title)
+        plt.savefig(viz_dir / "num_cols_dist.png", format="png")
+        plt.close()
+        return None
