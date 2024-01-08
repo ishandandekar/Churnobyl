@@ -2,7 +2,7 @@
 This file contains functions and class to run modelling experiments,
 tune the hyperparameters and use shap values
 """
-
+import functools as F
 import typing as t
 from dataclasses import dataclass
 from pathlib import Path
@@ -11,7 +11,7 @@ import cloudpickle as cpickle
 import optuna
 import polars as pl
 import xgboost as xgb
-from box import Box, BoxList
+from box import Box
 from sklearn import base, dummy, ensemble, linear_model, metrics, neighbors, svm, tree
 
 from data import TransformerOutput
@@ -41,6 +41,16 @@ class TunerOutput:
     best_metrics: list[float]
     names: list[str]
     best_paths: list[Path]
+
+
+def _get_metrics(data, model, y_true):
+    preds = model.predict(data)
+    return (
+        metrics.accuracy_score(y_true=y_true, y_pred=preds),
+        metrics.precision_score(y_true=y_true, y_pred=preds),
+        metrics.recall_score(y_true=y_true, y_pred=preds),
+        metrics.f1_score(y_true=y_true, y_pred=preds),
+    )
 
 
 class LearnLab:
@@ -73,24 +83,13 @@ class LearnLab:
             model = ModelFactory.get(model_name)
             model = model(**model_params)
             model.fit(X_train, y_train)
-            train_predictions = model.predict(X_train)
-            test_predictions = model.predict(X_test)
-            train_accuracy = metrics.accuracy_score(
-                y_true=y_train, y_pred=train_predictions
+            get_metrics = F.partial(_get_metrics, model=model)
+            train_accuracy, train_precision, train_recall, train_fscore = get_metrics(
+                data=X_train, y_true=y_train
             )
-            train_precision = metrics.precision_score(
-                y_true=y_train, y_pred=train_predictions
+            test_accuracy, test_precision, test_recall, test_fscore = get_metrics(
+                data=X_test, y_true=y_test
             )
-            train_recall = metrics.recall_score(
-                y_true=y_train, y_pred=train_predictions
-            )
-            train_fscore = metrics.f1_score(y_true=y_train, y_pred=train_predictions)
-            test_accuracy = metrics.accuracy_score(y_test, test_predictions)
-            test_precision = metrics.precision_score(
-                y_true=y_test, y_pred=test_predictions
-            )
-            test_recall = metrics.recall_score(y_true=y_test, y_pred=test_predictions)
-            test_fscore = metrics.f1_score(y_true=y_test, y_pred=test_predictions)
             results[model_name] = (
                 train_accuracy,
                 train_precision,
@@ -147,7 +146,7 @@ class LearnLab:
             transformed_ds.y_train,
             transformed_ds.y_test,
         )
-        models: BoxList = config.get("models").to_list()
+        models: list = config.get("models").to_list()
         for model_param_item in models:
             model_name, model_params = (
                 list(model_param_item.keys())[0],
