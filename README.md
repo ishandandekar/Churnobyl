@@ -79,18 +79,11 @@ churnobyl/
 - [ ] https://www.youtube.com/watch?v=XEZ7Hx2NrO8 & https://stackoverflow.com/questions/62664183/mlflow-find-model-version-with-best-metric-using-python-code
 - [x] https://aws.amazon.com/blogs/compute/deploying-machine-learning-models-with-serverless-templates/ DOES NOT WORK FFS
 - [ ] Try another way to package model so that one program downloads the best transformer and predictor and another script just with inference/prediction function this then gets packged into a Docker image.
-- [x] Modify code in a way that even params for the models are taken from the `.yaml` itself. UPDATE THE CODE!, see [code](https://github.com/ishandandekar/misc/blob/main/model_trainerEngine/main.py)
-- [x] Modify hyparams to be taken from yaml rather getting hardcoded from the program. This is a much awaited feature
-- [x] Use Strategy pattern to modify data loaders using `.yaml` configuration itself
-- [x] Incorporate newly developed data loading and model training/tuning logic engines in the code. For ref [data code](https://github.com/ishandandekar/misc/tree/main/data_loaderEngine) and [model training/tuning](https://github.com/ishandandekar/misc/tree/main/model_trainerEngine)
-- [x] Migrate data loading to `polars` rather than pandas. [code](https://github.com/ishandandekar/misc/blob/main/polars_dataloader/load.py)
-- [x] Check if polars and pandera are compatible for data validation. [code](https://github.com/ishandandekar/misc/blob/main/polars_dataloader/load.py)
 - [x] Write DataEngine in `churnobyl/data.py`. Use `ColumnTransformer` within transform function. [code](https://github.com/ishandandekar/misc/blob/main/col_transformer_engine/main.py)
+- [ ] Update documentation for code
 - [ ] Rewrite `vizard.py` for new polars integration
-- [x] Split training and tuning into two new functions
 - [ ] Update tests for this new integration
 - [ ] Write `exceptions.py` maybe for better error catching
-- [x] Rename `pipeline.py` to `engine.py`? maybe
 - [ ] Write func to validate `.yaml` conf
 - [ ] Another idea is to setup a new separate repository for flagged data and monitoring, this could make things easier for api deployment as well as maintenence.
 - [ ] Refer the [prototype](./temp/predict_prototype.py) for the API
