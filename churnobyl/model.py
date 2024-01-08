@@ -7,13 +7,13 @@ import typing as t
 from dataclasses import dataclass
 from pathlib import Path
 
+import cloudpickle as cpickle
 import optuna
-import pandas as pd
 import polars as pl
 import xgboost as xgb
 from box import Box, BoxList
 from sklearn import base, dummy, ensemble, linear_model, metrics, neighbors, svm, tree
-import cloudpickle as cpickle
+
 from data import TransformerOutput
 
 # DEV: Add models with names as key-value pair
@@ -75,7 +75,9 @@ class LearnLab:
             model.fit(X_train, y_train)
             train_predictions = model.predict(X_train)
             test_predictions = model.predict(X_test)
-            train_accuracy = metrics.accuracy_score
+            train_accuracy = metrics.accuracy_score(
+                y_true=y_train, y_pred=train_predictions
+            )
             train_precision = metrics.precision_score(
                 y_true=y_train, y_pred=train_predictions
             )
@@ -100,8 +102,7 @@ class LearnLab:
                 test_fscore,
             )
         return (
-            pl.LazyFrame(results)
-            .collect()
+            pl.DataFrame(results)
             .transpose()
             .lazy()
             .with_columns(
