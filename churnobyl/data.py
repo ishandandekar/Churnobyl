@@ -8,15 +8,15 @@ from io import StringIO
 from pathlib import Path
 
 import boto3
-from box import Box
+import cloudpickle as cpickle
 import numpy as np
 import pandera as pa
 import polars as pl
 import requests
-from sklearn.model_selection import train_test_split
-import cloudpickle as cpickle
-from sklearn import preprocessing, compose
+from box import Box
 from scipy.sparse import spmatrix
+from sklearn import compose, preprocessing
+from sklearn.model_selection import train_test_split
 
 checks: t.Dict[str, t.List[pa.Check]] = {
     "customerID": [],
@@ -450,6 +450,7 @@ class DataEngine:
     def split(
         config: Box,
         data: pl.DataFrame,
+        seed: int,
     ) -> t.Tuple[pl.DataFrame, pl.DataFrame, pl.DataFrame, pl.DataFrame]:
         X, y = data.drop("Churn"), data.select("Churn")
         if config.stratify:
@@ -457,7 +458,7 @@ class DataEngine:
                 X,
                 y,
                 test_size=config.ratio,
-                random_state=config.SEED,
+                random_state=seed,
                 stratify=y,
             )
         else:
@@ -465,7 +466,7 @@ class DataEngine:
                 X,
                 y,
                 test_size=config.ratio,
-                random_state=config.SEED,
+                random_state=seed,
             )
 
         return X_train, X_test, y_train, y_test
@@ -500,7 +501,7 @@ class DataEngine:
         ):
             path: Path = artifact_dir / path_
             with open(str(path), "wb") as f_out:
-                cpickle.dumps(preprocessor, f_out)
+                cpickle.dump(preprocessor, f_out)
 
         for path, preprocessor in zip(preprocessor_paths, preprocessors):
             _save_to_pickle(path, preprocessor)
