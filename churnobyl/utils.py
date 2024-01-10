@@ -16,9 +16,9 @@ class Pilot:
             with open(filepath, "r") as f_in:
                 config = Box(yaml.safe_load(stream=f_in))
             ROOT_DIR = Path.cwd()
-            VIZ_DIR: Path = ROOT_DIR / config.PATH.viz
-            MODEL_DIR: Path = ROOT_DIR / config.PATH.model
-            ARTIFACT_DIR: Path = ROOT_DIR / config.PATH.model / "artifacts"
+            VIZ_DIR: Path = ROOT_DIR / config.path.viz
+            MODEL_DIR: Path = ROOT_DIR / config.path.model
+            ARTIFACT_DIR: Path = ROOT_DIR / config.path.model / "artifacts"
 
             VIZ_DIR.mkdir(parents=True, exist_ok=True)
             MODEL_DIR.mkdir(parents=True, exist_ok=True)
