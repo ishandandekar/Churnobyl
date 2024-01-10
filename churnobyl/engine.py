@@ -222,9 +222,9 @@ def workflow(config_path: str) -> None:
     ) = setup_pipeline(config_filepath=config_path)
     logger = get_run_logger()
     logger.info("Setting up directories and logging")
-    df = data_loader(config=config)
+    data = data_loader(config=config)
     logger.info("Data has been loaded")
-    X_train, X_test, y_train, y_test = data_splits(config=config, data=df)
+    X_train, X_test, y_train, y_test = data_splits(config=config, data=data)
     logger.info("Data splits have been made")
     transformed_ds = data_transformer(
         config=config,
@@ -243,12 +243,12 @@ def workflow(config_path: str) -> None:
     logger.info("Best model has been acquired")
     _ = visualize_insights(
         config=config,
-        df=df,
+        data=data,
         results=results,
         tuner=tuner,
         viz_dir=VIZ_DIR,
     )
-    # logger.info("Visualizations have been drawn")
+    logger.info("Visualizations have been drawn")
     # _ = push_artifacts(
     #     best_type_=tuner.names[0],
     #     best_metric=tuner.best_metrics[0],
