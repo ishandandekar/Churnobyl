@@ -4,7 +4,6 @@ This script contains all the data utility functions.
 import typing as t
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from io import StringIO
 from pathlib import Path
 
 import boto3
@@ -12,7 +11,6 @@ import cloudpickle as cpickle
 import numpy as np
 import pandera as pa
 import polars as pl
-import requests
 from box import Box
 from scipy.sparse import spmatrix
 from sklearn import compose, preprocessing
@@ -347,24 +345,6 @@ class DirDataLoaderStrategy(BaseDataLoaderStrategy):
 
 
 @dataclass
-class UrlDataLoaderStrategy(BaseDataLoaderStrategy):
-    url: str
-
-    def __call__(self) -> pl.DataFrame:
-        if not self.url.endswith(".csv"):
-            raise Exception(f"The url is not of a `.csv`: {self.url}")
-        response = requests.get(self.url)
-        response.raise_for_status()
-        content = StringIO(response.text)
-
-        return pl.read_csv(content, dtypes={"TotalCharges": pl.String}).with_columns(
-            pl.col("TotalCharges")
-            .str.replace(pattern=" ", value="0")
-            .alias("TotalCharges")
-        )
-
-
-@dataclass
 class AwsS3DataLoaderStrategy(BaseDataLoaderStrategy):
     bucket_name: str
     folder_path: str
@@ -410,7 +390,6 @@ class AwsS3DataLoaderStrategy(BaseDataLoaderStrategy):
 
 DataLoaderStrategyFactory: t.Dict[str, t.Type[BaseDataLoaderStrategy]] = {
     "dir": DirDataLoaderStrategy,
-    "url": UrlDataLoaderStrategy,
     "aws_s3": AwsS3DataLoaderStrategy,
 }
 
