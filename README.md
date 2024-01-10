@@ -80,7 +80,8 @@ churnobyl/
 - [ ] Update documentation for code
 - [x] Rewrite `vizard.py` for new polars integration
 - [x] Fix inconsistent variable for `data` and `df`
-- [x] Incorporate `multiprocessing` for training and tuning.
+- [x] Incorporate `multiprocessing` for training
+- [ ] Incorporate `multiprocessing` for tuning
 - [ ] Update tests for this new integration
 - [ ] Write `exceptions.py` maybe for better error catching
 - [ ] Write func to validate `.yaml` conf
