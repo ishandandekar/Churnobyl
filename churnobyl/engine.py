@@ -8,14 +8,14 @@ import typing as t
 from pathlib import Path
 
 import polars as pl
-import wandb
 from box import Box
-from prefect import artifacts, flow, get_run_logger, task
-
-from data import DataEngine, TransformerOutput
 from model import LearnLab, TunerOutput
+from prefect import artifacts, flow, get_run_logger, task
 from utils import Pilot
 from visualize import Vizard
+
+import wandb
+from data import DataEngine, TransformerOutput
 
 
 @task(
@@ -248,7 +248,7 @@ def workflow(config_path: str) -> None:
         tuner=tuner,
         viz_dir=VIZ_DIR,
     )
-    logger.info("Visualizations have been drawn")
+    # logger.info("Visualizations have been drawn")
     # _ = push_artifacts(
     #     best_type_=tuner.names[0],
     #     best_metric=tuner.best_metrics[0],
