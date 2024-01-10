@@ -1,7 +1,7 @@
 # DEV: Add conf variables
 SEED: 42
 
-PATH:
+path:
   viz: figures
   model: models
 
@@ -18,12 +18,10 @@ data:
       - tenure
       - MonthlyCharges
       - TotalCharges
-
     dummy:
       - PaymentMethod
       - Contract
       - InternetService
-
     ordinal:
       - OnlineSecurity
       - MultipleLines
