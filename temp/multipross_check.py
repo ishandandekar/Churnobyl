@@ -2,6 +2,16 @@ import time
 from multiprocess import Pool
 
 
+def two_outs(args):
+    return "a", "b"
+
+
+with Pool() as p:
+    l1, l2 = zip(*p.map(two_outs, range(3)))
+print(l1, l2)
+exit()
+
+
 def f(args):
     def task(x):
         return x * x * x * x * x * x * x * x * x + 1_000_000
