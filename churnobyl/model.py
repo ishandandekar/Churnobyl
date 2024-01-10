@@ -12,8 +12,7 @@ import optuna
 import polars as pl
 import xgboost as xgb
 from box import Box
-from sklearn import (base, dummy, ensemble, linear_model, metrics, neighbors,
-                     svm, tree)
+from sklearn import base, dummy, ensemble, linear_model, metrics, neighbors, svm, tree
 
 from data import TransformerOutput
 
@@ -100,6 +99,7 @@ class LearnLab:
                 test_precision,
                 test_recall,
                 test_fscore,
+                model_name,
             )
         return (
             pl.DataFrame(results)
@@ -114,6 +114,7 @@ class LearnLab:
                 pl.col("column_5").alias("test_precision"),
                 pl.col("column_6").alias("test_recall"),
                 pl.col("column_7").alias("test_fscore"),
+                pl.col("column_8").alias("model"),
             )
             .select(
                 pl.col("train_accuracy"),
@@ -124,6 +125,7 @@ class LearnLab:
                 pl.col("test_precision"),
                 pl.col("test_recall"),
                 pl.col("test_fscore"),
+                pl.col("model"),
             )
             .sort("test_fscore", descending=True)
             .collect()
@@ -181,7 +183,7 @@ class LearnLab:
             )
             best_metric = study.best_value
 
-            path_ = model_dir / model_name
+            path_ = model_dir / f"{model_name}.pkl"
             with open(path_, "wb") as f_out:
                 cpickle.dump(best_model, f_out)
             studies.append(study)
