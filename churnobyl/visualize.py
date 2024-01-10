@@ -97,6 +97,7 @@ class Vizard:
         plt.close()
         return None
 
+    # FIXME
     @staticmethod
     def plot_training_results(config: Box, results: pl.DataFrame, viz_dir: Path):
         arr_labels = results.columns
