@@ -1,12 +1,12 @@
 name: Tests
 on:
-  schedule:
-    - cron: "0 0 2 * *"
+  # schedule:
+  #   - cron: "0 0 2 * *"
   workflow_dispatch:
-  push:
-    paths:
-      - tests/**
-      - churnobyl/**
+  # push:
+  #   paths:
+  #     - tests/**
+  #     - churnobyl/**
   pull_request:
     types: [review_requested]
 
