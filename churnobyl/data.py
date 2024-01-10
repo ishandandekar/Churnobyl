@@ -341,7 +341,7 @@ class DirDataLoaderStrategy(BaseDataLoaderStrategy):
             if len(paths) == 0:
                 raise Exception(f"No `.csv` present in the directory {dir}")
 
-            return pl.concat(list(map(_read, paths)), how="vertical").concat()
+            return pl.concat(list(map(_read, paths)), how="vertical").collect()
         else:
             raise Exception("Path provided is not a directory")
 
