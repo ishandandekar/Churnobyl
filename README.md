@@ -79,6 +79,7 @@ churnobyl/
 - [ ] Add visualization to plot training results
 - [ ] Update documentation for code
 - [ ] Rewrite `vizard.py` for new polars integration
+- [ ] Fix inconsistent variable for `data` and `df`
 - [ ] Incorporate `multiprocessing` for training and tuning.
 - [ ] Update tests for this new integration
 - [ ] Write `exceptions.py` maybe for better error catching
