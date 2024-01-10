@@ -78,9 +78,9 @@ churnobyl/
 - [ ] Try another way to package model so that one program downloads the best transformer and predictor and another script just with inference/prediction function this then gets packged into a Docker image.
 - [ ] Add visualization to plot training results
 - [ ] Update documentation for code
-- [ ] Rewrite `vizard.py` for new polars integration
-- [ ] Fix inconsistent variable for `data` and `df`
-- [ ] Incorporate `multiprocessing` for training and tuning.
+- [x] Rewrite `vizard.py` for new polars integration
+- [x] Fix inconsistent variable for `data` and `df`
+- [x] Incorporate `multiprocessing` for training and tuning.
 - [ ] Update tests for this new integration
 - [ ] Write `exceptions.py` maybe for better error catching
 - [ ] Write func to validate `.yaml` conf
@@ -93,6 +93,7 @@ churnobyl/
 
 ### Refs:
 
+- https://stackoverflow.com/questions/19555525/saving-plots-axessubplot-generated-from-python-pandas-with-matplotlibs-savefi
 - https://github.com/ricardo-vaca/serverless-fastapi
 - https://www.ravirajag.dev/blog/mlops-monitoring
 - https://www.deadbear.io/simple-serverless-fastapi-with-aws-lambda/
