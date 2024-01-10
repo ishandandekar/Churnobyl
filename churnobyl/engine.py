@@ -136,7 +136,9 @@ def tune_models(
     description="Create visualizations for model explainability and data analysis",
 )
 def visualize_insights(
-    df: pl.DataFrame,
+    config: Box,
+    data: pl.DataFrame,
+    results: pl.DataFrame,
     tuner: TunerOutput,
     viz_dir: Path,
 ) -> None:
@@ -148,10 +150,10 @@ def visualize_insights(
         viz_dir (Path): Directories to store all these visualizations
     """
 
-    Vizard.plot_target_dist(df=df, directory=viz_dir)
-    Vizard.plot_cust_info(df=df, viz_dir=viz_dir)
-    Vizard.plot_num_dist(df=df, viz_dir=viz_dir)
-    Vizard.plot_optuna(tuner.studies[0])
+    Vizard.plot_target_dist(data=data, directory=viz_dir)
+    Vizard.plot_cust_info(data=data, viz_dir=viz_dir)
+    Vizard.plot_num_dist(data=data, viz_dir=viz_dir)
+    # Vizard.plot_training_results(config=config, results=results, viz_dir=viz_dir)
     return None
 
 
@@ -240,18 +242,20 @@ def workflow(config_path: str) -> None:
     )
     logger.info("Best model has been acquired")
     _ = visualize_insights(
+        config=config,
         df=df,
-        tuned=tuner,
+        results=results,
+        tuner=tuner,
         viz_dir=VIZ_DIR,
     )
     logger.info("Visualizations have been drawn")
-    _ = push_artifacts(
-        best_type_=tuner.names[0],
-        best_metric=tuner.best_metrics[0],
-        best_path_=tuner.best_paths[0],
-        artifact_dir=ARTIFACT_DIR,
-        viz_dir=VIZ_DIR,
-    )
+    # _ = push_artifacts(
+    #     best_type_=tuner.names[0],
+    #     best_metric=tuner.best_metrics[0],
+    #     best_path_=tuner.best_paths[0],
+    #     artifact_dir=ARTIFACT_DIR,
+    #     viz_dir=VIZ_DIR,
+    # )
 
 
 if __name__ == "__main__":
