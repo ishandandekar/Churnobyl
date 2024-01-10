@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import cloudpickle as cpickle
+import multiprocess as mp
 import optuna
 import polars as pl
 import xgboost as xgb
@@ -43,16 +44,6 @@ class TunerOutput:
     best_paths: list[Path]
 
 
-def _get_metrics(data, model, y_true):
-    preds = model.predict(data)
-    return (
-        metrics.accuracy_score(y_true=y_true, y_pred=preds),
-        metrics.precision_score(y_true=y_true, y_pred=preds),
-        metrics.recall_score(y_true=y_true, y_pred=preds),
-        metrics.f1_score(y_true=y_true, y_pred=preds),
-    )
-
-
 class LearnLab:
     @staticmethod
     def train_experiments(
@@ -64,11 +55,21 @@ class LearnLab:
             transformed_ds.y_train,
             transformed_ds.y_test,
         )
-        results: t.Dict[
-            str, t.Tuple[float, float, float, float, float, float, float, float]
-        ] = dict()
-        for idx in config.models:
-            model_name, model_params = list(idx.keys())[0], list(idx.values())[0].params
+
+        def _get_metrics(model, features, labels):
+            preds = model.predict(features)
+            return (
+                metrics.accuracy_score(y_true=labels, y_pred=preds),
+                metrics.precision_score(y_true=labels, y_pred=preds),
+                metrics.recall_score(y_true=labels, y_pred=preds),
+                metrics.f1_score(y_true=labels, y_pred=preds),
+            )
+
+        def _trainer(model_item):
+            model_name, model_params = (
+                list(model_item.keys())[0],
+                list(model_item.values())[0].params,
+            )
             if model_name == "voting":
                 estimators_list = list()
                 for estimator in model_params.estimators:
@@ -85,64 +86,31 @@ class LearnLab:
             model.fit(X_train, y_train)
             get_metrics = F.partial(_get_metrics, model=model)
             train_accuracy, train_precision, train_recall, train_fscore = get_metrics(
-                data=X_train, y_true=y_train
+                features=X_train, labels=y_train
             )
             test_accuracy, test_precision, test_recall, test_fscore = get_metrics(
-                data=X_test, y_true=y_test
+                features=X_test, labels=y_test
             )
-            results[model_name] = (
-                train_accuracy,
-                train_precision,
-                train_recall,
-                train_fscore,
-                test_accuracy,
-                test_precision,
-                test_recall,
-                test_fscore,
-                model_name,
-            )
-        return (
-            pl.DataFrame(results)
-            .transpose()
-            .lazy()
-            .with_columns(
-                pl.col("column_0").alias("train_accuracy"),
-                pl.col("column_1").alias("train_precision"),
-                pl.col("column_2").alias("train_recall"),
-                pl.col("column_3").alias("train_fscore"),
-                pl.col("column_4").alias("test_accuracy"),
-                pl.col("column_5").alias("test_precision"),
-                pl.col("column_6").alias("test_recall"),
-                pl.col("column_7").alias("test_fscore"),
-                pl.col("column_8").alias("model"),
-            )
-            .select(
-                pl.col("train_accuracy"),
-                pl.col("train_precision"),
-                pl.col("train_recall"),
-                pl.col("train_fscore"),
-                pl.col("test_accuracy"),
-                pl.col("test_precision"),
-                pl.col("test_recall"),
-                pl.col("test_fscore"),
-                pl.col("model"),
-            )
-            .sort("test_fscore", descending=True)
-            .collect()
-        )
+            return {
+                "train_accuracy": train_accuracy,
+                "train_precision": train_precision,
+                "train_recall": train_recall,
+                "train_fscore": train_fscore,
+                "test_accuracy": test_accuracy,
+                "test_precision": test_precision,
+                "test_recall": test_recall,
+                "test_fscore": test_fscore,
+                "model": model_name,
+            }
+
+        with mp.Pool() as pool:
+            results: t.List[t.Dict[str, float]] = pool.map(_trainer, config.models)
+        return pl.from_dicts(results)
 
     @staticmethod
     def tune_models(
         config: Box, transformed_ds: t.Type[TransformerOutput], model_dir: Path
     ) -> TunerOutput:
-        studies, best_models, best_parameters, best_metrics, names, best_paths = (
-            list(),
-            list(),
-            list(),
-            list(),
-            list(),
-            list(),
-        )
         X_train, X_test, y_train, y_test = (
             transformed_ds.X_train,
             transformed_ds.X_test,
@@ -150,7 +118,9 @@ class LearnLab:
             transformed_ds.y_test,
         )
         models: list = config.get("models").to_list()
-        for model_param_item in models:
+        optuna.logging.set_verbosity(optuna.logging.WARNING)
+
+        def _tuner(model_param_item):
             model_name, model_params = (
                 list(model_param_item.keys())[0],
                 list(model_param_item.values())[0].get("params"),
@@ -172,9 +142,8 @@ class LearnLab:
                 model = model(**params)
                 model.fit(X_train, y_train)
                 preds = model.predict(X_test)
-                return (metrics.f1_score(y_test, preds),)
+                return metrics.f1_score(y_test, preds)
 
-            optuna.logging.set_verbosity(optuna.logging.WARNING)
             study = optuna.create_study(direction="maximize")
             study.optimize(objective, n_trials=config.get("n_trials"))
             best_params = study.best_params
@@ -182,16 +151,21 @@ class LearnLab:
                 X_train, y_train
             )
             best_metric = study.best_value
-
             path_ = model_dir / f"{model_name}.pkl"
             with open(path_, "wb") as f_out:
                 cpickle.dump(best_model, f_out)
-            studies.append(study)
-            best_models.append(best_model)
-            best_parameters.append(best_params)
-            best_metrics.append(best_metric)
-            names.append(model_name)
-            best_paths.append(path_)
+            return study, best_model, best_params, best_metric, model_name, path_
+
+        with mp.Pool() as pool:
+            (
+                studies,
+                best_models,
+                best_parameters,
+                best_metrics,
+                names,
+                best_paths,
+            ) = zip(*pool.map(_tuner, models))
+
         (
             sorted_studies,
             sorted_best_models,
@@ -203,7 +177,7 @@ class LearnLab:
             *sorted(
                 zip(
                     studies,
-                    best_metrics,
+                    best_models,
                     best_parameters,
                     best_metrics,
                     names,
