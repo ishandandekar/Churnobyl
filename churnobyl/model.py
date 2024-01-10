@@ -121,9 +121,10 @@ class LearnLab:
         optuna.logging.set_verbosity(optuna.logging.WARNING)
 
         def _tuner(model_param_item):
-            model_name, model_params = (
+            model_name, model_params, n_trials = (
                 list(model_param_item.keys())[0],
                 list(model_param_item.values())[0].get("params"),
+                list(model_param_item.values())[0].get("n_trials"),
             )
 
             def objective(trial: optuna.Trial):
@@ -145,7 +146,7 @@ class LearnLab:
                 return metrics.f1_score(y_test, preds)
 
             study = optuna.create_study(direction="maximize")
-            study.optimize(objective, n_trials=config.get("n_trials"))
+            study.optimize(objective, n_trials=n_trials)
             best_params = study.best_params
             best_model = ModelFactory.get(model_name)(**best_params).fit(
                 X_train, y_train
