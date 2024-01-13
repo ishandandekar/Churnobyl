@@ -39,8 +39,6 @@ Any help is always welcomed. The project is open-sourced. The key features that 
 
 ### Issues:
 
-- Have commented out the SHAP plots, it raises an error when RandomForest is the best one
-- Suddenly, since 2 3 runs RandomForest is now the best model, dont know how this changed.
 - Wandb cant seem to log preprocessors, still have to figure this out
   > Did some experimentation, `wandb` is only logging the new preprocessors, only if I delete the previous versions, idk what other fix there is. But this'll have to do right now. I'll have to figure out the `encoder_oe` stuff before I tackle this.
 - There is no code for imputing values in pipeline. **This has been set aside temporalily**
@@ -76,7 +74,7 @@ churnobyl/
 - [ ] https://www.youtube.com/watch?v=XEZ7Hx2NrO8 & https://stackoverflow.com/questions/62664183/mlflow-find-model-version-with-best-metric-using-python-code
 - [x] https://aws.amazon.com/blogs/compute/deploying-machine-learning-models-with-serverless-templates/ DOES NOT WORK FFS
 - [ ] Try another way to package model so that one program downloads the best transformer and predictor and another script just with inference/prediction function this then gets packged into a Docker image.
-- [ ] Add visualization to plot training results
+- [x] Add visualization to plot training results
 - [x] Add `models.tune.n_trials` argument specific to models params
 - [ ] Update documentation for code
 - [x] Rewrite `vizard.py` for new polars integration
@@ -84,7 +82,7 @@ churnobyl/
 - [x] Incorporate `multiprocessing` for training
 - [x] Incorporate `multiprocessing` for tuning
 - [ ] Update tests for this new integration
-- [ ] Write `exceptions.py` maybe for better error catching
+- [x] Write `exceptions.py` maybe for better error catching
 - [ ] Write func to validate `.yaml` conf
 - [ ] Another idea is to setup a new separate repository for flagged data and monitoring, this could make things easier for api deployment as well as maintenence.
 - [ ] Refer the [prototype](./temp/predict_prototype.py) for the API
@@ -95,6 +93,8 @@ churnobyl/
 
 ### Refs:
 
+- Pulumi seems like a great automation tool to "up" the infra, would have to look into ECS first, but lets see. Very hopeful about this
+- https://www.youtube.com/watch?app=desktop&v=ZaTVXLuCXQ8
 - https://stackoverflow.com/questions/19555525/saving-plots-axessubplot-generated-from-python-pandas-with-matplotlibs-savefi
 - https://github.com/ricardo-vaca/serverless-fastapi
 - https://www.ravirajag.dev/blog/mlops-monitoring
