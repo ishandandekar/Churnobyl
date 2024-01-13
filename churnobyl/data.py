@@ -394,7 +394,7 @@ DataLoaderStrategyFactory: t.Dict[str, t.Type[BaseDataLoaderStrategy]] = {
 }
 
 
-@dataclass
+@dataclass(frozen=True)
 class TransformerOutput:
     X_train: t.Union[np.ndarray, spmatrix]
     X_test: t.Union[np.ndarray, spmatrix]
