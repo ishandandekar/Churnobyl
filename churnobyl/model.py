@@ -34,7 +34,7 @@ ModelFactory: t.Dict[str, t.Union[xgb.XGBClassifier, base.BaseEstimator]] = {
 }
 
 
-@dataclass
+@dataclass(frozen=True)
 class TunerOutput:
     studies: list[optuna.study.Study]
     best_models: list[t.Union[base.BaseEstimator, xgb.XGBClassifier]]
@@ -42,6 +42,9 @@ class TunerOutput:
     best_metrics: list[float]
     names: list[str]
     best_paths: list[Path]
+
+    def __post_init__(self):
+        self.table = pl.DataFrame({"models": self.names, "metrics": self.best_metrics})
 
 
 class LearnLab:
