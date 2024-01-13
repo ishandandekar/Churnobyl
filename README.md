@@ -103,6 +103,9 @@ churnobyl/
 
 ---
 
+- https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#adding-a-job-summary
+- https://github.blog/2022-05-09-supercharging-github-actions-with-job-summaries/
+- https://cml.dev/doc/usage
 - https://docs.aws.amazon.com/AmazonECR/latest/userguide/image-push.html
 
 - https://medium.com/akava/deploying-containerized-aws-lambda-functions-with-terraform-7147b9815599
