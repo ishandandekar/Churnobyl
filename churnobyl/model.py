@@ -13,7 +13,8 @@ import optuna
 import polars as pl
 import xgboost as xgb
 from box import Box
-from sklearn import base, dummy, ensemble, linear_model, metrics, neighbors, svm, tree
+from sklearn import (base, dummy, ensemble, linear_model, metrics, neighbors,
+                     svm, tree)
 
 from data import TransformerOutput
 
