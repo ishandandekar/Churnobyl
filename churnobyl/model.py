@@ -13,8 +13,7 @@ import optuna
 import polars as pl
 import xgboost as xgb
 from box import Box
-from sklearn import (base, dummy, ensemble, linear_model, metrics, neighbors,
-                     svm, tree)
+from sklearn import base, dummy, ensemble, linear_model, metrics, neighbors, svm, tree
 
 from data import TransformerOutput
 
@@ -200,3 +199,7 @@ class LearnLab:
             names=sorted_names,
             best_paths=sorted_paths,
         )
+
+
+def validate_model_config(config) -> None:
+    pass
