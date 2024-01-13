@@ -135,28 +135,28 @@ def tune_models(
     name="make_plots_and_viz",
     description="Create visualizations for model explainability and data analysis",
 )
-def visualize_insights(
-    config: Box,
-    data: pl.DataFrame,
-    results: pl.DataFrame,
-    tuner: TunerOutput,
-    viz_dir: Path,
-) -> None:
+def visualize_insights(**kwargs) -> None:
     """
     Creates plots and visualizations for data analysis, results of training and hyper-parameter tuning
-
-    Args:
-        df (pd.DataFrame): Data for this pipeline
-        viz_dir (Path): Directories to store all these visualizations
     """
-
-    Vizard.plot_target_dist(data=data, directory=viz_dir)
-    Vizard.plot_cust_info(data=data, viz_dir=viz_dir)
-    Vizard.plot_num_dist(data=data, viz_dir=viz_dir)
-    # Vizard.plot_training_results(config=config, results=results, viz_dir=viz_dir)
+    if kwargs.get("data") and kwargs.get("viz_dir"):
+        Vizard.plot_target_dist(data=kwargs.get("data"), viz_dir=kwargs.get("viz_dir"))
+    if kwargs.get("data") and kwargs.get("viz_dir"):
+        Vizard.plot_cust_info(data=kwargs.get("data"), viz_dir=kwargs.get("viz_dir"))
+    if kwargs.get("data") and kwargs.get("viz_dir"):
+        Vizard.plot_num_dist(data=kwargs.get("data"), viz_dir=kwargs.get("viz_dir"))
+    if kwargs.get("results") and kwargs.get("viz_dir"):
+        Vizard.plot_training_results(
+            results=kwargs.get("results"), viz_dir=kwargs.get("viz_dir")
+        )
+    if kwargs.get("tuner") and kwargs.get("viz_dir"):
+        Vizard.plot_optuna_study(
+            study=kwargs.get("tuner").studies[0], viz_dir=kwargs.get("viz_dir")
+        )
     return None
 
 
+# FIXME
 @task(
     name="push_artifacts",
     description="Push artifacts to W&B server and Prefect server",
@@ -242,7 +242,6 @@ def workflow(config_path: str) -> None:
     )
     logger.info("Best model has been acquired")
     _ = visualize_insights(
-        config=config,
         data=data,
         results=results,
         tuner=tuner,
