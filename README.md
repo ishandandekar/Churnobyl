@@ -75,12 +75,8 @@ churnobyl/
 - [x] https://aws.amazon.com/blogs/compute/deploying-machine-learning-models-with-serverless-templates/ DOES NOT WORK FFS
 - [ ] Try another way to package model so that one program downloads the best transformer and predictor and another script just with inference/prediction function this then gets packged into a Docker image.
 - [x] Add visualization to plot training results
-- [x] Add `models.tune.n_trials` argument specific to models params
 - [ ] Update documentation for code
-- [x] Rewrite `vizard.py` for new polars integration
-- [x] Fix inconsistent variable for `data` and `df`
-- [x] Incorporate `multiprocessing` for training
-- [x] Incorporate `multiprocessing` for tuning
+- [x] Incorporate `**kwargs` for **func** `engine.vizualize_insights` to shortcut optional args everytime
 - [ ] Update tests for this new integration
 - [x] Write `exceptions.py` maybe for better error catching
 - [ ] Write func to validate `.yaml` conf
