@@ -16,6 +16,8 @@ from scipy.sparse import spmatrix
 from sklearn import compose, preprocessing
 from sklearn.model_selection import train_test_split
 
+from exceptions import ConfigValidationError
+
 checks: t.Dict[str, t.List[pa.Check]] = {
     "customerID": [],
     "gender": [pa.Check.isin(["Male", "Female"])],
@@ -488,3 +490,63 @@ class DataEngine:
             label_transformer.transform(y_train.to_pandas()),
             label_transformer.transform(y_test.to_pandas()),
         )
+
+
+def validate_data_config(config: Box):
+    data_config = config.data
+
+    # Validating base data args
+    data_stages = ["load", "split", "transform"]
+    for stage in data_config.to_dict().keys():
+        if stage not in data_stages:
+            raise ConfigValidationError(
+                f"Stage '{stage}' not in DataStages{data_stages}"
+            )
+    del data_stages
+
+    # Validating load args
+    load_config = data_config.load
+    if load_config.strategy not in DataLoaderStrategyFactory.keys():
+        raise ConfigValidationError(
+            f"Strategy '{load_config.strategy}' not valid data loading strategy. Choose one of {list(DataLoaderStrategyFactory.keys())}."
+        )
+    del load_config
+
+    # Validating split args
+    split_config = data_config.split
+    split_args = ["ratio", "stratify"]
+    for arg in split_config.to_dict().keys():
+        if arg not in split_args:
+            raise ConfigValidationError(
+                f"Unknown split argument '{arg}'. Should be {split_args}"
+            )
+    if float(split_config.ratio) > 1.0:
+        raise ConfigValidationError(
+            "Split should be a ratio with float dtype. It should be between 0.0 and 1.0"
+        )
+    if not isinstance(split_config.stratify, bool):
+        raise ConfigValidationError("Stratify should either be true or false")
+    del split_config
+    del split_args
+
+    # Validating transform args
+    transform_config = data_config.transform.to_dict()
+    transform_params = ["scale", "dummy", "ordinal"]
+
+    for param in transform_config.keys():
+        if param not in transform_params:
+            raise ConfigValidationError(
+                f"{param} not present in transformation parameters {transform_params}"
+            )
+    cols = list()
+    for param in transform_params:
+        for col in transform_config.get(param):
+            cols.append(col)
+    if not (len(cols) == len(set(cols))):
+        raise ConfigValidationError(
+            "Columns should be unique within the transform parameters"
+        )
+    del transform_config
+    del transform_params
+    del param
+    del cols
