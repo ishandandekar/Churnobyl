@@ -1,16 +1,13 @@
 """
 Contains functions to make plots and visualizations
 """
-import typing as t
 import warnings
 from pathlib import Path
 
 import matplotlib.pyplot as plt
-import numpy as np
 import optuna
 import polars as pl
 import seaborn as sns
-from box import Box
 
 warnings.simplefilter("ignore")
 plt.switch_backend("agg")
@@ -29,7 +26,7 @@ class Vizard:
         return None
 
     @staticmethod
-    def plot_target_dist(data: pl.DataFrame, directory: Path) -> None:
+    def plot_target_dist(data: pl.DataFrame, viz_dir: Path) -> None:
         fig = plt.figure(figsize=(10, 6))
         ax = fig.add_subplot(111)
         churn_response = (
@@ -51,7 +48,7 @@ class Vizard:
         ax.set_xlabel("churn", fontsize=14)
         ax.set_ylabel("proportion of observations", fontsize=13)
         ax.tick_params(rotation="auto")
-        plt.savefig(directory / "target_dist.png", format="png")
+        plt.savefig(viz_dir / "target_dist.png", format="png")
         plt.close()
         return None
 
@@ -97,35 +94,15 @@ class Vizard:
         plt.close()
         return None
 
-    # FIXME
     @staticmethod
-    def plot_training_results(config: Box, results: pl.DataFrame, viz_dir: Path):
-        arr_labels = results.columns
-        results: t.Dict[str, t.List[float]] = results.transpose().to_dict(
-            as_series=False
+    def plot_training_results(results: pl.DataFrame, viz_dir: Path) -> None:
+        fig = (
+            results.to_pandas()
+            .set_index("model")
+            .plot(kind="bar", figsize=(17, 6), title="Training results")
+            .legend(bbox_to_anchor=(1.0, 1.0))
+            .get_figure()
         )
-        models_lst = [
-            list(model_item.keys())[0] for model_item in config.model.train.models
-        ]
-        values = list(results.values())
-        num_bars = len(values[0])
-
-        positions = np.arange(len(models_lst))
-        group_width = 0.4
-        width = 0.2
-        plt.figure(figsize=(22, 7))
-        for i, label in zip(range(num_bars), arr_labels):
-            plt.bar(
-                positions + i * group_width,
-                [v[i] for v in values],
-                width=width,
-                label=label,
-            )
-
-        plt.xlabel("Models")
-        plt.ylabel("Metrics")
-        plt.title("Training results")
-        plt.xticks(positions + width * (num_bars + 1) / 2, models_lst)
-        plt.legend()
-        plt.savefig(viz_dir / "training_results.png", format="png")
-        plt.close()
+        fig.tight_layout()
+        fig.savefig(viz_dir / "training_results.png", format="png")
+        return None
