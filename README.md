@@ -90,6 +90,7 @@ churnobyl/
 - Pulumi seems like a great automation tool to "up" the infra, would have to look into ECS first, but lets see. Very hopeful about this
 - https://www.youtube.com/watch?app=desktop&v=ZaTVXLuCXQ8
 - https://stackoverflow.com/questions/19555525/saving-plots-axessubplot-generated-from-python-pandas-with-matplotlibs-savefi
+- https://github.com/vb100/github-action-to-ecr/blob/main/.github/workflows/main.yml & https://www.youtube.com/watch?v=m1OFz_Y9bYo & https://www.youtube.com/watch?v=2qE4Kd1Lxmc
 - https://github.com/ricardo-vaca/serverless-fastapi
 - https://www.ravirajag.dev/blog/mlops-monitoring
 - https://www.deadbear.io/simple-serverless-fastapi-with-aws-lambda/
