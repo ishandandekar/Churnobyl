@@ -16,6 +16,7 @@ from box import Box
 from sklearn import base, dummy, ensemble, linear_model, metrics, neighbors, svm, tree
 
 from data import TransformerOutput
+from exceptions import ConfigValidationError
 
 # DEV: Add models with names as key-value pair
 ModelFactory: t.Dict[str, t.Union[xgb.XGBClassifier, base.BaseEstimator]] = {
@@ -202,4 +203,32 @@ class LearnLab:
 
 
 def validate_model_config(config) -> None:
-    pass
+    model_config = config.model
+
+    # Validate train args
+    models = model_config.train.to_dict().get("models")
+    model_list = [list(item.keys())[0] for item in models]
+    model_factory_keys = sorted(list(ModelFactory.keys()))
+    for model_name in model_list:
+        if model_name not in model_factory_keys:
+            raise ConfigValidationError(
+                f"{model_name} not available. Choose one of the specified models {model_factory_keys}"
+            )
+    del models
+    del model_list
+    del model_name
+
+    # Validate tuner args
+    tune_args = model_config.tune.to_dict()
+    tune_models = tune_args.get("models")
+    for item in tune_models:
+        k, v = list(item.keys())[0], list(item.values())[0]
+        if k not in model_factory_keys:
+            raise ConfigValidationError(
+                f"Model {k} not available. Choose one of {model_factory_keys}"
+            )
+        if not v.get("n_trials") and not isinstance(v.get("n_trials"), int):
+            raise ConfigValidationError(
+                f"Model {k} does not have a valid `n_trials` attribute. Make sure to keep it as an integer."
+            )
+    del k, v, tune_args, tune_models, item, model_factory_keys

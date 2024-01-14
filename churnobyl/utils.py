@@ -8,6 +8,7 @@ from box import Box
 from exceptions import ConfigValidationError
 
 from data import validate_data_config
+from model import validate_model_config
 
 
 class Pilot:
@@ -16,6 +17,7 @@ class Pilot:
         if not isinstance(config.get("SEED"), int):
             raise ConfigValidationError("SEED should be an integer.")
         validate_data_config(config=config)
+        validate_model_config(config=config)
 
     @staticmethod
     def setup(filepath: t.Union[str, Path]) -> t.Tuple[Box, Path, Path, Path, Path]:
