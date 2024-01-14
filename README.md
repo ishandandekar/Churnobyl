@@ -47,6 +47,7 @@ Any help is always welcomed. The project is open-sourced. The key features that 
 - For setting up configuration variables right now, `.yaml` seems the way to go. Some other ways like using a `.env` file can also be a method that can be benefiticial for setting up AWS credentials locally.
 - DEV notes are still needed to be added for future MLEs
 - Model training doesn't support `StackingClassifier`
+- Tuning `VotingClassifier` is not available yet
 
 ### S3 directory structure
 
@@ -74,12 +75,9 @@ churnobyl/
 - [ ] https://www.youtube.com/watch?v=XEZ7Hx2NrO8 & https://stackoverflow.com/questions/62664183/mlflow-find-model-version-with-best-metric-using-python-code
 - [x] https://aws.amazon.com/blogs/compute/deploying-machine-learning-models-with-serverless-templates/ DOES NOT WORK FFS
 - [ ] Try another way to package model so that one program downloads the best transformer and predictor and another script just with inference/prediction function this then gets packged into a Docker image.
-- [x] Add visualization to plot training results
 - [ ] Update documentation for code
-- [x] Incorporate `**kwargs` for **func** `engine.vizualize_insights` to shortcut optional args everytime
 - [ ] Update tests for this new integration
-- [x] Write `exceptions.py` maybe for better error catching
-- [ ] Write func to validate `.yaml` conf
+- [x] Write func to validate `.yaml` conf
 - [ ] Another idea is to setup a new separate repository for flagged data and monitoring, this could make things easier for api deployment as well as maintenence.
 - [ ] Refer the [prototype](./temp/predict_prototype.py) for the API
 - [ ] Look into EKS cluster to display monitoring
