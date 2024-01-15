@@ -141,17 +141,17 @@ def visualize_insights(**kwargs) -> None:
     """
     Creates plots and visualizations for data analysis, results of training and hyper-parameter tuning
     """
-    if kwargs.get("data") and kwargs.get("viz_dir"):
+    if kwargs.get("data") is not None and kwargs.get("viz_dir") is not None:
         Vizard.plot_target_dist(data=kwargs.get("data"), viz_dir=kwargs.get("viz_dir"))
-    if kwargs.get("data") and kwargs.get("viz_dir"):
+    if kwargs.get("data") is not None and kwargs.get("viz_dir") is not None:
         Vizard.plot_cust_info(data=kwargs.get("data"), viz_dir=kwargs.get("viz_dir"))
-    if kwargs.get("data") and kwargs.get("viz_dir"):
+    if kwargs.get("data") is not None and kwargs.get("viz_dir") is not None:
         Vizard.plot_num_dist(data=kwargs.get("data"), viz_dir=kwargs.get("viz_dir"))
-    if kwargs.get("results") and kwargs.get("viz_dir"):
+    if kwargs.get("results") is not None and kwargs.get("viz_dir") is not None:
         Vizard.plot_training_results(
             results=kwargs.get("results"), viz_dir=kwargs.get("viz_dir")
         )
-    if kwargs.get("tuner") and kwargs.get("viz_dir"):
+    if kwargs.get("tuner") is not None and kwargs.get("viz_dir") is not None:
         Vizard.plot_optuna_study(
             study=kwargs.get("tuner").studies[0], viz_dir=kwargs.get("viz_dir")
         )
