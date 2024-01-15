@@ -39,6 +39,7 @@ data:
 
 model:
   train:
+    multiprocess: False
     models:
       - lr:
           params:
@@ -71,6 +72,7 @@ model:
                     solver: liblinear
             voting: hard
   tune:
+    multiprocess: False
     models:
       - lr:
           params:
