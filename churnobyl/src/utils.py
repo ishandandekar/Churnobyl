@@ -1,6 +1,7 @@
 """
 This script includes all the helper utility functions and classes
 """
+import os
 import random
 import typing as t
 from pathlib import Path
@@ -49,6 +50,15 @@ class Pilot:
                 MODEL_DIR,
                 ARTIFACT_DIR,
             )
+
+    @staticmethod
+    def populate_env_vars(filepath: t.Union[str, Path]):
+        with open(filepath, "rb") as f_in:
+            vars = f_in.readlines()
+
+        for var in vars:
+            k, v = var.decode().strip("\n").strip(" ").split("=")
+            os.environ[k] = v
 
 
 if __name__ == "__main__":
