@@ -240,17 +240,17 @@ def workflow(config_path: str) -> None:
     logger.info("Data transformers have been applied")
 
     results = train_models(config=config, transformed_ds=transformed_ds)
-    # tuner = tune_models(
-    #     config=config, transformed_ds=transformed_ds, model_dir=MODEL_DIR
-    # )
-    # logger.info("Best model has been acquired")
-    # _ = visualize_insights(
-    #     data=data,
-    #     results=results,
-    #     tuner=tuner,
-    #     viz_dir=VIZ_DIR,
-    # )
-    # logger.info("Visualizations have been drawn")
+    tuner = tune_models(
+        config=config, transformed_ds=transformed_ds, model_dir=MODEL_DIR
+    )
+    logger.info("Best model has been acquired")
+    _ = visualize_insights(
+        data=data,
+        results=results,
+        tuner=tuner,
+        viz_dir=VIZ_DIR,
+    )
+    logger.info("Visualizations have been drawn")
     # _ = push_artifacts(
     #     best_type_=tuner.names[0],
     #     best_metric=tuner.best_metrics[0],
