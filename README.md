@@ -75,10 +75,12 @@ churnobyl/
 - [ ] https://www.youtube.com/watch?v=XEZ7Hx2NrO8 & https://stackoverflow.com/questions/62664183/mlflow-find-model-version-with-best-metric-using-python-code
 - [x] https://aws.amazon.com/blogs/compute/deploying-machine-learning-models-with-serverless-templates/ DOES NOT WORK FFS
 - [ ] Try another way to package model so that one program downloads the best transformer and predictor and another script just with inference/prediction function this then gets packged into a Docker image.
-- [ ] Update documentation for code
+- [x] Update documentation for code
 - [ ] Update tests for this new integration
 - [x] Move code to `src` directory for better management
-- [ ] Add option or flag for multiprocessing, only multiprocess when set to `True`
+- [x] Add option or flag for multiprocessing, only multiprocess when set to `True`
+- [ ] Shift all the saving to pickle files as artifacts or models to **`func`** `churnobyl.engine.push_artifact`. This is a MAYBE, will see if everything works out
+- [ ] Decouple API endpoints to two different scripts i.e. `predict` and `flag` for better maintainability
 - [ ] Another idea is to setup a new separate repository for flagged data and monitoring, this could make things easier for api deployment as well as maintenence.
 - [ ] Refer the [prototype](./temp/predict_prototype.py) for the API
 - [ ] Look into EKS cluster to display monitoring
