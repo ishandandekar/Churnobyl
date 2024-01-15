@@ -1,3 +1,6 @@
+"""
+This script includes all the helper utility functions and classes
+"""
 import random
 import typing as t
 from pathlib import Path
@@ -5,10 +8,9 @@ from pathlib import Path
 import numpy as np
 import yaml
 from box import Box
-from exceptions import ConfigValidationError
-
-from data import validate_data_config
-from model import validate_model_config
+from src.model import validate_model_config
+from src.data import validate_data_config
+from src.exceptions import ConfigValidationError
 
 
 class Pilot:
@@ -29,7 +31,7 @@ class Pilot:
 
             Pilot.__validate_config(config=config)
 
-            ROOT_DIR = Path.cwd()
+            ROOT_DIR = Path.cwd().absolute()
             VIZ_DIR: Path = ROOT_DIR / config.path.viz
             MODEL_DIR: Path = ROOT_DIR / config.path.model
             ARTIFACT_DIR: Path = ROOT_DIR / config.path.model / "artifacts"
