@@ -77,7 +77,8 @@ churnobyl/
 - [ ] Try another way to package model so that one program downloads the best transformer and predictor and another script just with inference/prediction function this then gets packged into a Docker image.
 - [ ] Update documentation for code
 - [ ] Update tests for this new integration
-- [x] Write func to validate `.yaml` conf
+- [x] Move code to `src` directory for better management
+- [ ] Add option or flag for multiprocessing, only multiprocess when set to `True`
 - [ ] Another idea is to setup a new separate repository for flagged data and monitoring, this could make things easier for api deployment as well as maintenence.
 - [ ] Refer the [prototype](./temp/predict_prototype.py) for the API
 - [ ] Look into EKS cluster to display monitoring
