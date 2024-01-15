@@ -15,8 +15,7 @@ from box import Box
 from scipy.sparse import spmatrix
 from sklearn import compose, preprocessing
 from sklearn.model_selection import train_test_split
-
-from exceptions import ConfigValidationError
+from src.exceptions import ConfigValidationError
 
 checks: t.Dict[str, t.List[pa.Check]] = {
     "customerID": [],
@@ -484,12 +483,25 @@ class DataEngine:
 
         for path, preprocessor in zip(preprocessor_paths, preprocessors):
             _save_to_pickle(path, preprocessor)
-        return TransformerOutput(
+
+        transformed_dataset = TransformerOutput(
             feature_transformer.transform(X_train.to_pandas()),
             feature_transformer.transform(X_test.to_pandas()),
             label_transformer.transform(y_train.to_pandas()),
             label_transformer.transform(y_test.to_pandas()),
         )
+        np.savez(
+            artifact_dir / "train_dataset",
+            features=transformed_dataset.X_train,
+            labels=transformed_dataset.y_train,
+        )
+        np.savez(
+            artifact_dir / "test_dataset",
+            features=transformed_dataset.X_test,
+            labels=transformed_dataset.y_test,
+        )
+
+        return transformed_dataset
 
 
 def validate_data_config(config: Box):
