@@ -17,6 +17,15 @@ from src.exceptions import ConfigValidationError
 class Pilot:
     @staticmethod
     def __validate_config(config: Box):
+        """
+        Validates configuration mapping
+
+        Args:
+            config (Box): Configuration mapping
+
+        Raises:
+            ConfigValidationError: If seed specified is not an integer
+        """
         if not isinstance(config.get("SEED"), int):
             raise ConfigValidationError("SEED should be an integer.")
         validate_data_config(config=config)
@@ -24,9 +33,22 @@ class Pilot:
 
     @staticmethod
     def setup(filepath: t.Union[str, Path]) -> t.Tuple[Box, Path, Path, Path, Path]:
+        """
+        _summary_
+
+        Args:
+            filepath (t.Union[str, Path]): Path to the `.yaml` file
+
+        Returns:
+            t.Tuple[Box, Path, Path, Path, Path]: Configuration mapping and paths to various directories
+        """
         if isinstance(filepath, str):
             filepath = Path(filepath)
-        if filepath.exists():
+        if (
+            filepath.exists()
+            and filepath.is_file()
+            and filepath.suffix in [".yaml", ".yml"]
+        ):
             with open(filepath, "r") as f_in:
                 config = Box(yaml.safe_load(stream=f_in))
 
@@ -50,9 +72,19 @@ class Pilot:
                 MODEL_DIR,
                 ARTIFACT_DIR,
             )
+        else:
+            FileNotFoundError(
+                f"Please check if {filepath} is either `.yaml` or `.yml` is present on the correct location."
+            )
 
     @staticmethod
-    def populate_env_vars(filepath: t.Union[str, Path]):
+    def populate_env_vars(filepath: t.Union[str, Path]) -> None:
+        """
+        Adds environment variables to runtime
+
+        Args:
+            filepath (t.Union[str, Path]): Path to the .env file
+        """
         with open(filepath, "rb") as f_in:
             vars = f_in.readlines()
 
@@ -60,6 +92,4 @@ class Pilot:
             k, v = var.decode().strip("\n").strip(" ").split("=")
             os.environ[k] = v
 
-
-if __name__ == "__main__":
-    tup = Pilot.setup("./churnobyl/conf/config.yaml")
+    None

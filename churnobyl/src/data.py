@@ -17,6 +17,7 @@ from sklearn import compose, preprocessing
 from sklearn.model_selection import train_test_split
 from src.exceptions import ConfigValidationError
 
+# Dictionary containing conditions for columns for validation
 checks: t.Dict[str, t.List[pa.Check]] = {
     "customerID": [],
     "gender": [pa.Check.isin(["Male", "Female"])],
@@ -52,7 +53,7 @@ checks: t.Dict[str, t.List[pa.Check]] = {
     "Churn": [pa.Check.isin(["No", "Yes"])],
 }
 
-
+# Data schema for validating and checking the new data
 DataSchema = pa.DataFrameSchema(
     columns={
         "customerID": pa.Column(
@@ -311,6 +312,10 @@ DataSchema = pa.DataFrameSchema(
 
 
 class BaseDataLoaderStrategy(ABC):
+    """
+    Base class for data loading strategies
+    """
+
     @abstractmethod
     def __call__(self) -> pl.DataFrame:
         """
@@ -320,9 +325,26 @@ class BaseDataLoaderStrategy(ABC):
 
 @dataclass
 class DirDataLoaderStrategy(BaseDataLoaderStrategy):
+    """
+    Strategy for loading `.csv` files from a directory
+
+    Args:
+        dir (t.Union[Path, str]): Directory where data files can be found
+    """
+
     dir: t.Union[Path, str]
 
     def __call__(self) -> pl.DataFrame:
+        """
+        Function to load data
+
+        Raises:
+            FileNotFoundError: When there are no `.csv` files found
+            NotADirectoryError: When arg `dir` is not a path to directory
+
+        Returns:
+            pl.DataFrame: Data from the folder as a DataFrame
+        """
         if isinstance(self.dir, str):
             self.dir = Path(self.dir)
         if self.dir.is_dir():
@@ -338,20 +360,35 @@ class DirDataLoaderStrategy(BaseDataLoaderStrategy):
 
             paths = list(self.dir.glob("*.csv"))
             if len(paths) == 0:
-                raise Exception(f"No `.csv` present in the directory {dir}")
+                raise FileNotFoundError(f"No `.csv` present in the directory {dir}")
 
             return pl.concat(list(map(_read, paths)), how="vertical").collect()
         else:
-            raise Exception("Path provided is not a directory")
+            raise NotADirectoryError(f"{self.dir.absolute()} is not a directory")
 
 
 @dataclass
 class AwsS3DataLoaderStrategy(BaseDataLoaderStrategy):
+    """
+    Strategy to load `.csv` files from AWS S3 bucket
+
+    Args:
+        bucket_name (str): Name of the bucket
+        folder_path (str): Name of the folder to pick data from
+        session (boto3.Session): Session to connect to S3 instance bucket
+    """
+
     bucket_name: str
     folder_path: str
     session: boto3.Session
 
     def __call__(self) -> pl.DataFrame:
+        """
+        Function to load data
+
+        Returns:
+            pl.DataFrame: Data from the bucket as DataFrame
+        """
         s3_client = self.session.client("s3")
         if self.folder_path == "":
             s3_url = f"s3://{self.bucket_name}"
@@ -378,7 +415,6 @@ class AwsS3DataLoaderStrategy(BaseDataLoaderStrategy):
                         .collect()
                     )
                     dataframes.append(dataframe)
-                    print(f"Loaded: {key}")
                 except Exception as e:
                     print(f"Error loading {key}: {e}")
 
@@ -389,23 +425,37 @@ class AwsS3DataLoaderStrategy(BaseDataLoaderStrategy):
         return pl.concat(dataframes, ignore_index=True)
 
 
+# Factory for all the loading strategies
 DataLoaderStrategyFactory: t.Dict[str, t.Type[BaseDataLoaderStrategy]] = {
     "dir": DirDataLoaderStrategy,
     "aws_s3": AwsS3DataLoaderStrategy,
 }
 
 
+# Output class for better annotations
 @dataclass(frozen=True)
 class TransformerOutput:
-    X_train: t.Union[np.ndarray, spmatrix]
-    X_test: t.Union[np.ndarray, spmatrix]
-    y_train: t.Union[np.ndarray, spmatrix]
-    y_test: t.Union[np.ndarray, spmatrix]
+    X_train: t.Annotated[t.Union[np.ndarray, spmatrix], "Training features"]
+    X_test: t.Annotated[t.Union[np.ndarray, spmatrix], "Test features"]
+    y_train: t.Annotated[t.Union[np.ndarray, spmatrix], "Training labels"]
+    y_test: t.Annotated[t.Union[np.ndarray, spmatrix], "Test label"]
 
 
 class DataEngine:
     @staticmethod
     def load(config: Box) -> pl.DataFrame:
+        """
+        Load data using strategy
+
+        Args:
+            config (Box): Configurations arguments for strategies
+
+        Raises:
+            Exception: Raised when there is no strategy present as specified in configuration
+
+        Returns:
+            pl.DataFrame: Data as a polars.DataFrame
+        """
         if config.strategy is not None:
             return DataLoaderStrategyFactory.get(config.strategy)(**config.args)()
         else:
@@ -413,6 +463,18 @@ class DataEngine:
 
     @staticmethod
     def validate(data: pl.DataFrame) -> pl.DataFrame:
+        """
+        Checks if data fits the appropriate conditions using a schema
+
+        Args:
+            data (pl.DataFrame): Data required to be checked
+
+        Raises:
+            Exception: When data doesn't fit the required schema
+
+        Returns:
+            pl.DataFrame: Same data if passed
+        """
         try:
             DataSchema.validate(data.to_pandas(), lazy=True)
         except pa.errors.SchemaErrors as err:
@@ -430,6 +492,17 @@ class DataEngine:
         data: pl.DataFrame,
         seed: int,
     ) -> t.Tuple[pl.DataFrame, pl.DataFrame, pl.DataFrame, pl.DataFrame]:
+        """
+        Split the data into training and test sets of features and labels pairs
+
+        Args:
+            config (Box): Configuration mapping
+            data (pl.DataFrame): Whole data needed to be split
+            seed (int): Random seed
+
+        Returns:
+            t.Tuple[pl.DataFrame, pl.DataFrame, pl.DataFrame, pl.DataFrame]: Tuple of train features, test features, train labels and test labels
+        """
         X, y = data.drop("Churn"), data.select("Churn")
         if config.stratify:
             X_train, X_test, y_train, y_test = train_test_split(
@@ -458,6 +531,20 @@ class DataEngine:
         y_test: pl.DataFrame,
         artifact_dir: Path,
     ) -> TransformerOutput:
+        """
+        Transforms training and test data using scaling and encoding methods
+
+        Args:
+            config (Box): Configuration mapping
+            X_train (pl.DataFrame): Training features
+            X_test (pl.DataFrame): Test features
+            y_train (pl.DataFrame): Training labels
+            y_test (pl.DataFrame): Test labels
+            artifact_dir (Path): Directory to store trained preprocessors
+
+        Returns:
+            TransformerOutput: Contains training and test features and labels seperately
+        """
         feature_transformer = compose.ColumnTransformer(
             transformers=[
                 ("num_scaler", preprocessing.StandardScaler(), config.scale),
@@ -481,6 +568,7 @@ class DataEngine:
             with open(str(path), "wb") as f_out:
                 cpickle.dump(preprocessor, f_out)
 
+        # Saving trained preprocessors
         for path, preprocessor in zip(preprocessor_paths, preprocessors):
             _save_to_pickle(path, preprocessor)
 
@@ -490,6 +578,8 @@ class DataEngine:
             label_transformer.transform(y_train.to_pandas()),
             label_transformer.transform(y_test.to_pandas()),
         )
+
+        # Saving transformed data into directory as an artifact
         np.savez(
             artifact_dir / "train_dataset",
             features=transformed_dataset.X_train,
@@ -504,7 +594,13 @@ class DataEngine:
         return transformed_dataset
 
 
-def validate_data_config(config: Box):
+def validate_data_config(config: Box) -> None:
+    """
+    Validates configuration mapping specific to data
+
+    Args:
+        config (Box): Configuration mapping
+    """
     data_config = config.data
 
     # Validating base data args

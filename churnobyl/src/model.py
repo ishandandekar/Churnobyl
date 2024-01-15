@@ -9,7 +9,9 @@ from pathlib import Path
 
 import cloudpickle as cpickle
 import multiprocess as mp
+import numpy as np
 import optuna
+from scipy.sparse import spmatrix
 import polars as pl
 import xgboost as xgb
 from box import Box
@@ -18,6 +20,7 @@ from src.data import TransformerOutput
 from src.exceptions import ConfigValidationError
 
 # DEV: Add models with names as key-value pair
+# Dictionary collections of supported models
 ModelFactory: t.Dict[str, t.Union[xgb.XGBClassifier, base.BaseEstimator]] = {
     "dummy": dummy.DummyClassifier,
     "knn": neighbors.KNeighborsClassifier,
@@ -34,6 +37,7 @@ ModelFactory: t.Dict[str, t.Union[xgb.XGBClassifier, base.BaseEstimator]] = {
 }
 
 
+# Class to encapsulate output of the tuning the models
 @dataclass(frozen=True)
 class TunerOutput:
     studies: list[optuna.study.Study]
@@ -44,6 +48,7 @@ class TunerOutput:
     best_paths: list[Path]
 
     def __post_init__(self):
+        # Save insights as `.csv`
         table = pl.DataFrame({"Models": self.names, "Metrics": self.best_metrics})
         dir_path = self.best_paths[0].parent
         table.write_csv(dir_path / "tuning_results.csv")
@@ -56,6 +61,16 @@ class LearnLab:
     def train_experiments(
         config: Box, transformed_ds: TransformerOutput
     ) -> pl.DataFrame:
+        """
+        Runs training experiments from a plethora of models specified
+
+        Args:
+            config (Box): Configuration mapping for training
+            transformed_ds (TransformerOutput): Contains training and test features and labels
+
+        Returns:
+            pl.DataFrame: Contains metrics and name of the model as a DataFrame
+        """
         X_train, X_test, y_train, y_test = (
             transformed_ds.X_train,
             transformed_ds.X_test,
@@ -64,8 +79,21 @@ class LearnLab:
         )
 
         def _get_metrics(
-            model, features, labels
+            model: t.Union[base.BaseEstimator, xgb.XGBClassifier],
+            features: t.Union[np.ndarray, spmatrix],
+            labels: t.Union[np.ndarray, spmatrix],
         ) -> t.Tuple[float, float, float, float]:
+            """
+            Returns accuracy, precision, recall and f1score
+
+            Args:
+                model (t.Union[base.BaseEstimator, xgb.XGBClassifier]): Model to get the metrics for
+                features (t.Union[np.ndarray, spmatrix]): Features to predict for
+                labels (t.Union[np.ndarray, spmatrix]): True labels for the features
+
+            Returns:
+                t.Tuple[float, float, float, float]: Accuracy, Precision, Recall, F1-score
+            """
             preds = model.predict(features)
             return (
                 metrics.accuracy_score(y_true=labels, y_pred=preds),
@@ -75,6 +103,12 @@ class LearnLab:
             )
 
         def _trainer(model_item) -> t.Dict[str, float]:
+            """
+            Traines over one model
+
+            Returns:
+                t.Dict[str, float]: Key-value pair of train and test metrics with the name of the model
+            """
             model_name, model_params = (
                 list(model_item.keys())[0],
                 list(model_item.values())[0].params,
@@ -112,6 +146,7 @@ class LearnLab:
                 "model": model_name,
             }
 
+        # Flag to utilize multiprocessing
         if config.multiprocess:
             with mp.Pool() as pool:
                 results: t.List[t.Dict[str, float]] = pool.map(_trainer, config.models)

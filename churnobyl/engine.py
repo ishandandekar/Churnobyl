@@ -26,12 +26,6 @@ def setup_pipeline(
 ) -> t.Tuple[Box, Path, Path, Path, Path,]:
     """
     Creates directories and sets random seed for reproducibility
-
-    Args:
-        config_filepath (str): Configuraton yaml path
-
-    Returns:
-        t.Tuple[Path, Path, Path, Path, Path, Path,]: Paths for all the directories
     """
     return Pilot.setup(filepath=config_filepath)
 
@@ -44,24 +38,16 @@ def setup_pipeline(
 )
 def data_loader(config: Box) -> pl.DataFrame:
     """
-    Loads data from functions mentioned by the developer,
-    Also validates data based on schema
-
-    Args:
-        config (Box): Configuration
-        schema (pa.DataFrameSchema): Training data schema
-
-    Raises:
-        Exception: If the data does not match the schema
-
-    Returns:
-        pd.DataFrame: concatenated data that now be split into train and test sets
+    Loads data
     """
     return DataEngine.load(config.data.load)
 
 
 @task(name="data_validator", description="Validate data to fit the schema")
 def data_validator(data) -> pl.DataFrame:
+    """
+    Validates data
+    """
     return DataEngine.validate(data)
 
 
@@ -75,13 +61,6 @@ def data_splits(
 ) -> t.Tuple[pl.DataFrame, pl.DataFrame, pl.DataFrame, pl.DataFrame]:
     """
     Splits the data into train and test sets
-
-    Args:
-        config (Munch): configuration mapping
-        df (pd.DataFrame): Data that is needed to be split
-
-    Returns:
-        Training features, test features, train labels, test labels
     """
     return DataEngine.split(config.data.split, data=data, seed=config.SEED)
 
@@ -118,6 +97,9 @@ def data_transformer(
 def train_models(
     config: Box, transformed_ds: t.Type[TransformerOutput]
 ) -> pl.DataFrame:
+    """
+    Trains models based on configuration
+    """
     return LearnLab.train_experiments(
         config=config.model.train, transformed_ds=transformed_ds
     )
@@ -130,6 +112,9 @@ def train_models(
 def tune_models(
     config: Box, transformed_ds: t.Type[TransformerOutput], model_dir: Path
 ) -> TunerOutput:
+    """
+    Tunes models based on configuration
+    """
     return LearnLab.tune_models(
         config=config.model.tune, transformed_ds=transformed_ds, model_dir=model_dir
     )

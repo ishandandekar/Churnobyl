@@ -20,6 +20,13 @@ class Vizard:
         study: optuna.Study,
         viz_dir: Path,
     ) -> None:
+        """
+        Plots parameters importance chart from a optimization study
+
+        Args:
+            study (optuna.Study): Optuna study of the best model
+            viz_dir (Path): Directory to store the plot
+        """
         _ = optuna.visualization.plot_param_importances(study).write_image(
             viz_dir / "param_importance.png"
         )
@@ -27,6 +34,13 @@ class Vizard:
 
     @staticmethod
     def plot_target_dist(data: pl.DataFrame, viz_dir: Path) -> None:
+        """
+        Plots distribution of the target variable
+
+        Args:
+            data (pl.DataFrame): Whole data
+            viz_dir (Path): Directory to store the plot to
+        """
         fig = plt.figure(figsize=(10, 6))
         ax = fig.add_subplot(111)
         churn_response = (
@@ -54,6 +68,13 @@ class Vizard:
 
     @staticmethod
     def plot_cust_info(data: pl.DataFrame, viz_dir: Path) -> None:
+        """
+        Plots customer information
+
+        Args:
+            data (pl.DataFrame): Whole data
+            viz_dir (Path): Directory to store the plot to
+        """
         colors = ["#E94B3C", "#2D2926"]
         l1 = ["gender", "SeniorCitizen", "Partner", "Dependents"]
         _ = plt.subplots(nrows=2, ncols=2, figsize=(12, 10))
@@ -83,6 +104,13 @@ class Vizard:
 
     @staticmethod
     def plot_num_dist(data: pl.DataFrame, viz_dir: Path) -> None:
+        """
+        Plots histograms for numerical features
+
+        Args:
+            data (pl.DataFrame): Whole data
+            viz_dir (Path): Directory to store the plot to
+        """
         num_features = ["tenure", "MonthlyCharges", "TotalCharges"]
         _, _ = plt.subplots(nrows=1, ncols=3, figsize=(11, 5))
         for i in range(len(num_features)):
@@ -96,6 +124,13 @@ class Vizard:
 
     @staticmethod
     def plot_training_results(results: pl.DataFrame, viz_dir: Path) -> None:
+        """
+        Plots training results using the metrics
+
+        Args:
+            results (pl.DataFrame): Training results
+            viz_dir (Path): Directory to store the plot to
+        """
         fig = (
             results.to_pandas()
             .set_index("model")
@@ -105,4 +140,5 @@ class Vizard:
         )
         fig.tight_layout()
         fig.savefig(viz_dir / "training_results.png", format="png")
+        plt.close()
         return None
