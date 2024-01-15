@@ -14,9 +14,8 @@ import polars as pl
 import xgboost as xgb
 from box import Box
 from sklearn import base, dummy, ensemble, linear_model, metrics, neighbors, svm, tree
-
-from data import TransformerOutput
-from exceptions import ConfigValidationError
+from src.data import TransformerOutput
+from src.exceptions import ConfigValidationError
 
 # DEV: Add models with names as key-value pair
 ModelFactory: t.Dict[str, t.Union[xgb.XGBClassifier, base.BaseEstimator]] = {
@@ -45,7 +44,11 @@ class TunerOutput:
     best_paths: list[Path]
 
     def __post_init__(self):
-        self.table = pl.DataFrame({"models": self.names, "metrics": self.best_metrics})
+        table = pl.DataFrame({"Models": self.names, "Metrics": self.best_metrics})
+        dir_path = self.best_paths[0].parent
+        table.write_csv(dir_path / "tuning_results.csv")
+        del dir_path
+        del table
 
 
 class LearnLab:
@@ -60,7 +63,9 @@ class LearnLab:
             transformed_ds.y_test,
         )
 
-        def _get_metrics(model, features, labels):
+        def _get_metrics(
+            model, features, labels
+        ) -> t.Tuple[float, float, float, float]:
             preds = model.predict(features)
             return (
                 metrics.accuracy_score(y_true=labels, y_pred=preds),
@@ -69,7 +74,7 @@ class LearnLab:
                 metrics.f1_score(y_true=labels, y_pred=preds),
             )
 
-        def _trainer(model_item):
+        def _trainer(model_item) -> t.Dict[str, float]:
             model_name, model_params = (
                 list(model_item.keys())[0],
                 list(model_item.values())[0].params,
@@ -107,8 +112,13 @@ class LearnLab:
                 "model": model_name,
             }
 
-        with mp.Pool() as pool:
-            results: t.List[t.Dict[str, float]] = pool.map(_trainer, config.models)
+        if config.multiprocess:
+            with mp.Pool() as pool:
+                results: t.List[t.Dict[str, float]] = pool.map(_trainer, config.models)
+        else:
+            results: t.List[t.Dict[str, float]] = list()
+            for item in config.models:
+                results.append(_trainer(item))
         return pl.from_dicts(results)
 
     @staticmethod
@@ -124,7 +134,9 @@ class LearnLab:
         models: list = config.get("models").to_list()
         optuna.logging.set_verbosity(optuna.logging.WARNING)
 
-        def _tuner(model_param_item):
+        def _tuner(
+            model_param_item,
+        ) -> t.Tuple[optuna.study.Study, t.Any, t.Dict[str, t.Any], float, str, Path]:
             model_name, model_params, n_trials = (
                 list(model_param_item.keys())[0],
                 list(model_param_item.values())[0].get("params"),
@@ -161,15 +173,40 @@ class LearnLab:
                 cpickle.dump(best_model, f_out)
             return study, best_model, best_params, best_metric, model_name, path_
 
-        with mp.Pool() as pool:
-            (
-                studies,
-                best_models,
-                best_parameters,
-                best_metrics,
-                names,
-                best_paths,
-            ) = zip(*pool.map(_tuner, models))
+        if config.multiprocess:
+            with mp.Pool() as pool:
+                (
+                    studies,
+                    best_models,
+                    best_parameters,
+                    best_metrics,
+                    names,
+                    best_paths,
+                ) = zip(*pool.map(_tuner, models))
+        else:
+            studies, best_models, best_parameters, best_metrics, names, best_paths = (
+                list(),
+                list(),
+                list(),
+                list(),
+                list(),
+                list(),
+            )
+            for model in models:
+                (
+                    study,
+                    best_model,
+                    best_parameter,
+                    best_metric,
+                    name,
+                    best_path,
+                ) = _tuner(model)
+                studies.append(study)
+                best_models.append(best_model)
+                best_parameters.append(best_parameter)
+                best_metrics.append(best_metric)
+                names.append(name)
+                best_paths.append(best_path)
 
         (
             sorted_studies,
