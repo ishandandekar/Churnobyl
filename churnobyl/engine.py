@@ -9,13 +9,12 @@ from pathlib import Path
 
 import polars as pl
 from box import Box
-from model import LearnLab, TunerOutput
 from prefect import artifacts, flow, get_run_logger, task
-from utils import Pilot
-from visualize import Vizard
-
 import wandb
-from data import DataEngine, TransformerOutput
+from src.data import DataEngine, TransformerOutput
+from src.model import LearnLab, TunerOutput
+from src.utils import Pilot
+from src.visualize import Vizard
 
 
 @task(
@@ -122,7 +121,10 @@ def train_models(config: Box, transformed_ds: TransformerOutput) -> pl.DataFrame
     )
 
 
-@task
+@task(
+    name="tune_models",
+    description="Tunes models based on params, returns a TunerObject",
+)
 def tune_models(
     config: Box, transformed_ds: t.Type[TransformerOutput], model_dir: Path
 ) -> TunerOutput:
@@ -198,7 +200,6 @@ def push_artifacts(
     )
     logger = get_run_logger()
     logger.info("Artifacts have been pushed to project server")
-    logger.info("All tasks done. Pipeline has now been completed")
     return None
 
 
@@ -221,7 +222,7 @@ def workflow(config_path: str) -> None:
         ARTIFACT_DIR,
     ) = setup_pipeline(config_filepath=config_path)
     logger = get_run_logger()
-    logger.info("Setting up directories and logging")
+    logger.info("Setup has been configured")
     data = data_loader(config=config)
     logger.info("Data has been loaded")
     X_train, X_test, y_train, y_test = data_splits(config=config, data=data)
@@ -255,6 +256,8 @@ def workflow(config_path: str) -> None:
     #     artifact_dir=ARTIFACT_DIR,
     #     viz_dir=VIZ_DIR,
     # )
+
+    logger.info("All tasks done. Pipeline has now been completed")
 
 
 if __name__ == "__main__":
