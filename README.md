@@ -73,12 +73,9 @@ churnobyl/
 - [ ] Test out how you can upload data from python to AWS S3 bucket. [link for yt video](https://www.youtube.com/watch?v=vXiZO1c5Sk0)
 - [ ] Look into [Hopsworks](https://docs.hopsworks.ai/3.4/concepts/mlops/registry/) for model registry and deployment
 - [ ] https://www.youtube.com/watch?v=XEZ7Hx2NrO8 & https://stackoverflow.com/questions/62664183/mlflow-find-model-version-with-best-metric-using-python-code
-- [x] https://aws.amazon.com/blogs/compute/deploying-machine-learning-models-with-serverless-templates/ DOES NOT WORK FFS
 - [ ] Try another way to package model so that one program downloads the best transformer and predictor and another script just with inference/prediction function this then gets packged into a Docker image.
-- [x] Update documentation for code
 - [ ] Update tests for this new integration
-- [x] Move code to `src` directory for better management
-- [x] Add option or flag for multiprocessing, only multiprocess when set to `True`
+- [ ] Rewrite **`func`** `churnobyl.engine.push_artifact` for new code. Also get the version right.
 - [ ] Shift all the saving to pickle files as artifacts or models to **`func`** `churnobyl.engine.push_artifact`. This is a MAYBE, will see if everything works out
 - [ ] Write a script in [`temp/`](./temp) to download data from Kaggle for better reproducibility
 - [ ] Decouple API endpoints to two different scripts i.e. `predict` and `flag` for better maintainability
@@ -94,6 +91,7 @@ churnobyl/
 - Pulumi seems like a great automation tool to "up" the infra, would have to look into ECS first, but lets see. Very hopeful about this
 - https://www.youtube.com/watch?app=desktop&v=ZaTVXLuCXQ8
 - https://stackoverflow.com/questions/19555525/saving-plots-axessubplot-generated-from-python-pandas-with-matplotlibs-savefi
+- https://www.youtube.com/watch?v=iqrS7Q174Ac & https://www.youtube.com/watch?v=h5wLuVDr0oc&t=397s
 - https://github.com/vb100/github-action-to-ecr/blob/main/.github/workflows/main.yml & https://www.youtube.com/watch?v=m1OFz_Y9bYo & https://www.youtube.com/watch?v=2qE4Kd1Lxmc
 - https://github.com/ricardo-vaca/serverless-fastapi
 - https://www.ravirajag.dev/blog/mlops-monitoring
