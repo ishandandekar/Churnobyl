@@ -348,6 +348,9 @@ class DirDataLoaderStrategy(BaseDataLoaderStrategy):
         if isinstance(self.dir, str):
             self.dir = Path(self.dir)
         if self.dir.is_dir():
+            paths = list(self.dir.glob("*.csv"))
+            if len(paths) == 0:
+                raise FileNotFoundError(f"No `.csv` present in the directory {dir}")
 
             def _read(path) -> pl.DataFrame:
                 return pl.scan_csv(
@@ -357,10 +360,6 @@ class DirDataLoaderStrategy(BaseDataLoaderStrategy):
                     .str.replace(pattern=" ", value="0")
                     .alias("TotalCharges")
                 )
-
-            paths = list(self.dir.glob("*.csv"))
-            if len(paths) == 0:
-                raise FileNotFoundError(f"No `.csv` present in the directory {dir}")
 
             return pl.concat(list(map(_read, paths)), how="vertical").collect()
         else:
