@@ -75,7 +75,9 @@ churnobyl/
 - [ ] https://www.youtube.com/watch?v=XEZ7Hx2NrO8 & https://stackoverflow.com/questions/62664183/mlflow-find-model-version-with-best-metric-using-python-code
 - [ ] Try another way to package model so that one program downloads the best transformer and predictor and another script just with inference/prediction function this then gets packged into a Docker image.
 - [ ] Update tests for this new integration
+- [ ] Rewrite AWS data loading strategy, code obviously breaks. Look into [code](./churnobyl/src/data.py)
 - [ ] Rewrite **`func`** `churnobyl.engine.push_artifact` for new code. Also get the version right.
+- [ ] Rewrite [./serve](./serve/), decouple applications, refactor code and remove [`serve yaml`](./serve/serve-config.yaml)
 - [ ] Shift all the saving to pickle files as artifacts or models to **`func`** `churnobyl.engine.push_artifact`. This is a MAYBE, will see if everything works out
 - [ ] Write a script in [`temp/`](./temp) to download data from Kaggle for better reproducibility
 - [ ] Decouple API endpoints to two different scripts i.e. `predict` and `flag` for better maintainability
