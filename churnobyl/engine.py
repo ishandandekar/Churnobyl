@@ -24,7 +24,13 @@ from src.visualize import Vizard
 )
 def setup_pipeline(
     config_filepath: str,
-) -> t.Tuple[Box, Path, Path, Path, Path,]:
+) -> t.Tuple[
+    Box,
+    Path,
+    Path,
+    Path,
+    Path,
+]:
     """
     Creates directories and sets random seed for reproducibility
     """
