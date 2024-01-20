@@ -373,13 +373,11 @@ class AwsS3DataLoaderStrategy(BaseDataLoaderStrategy):
 
     Args:
         bucket_name (str): Name of the bucket
-        folder_path (str): Name of the folder to pick data from
-        session (boto3.Session): Session to connect to S3 instance bucket
+        folder_prefix (str): Name of the folder to pick data from
     """
 
     bucket_name: str
-    folder_path: str
-    session: boto3.Session
+    folder_prefix: str
 
     def __call__(self) -> pl.DataFrame:
         """
@@ -388,30 +386,28 @@ class AwsS3DataLoaderStrategy(BaseDataLoaderStrategy):
         Returns:
             pl.DataFrame: Data from the bucket as DataFrame
         """
-        s3_client = self.session.client("s3")
+        client = boto3.Session().client("s3")
         if self.folder_path == "":
             s3_url = f"s3://{self.bucket_name}"
-            objects = s3_client.list_objects_v2(Bucket=self.bucket_name)
+            objects = client.list_objects_v2(Bucket=self.bucket_name)
         else:
             s3_url = f"s3://{self.bucket_name}/{self.folder_path}"
-            objects = s3_client.list_objects_v2(
+            objects = client.list_objects_v2(
                 Bucket=self.bucket_name, Prefix=self.folder_path
             )
 
-        dataframes: list = list()
+        dataframes: list[pl.LazyFrame] = list()
         for obj in objects.get("Contents", []):
             key = obj["Key"]
             if key.endswith(".csv"):
                 file_url = f"{s3_url}/{key}"
                 try:
-                    dataframe = (
-                        pl.scan_csv(file_url, dtypes={"TotalCharges": pl.String})
-                        .with_columns(
-                            pl.col("TotalCharges")
-                            .str.replace(pattern=" ", value="0")
-                            .alias("TotalCharges")
-                        )
-                        .collect()
+                    dataframe = pl.scan_csv(
+                        file_url, dtypes={"TotalCharges": pl.String}
+                    ).with_columns(
+                        pl.col("TotalCharges")
+                        .str.replace(pattern=" ", value="0")
+                        .alias("TotalCharges")
                     )
                     dataframes.append(dataframe)
                 except Exception as e:
@@ -421,7 +417,7 @@ class AwsS3DataLoaderStrategy(BaseDataLoaderStrategy):
             raise Exception(
                 "No data found. Check the contents in the bucket and folder"
             )
-        return pl.concat(dataframes, ignore_index=True)
+        return pl.concat(dataframes, ignore_index=True).collect()
 
 
 # Factory for all the loading strategies
