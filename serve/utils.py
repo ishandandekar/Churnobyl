@@ -6,14 +6,13 @@ import pickle as pkl
 from datetime import datetime
 import typing as t
 from functools import wraps
-from pandera import Check, Column, DataFrameSchema, Index, MultiIndex
+from pandera import Check, Column, DataFrameSchema, Index
 import pandas as pd
 import pandera as pa
 from pydantic import BaseModel
 import fastapi
 import wandb
 import yaml
-from munch import Munch
 
 checks: t.Dict[str, t.List[Check]] = {
     "customerID": [],
@@ -48,10 +47,9 @@ checks: t.Dict[str, t.List[Check]] = {
     ],
     "MonthlyCharges": [],
     "TotalCharges": [],
-    "Churn": [Check.isin(["No", "Yes"])],
-    "actualChurn": [],
-    "predictionChurn": [],
-    "predicted_probaChurn": [],
+    "TrueChurn": [Check.isin(["No", "Yes"])],
+    "PredictedChurn": [Check.isin(["No", "Yes"])],
+    "PredictedChurnProbability": [],
 }
 
 INPUT_SCHEMA = DataFrameSchema(
@@ -299,7 +297,7 @@ INPUT_SCHEMA = DataFrameSchema(
     description=None,
 )
 
-FLAG_SCHEMA: pa.Da = DataFrameSchema(
+FLAG_SCHEMA: pa.DataFrameSchema = DataFrameSchema(
     columns={
         "customerID": Column(
             dtype="object",
@@ -627,14 +625,14 @@ class FlagEndpointInputSchema(BaseModel):
     predicted_probaChurn: float
 
 
-def construct_response(f):
+def construct_response(func):
     """
     Construct a JSON response for and endpoint
     """
 
-    @wraps(f)
+    @wraps(func)
     def wrap(request: fastapi.Request, *args, **kwargs) -> t.Dict:
-        results: dict = f(request, *args, **kwargs)
+        results: dict = func(request, *args, **kwargs)
         response = {
             "message": results["message"],
             "method": request.method,
@@ -643,6 +641,7 @@ def construct_response(f):
             "url": request.url._url,
             "data": results.get("data", None),
             "errors": results.get("errors", None),
+            "IP": request.client.host,
         }
         return response
 

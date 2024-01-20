@@ -4,7 +4,6 @@ import typing as t
 import uuid
 import json
 from http import HTTPStatus
-import pickle
 import fastapi
 import wandb
 import boto3
@@ -12,7 +11,8 @@ from pathlib import Path
 import pandas as pd
 import pandera as pa
 import uvicorn
-import serve_utils as sutil
+import utils
+import endpoints
 
 
 warnings.simplefilter("ignore")
@@ -72,9 +72,9 @@ def load_artifacts():
 
 CONFIG_PATH = Path("./serve/serve-config.yaml")
 WANDB_API_KEY = os.environ["WANDB_API_KEY"]
-config = sutil.set_config(config_path=CONFIG_PATH, WANDB_API_KEY=WANDB_API_KEY)
+config = utils.set_config(config_path=CONFIG_PATH, WANDB_API_KEY=WANDB_API_KEY)
 artifacts = load_artifacts()
-artifacts = sutil.unpickle(artifacts)
+artifacts = utils.unpickle(artifacts)
 
 # TODO: Add code for FastAPI and then dockerize
 app = fastapi.FastAPI(
@@ -83,7 +83,7 @@ app = fastapi.FastAPI(
 
 
 @app.get("/")
-@sutil.construct_response
+@utils.construct_response
 def _index(request: fastapi.Request) -> t.Dict:
     """Health check"""
     response = {
@@ -96,10 +96,11 @@ def _index(request: fastapi.Request) -> t.Dict:
 
 # TODO: this
 @app.post("/predict", tags=["Prediction"])
-def predict(input_data: sutil.PredEndpointInputSchema) -> t.Dict:
+def predict(data: utils.PredEndpointInputSchema) -> t.Dict:
     """
     API endpoint to get predictions for one single data point
     """
+    return endpoints.predict(data.model_dump())
     s3 = boto3.client("s3")
 
     # inputs = {
@@ -130,7 +131,7 @@ def predict(input_data: sutil.PredEndpointInputSchema) -> t.Dict:
     response = {}
     response["errors"] = {}
     try:
-        sutil.INPUT_SCHEMA.validate(input_df, lazy=True)
+        utils.INPUT_SCHEMA.validate(input_df, lazy=True)
         input_df["TotalCharges"] = input_df["TotalCharges"].replace(
             to_replace=" ", value="0"
         )
@@ -181,10 +182,11 @@ def predict(input_data: sutil.PredEndpointInputSchema) -> t.Dict:
 
 # TODO: and this
 @app.post("/flag", tags=["Flagging"])
-def flag(flag_data: sutil.FlagEndpointInputSchema):
+def flag(data: utils.FlagEndpointInputSchema):
     """
     API endpoint to flag a prediction. Must contain the predicted label, prediction probability and the actual label
     """
+    return endpoints.flag(data.model_dump())
     flag_data = {
         "customerID": flag_data.customerID,
         "gender": flag_data.gender,
@@ -213,7 +215,7 @@ def flag(flag_data: sutil.FlagEndpointInputSchema):
     flag_df = pd.DataFrame(flag_data)
     response = dict()
     try:
-        sutil.FLAG_SCHEMA.validate(flag_df)
+        utils.FLAG_SCHEMA.validate(flag_df)
         s3 = boto3.client("s3")
 
         # Generate a unique file name
