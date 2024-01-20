@@ -4,7 +4,7 @@ tune the hyperparameters and use shap values
 """
 import functools as F
 import typing as t
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import cloudpickle as cpickle
@@ -38,7 +38,7 @@ ModelFactory: t.Dict[str, t.Union[xgb.XGBClassifier, base.BaseEstimator]] = {
 
 
 # Class to encapsulate output of the tuning the models
-@dataclass(frozen=True)
+@dataclass()
 class TunerOutput:
     studies: list[optuna.study.Study]
     best_models: list[t.Union[base.BaseEstimator, xgb.XGBClassifier]]
@@ -46,14 +46,34 @@ class TunerOutput:
     best_metrics: list[float]
     names: list[str]
     best_paths: list[Path]
+    table: pl.DataFrame = field(init=False)
 
     def __post_init__(self):
+        (
+            self.studies,
+            self.best_models,
+            self.best_parameters,
+            self.best_metrics,
+            self.names,
+            self.paths,
+        ) = zip(
+            *sorted(
+                zip(
+                    self.studies,
+                    self.best_models,
+                    self.best_parameters,
+                    self.best_metrics,
+                    self.names,
+                    self.best_paths,
+                ),
+                key=lambda x: x[3],
+                reverse=True,
+            )
+        )
         # Save insights as `.csv`
-        table = pl.DataFrame({"Models": self.names, "Metrics": self.best_metrics})
+        self.table = pl.DataFrame({"Models": self.names, "Metrics": self.best_metrics})
         dir_path = self.best_paths[0].parent
-        table.write_csv(dir_path / "tuning_results.csv")
-        del dir_path
-        del table
+        self.table.write_csv(dir_path / "tuning_results.csv")
 
 
 class LearnLab:
@@ -242,35 +262,13 @@ class LearnLab:
                 best_metrics.append(best_metric)
                 names.append(name)
                 best_paths.append(best_path)
-
-        (
-            sorted_studies,
-            sorted_best_models,
-            sorted_best_parameters,
-            sorted_best_metrics,
-            sorted_names,
-            sorted_paths,
-        ) = zip(
-            *sorted(
-                zip(
-                    studies,
-                    best_models,
-                    best_parameters,
-                    best_metrics,
-                    names,
-                    best_paths,
-                ),
-                key=lambda x: x[3],
-                reverse=True,
-            )
-        )
         return TunerOutput(
-            studies=sorted_studies,
-            best_models=sorted_best_models,
-            best_parameters=sorted_best_parameters,
-            best_metrics=sorted_best_metrics,
-            names=sorted_names,
-            best_paths=sorted_paths,
+            studies=studies,
+            best_models=best_models,
+            best_parameters=best_parameters,
+            best_metrics=best_metrics,
+            names=names,
+            best_paths=best_paths,
         )
 
 
