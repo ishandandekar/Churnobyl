@@ -91,5 +91,8 @@ class Pilot:
         for var in vars:
             k, v = var.decode().strip("\n").strip(" ").split("=")
             os.environ[k] = v
+        return None
 
-    None
+    @staticmethod
+    def push_artifacts():
+        ...
