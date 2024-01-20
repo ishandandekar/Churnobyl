@@ -10,6 +10,7 @@ from pathlib import Path
 import polars as pl
 from box import Box
 from prefect import artifacts, flow, get_run_logger, task
+from prefect.utilities.annotations import quote
 import wandb
 from src.data import DataEngine, TransformerOutput
 from src.model import LearnLab, TunerOutput
@@ -229,14 +230,14 @@ def workflow(config_path: str) -> None:
         config=config, transformed_ds=transformed_ds, model_dir=MODEL_DIR
     )
     logger.info("Best model has been acquired")
-    _ = visualize_insights(
+    visualize_insights(
         data=data,
         results=results,
-        tuner=tuner,
+        tuner=quote(tuner),
         viz_dir=VIZ_DIR,
     )
     logger.info("Visualizations have been drawn")
-    # _ = push_artifacts(
+    # push_artifacts(
     #     best_type_=tuner.names[0],
     #     best_metric=tuner.best_metrics[0],
     #     best_path_=tuner.best_paths[0],
