@@ -19,9 +19,10 @@ from sklearn import base, dummy, ensemble, linear_model, metrics, neighbors, svm
 from src.data import TransformerOutput
 from src.exceptions import ConfigValidationError
 
+estimator = t.Union[xgb.XGBClassifier, base.BaseEstimator]
 # DEV: Add models with names as key-value pair
 # Dictionary collections of supported models
-ModelFactory: t.Dict[str, t.Union[xgb.XGBClassifier, base.BaseEstimator]] = {
+ModelFactory: t.Dict[str, estimator] = {
     "dummy": dummy.DummyClassifier,
     "knn": neighbors.KNeighborsClassifier,
     "lr": linear_model.LogisticRegression,
@@ -41,7 +42,7 @@ ModelFactory: t.Dict[str, t.Union[xgb.XGBClassifier, base.BaseEstimator]] = {
 @dataclass()
 class TunerOutput:
     studies: list[optuna.study.Study]
-    best_models: list[t.Union[base.BaseEstimator, xgb.XGBClassifier]]
+    best_models: list[estimator]
     best_parameters: list[dict]
     best_metrics: list[float]
     names: list[str]
