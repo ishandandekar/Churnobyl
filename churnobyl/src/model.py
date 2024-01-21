@@ -71,7 +71,10 @@ class TunerOutput:
                 reverse=True,
             )
         )
-        # Save insights as `.csv`
+
+        path, model = self.best_paths[0], self.best_models[0]
+        with open(path, "wb") as f_out:
+            cpickle.dump(model, file=f_out)
 
     def as_table(self) -> pl.DataFrame:
         return pl.DataFrame(
@@ -231,8 +234,6 @@ class LearnLab:
             )
             best_metric = study.best_value
             path_ = model_dir / f"{model_name}.pkl"
-            with open(path_, "wb") as f_out:
-                cpickle.dump(best_model, f_out)
             return study, best_model, best_params, best_metric, model_name, path_
 
         if config.multiprocess:
