@@ -27,15 +27,14 @@ Any help is always welcomed. The project is open-sourced. The key features that 
 - Notify owners and reviewers of repo/project
 - Push code to branch, some tests must be passes by the branch
 
-## Milestone (18-7-2023): The pipeline ran completely from start to end. No errors while adding artifacts to server too!
+## Milestones
 
-## Milestone (7-8-2023): The model serving API WORKED!!!
-
-## Milestone (19-9-2023): I finally figured out the `encoder_oe` error. **FINALLY**
-
-## Milestone (20-9-2023): A full forward pass from making the dataframe to preprocessing it, to predicting using a model worked... omfg, i am so done
-
-## Milestone (21-9-2023): DUDE DOCKERIZE A TEMP APPLICATION WITH ALL `WANDB` STUFF WORKED LESSSGOOOOOOO!!!. Just have to work the logging the response json to s3 bucket. Other than that everything is finally done. Also, yeah, this image is taking a lot of space.
+- **18-7-2023**: The pipeline ran completely from start to end. No errors while adding artifacts to server too!
+- **7-8-2023**: The model serving API WORKED!!!
+- **19-9-2023**: I finally figured out the `encoder_oe` error. **FINALLY**
+- **20-9-2023**: A full forward pass from making the dataframe to preprocessing it, to predicting using a model worked... omfg, i am so done
+- **21-9-2023**: DUDE DOCKERIZE A TEMP APPLICATION WITH ALL `WANDB` STUFF WORKED LESSSGOOOOOOO!!!. Just have to work the logging the response json to s3 bucket. Other than that everything is finally done. Also, yeah, this image is taking a lot of space.
+- **21-1-2024**: The pipeline's architecture has changed a whole lot from the start. I feel I've learned more than I've worked on this. I have a better understanding on how larger scale applications may (or atleast should) work. The only part that is left is pushing artifacts to various remote storage locations. I've integrated prefect as well.
 
 ### Issues:
 
