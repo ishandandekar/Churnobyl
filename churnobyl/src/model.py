@@ -77,7 +77,7 @@ class TunerOutput:
         return pl.DataFrame(
             {
                 "Model": self.names,
-                "Metric": self.best_metrics,
+                "Metric": [round(metric, 4) for metric in self.best_metrics],
                 "Path": [str(path) for path in self.best_paths],
             }
         )
