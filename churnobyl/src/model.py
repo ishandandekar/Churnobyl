@@ -72,9 +72,15 @@ class TunerOutput:
             )
         )
         # Save insights as `.csv`
-        self.table = pl.DataFrame({"Models": self.names, "Metrics": self.best_metrics})
-        dir_path = self.best_paths[0].parent
-        self.table.write_csv(dir_path / "tuning_results.csv")
+
+    def as_table(self) -> pl.DataFrame:
+        return pl.DataFrame(
+            {
+                "Model": self.names,
+                "Metric": self.best_metrics,
+                "Path": [str(path) for path in self.best_paths],
+            }
+        )
 
 
 class LearnLab:
