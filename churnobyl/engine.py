@@ -11,7 +11,6 @@ import polars as pl
 from box import Box
 from prefect import artifacts, flow, get_run_logger, task
 from prefect.utilities.annotations import quote
-import wandb
 from src.data import DataEngine, TransformerOutput
 from src.model import LearnLab, TunerOutput
 from src.utils import Pilot
@@ -24,13 +23,7 @@ from src.visualize import Vizard
 )
 def setup_pipeline(
     config_filepath: str,
-) -> t.Tuple[
-    Box,
-    Path,
-    Path,
-    Path,
-    Path,
-]:
+) -> t.Tuple[Box, Path, Path, Path, Path,]:
     """
     Creates directories and sets random seed for reproducibility
     """
@@ -159,41 +152,39 @@ def visualize_insights(**kwargs) -> None:
     retries=3,
     retry_delay_seconds=3,
 )
-def push_artifacts(
-    best_model_name,
-    best_metric: float,
-    best_path_: Path,
-    artifact_dir: Path,
-    viz_dir: Path,
-) -> None:
+def push_artifacts(tuner: TunerOutput) -> None:
     """
     Pushes various artifacts such as log files, visualizations and models to respective servers and storage spaces
     """
-
-    with wandb.init(project="churnobyl", job_type="pipeline") as run:
-        model_artifact = wandb.Artifact("churnobyl-clf", type="model")
-        model_artifact.add_file(str(best_path_))
-        run.log_artifact(model_artifact)
-        preprocessors_artifact = wandb.Artifact(
-            "churnobyl-ohe-oe-stand", type="preprocessors"
+    # Saving tuning results to prefect artifacts
+    with pl.Config(fmt_str_lengths=50):
+        artifacts.create_table_artifact(
+            key="tuning-results",
+            table=tuner.as_table().to_dict(as_series=False),
+            description="## Tuning results of the run",
         )
-        preprocessors_artifact.add_dir(str(artifact_dir))
-        run.log_artifact(preprocessors_artifact)
-        plots_artifact = wandb.Artifact("plots", type="visualizations")
-        plots_artifact.add_dir(str(viz_dir))
-        run.log_artifact(plots_artifact)
 
-    markdown_artifact = f"""
-    ### Model saved: {best_model_name}
-    ### Model performance: {best_metric}
-    """
-    _ = artifacts.create_markdown_artifact(
-        key="model-report",
-        markdown=markdown_artifact,
-        description="Model summary report",
-    )
-    logger = get_run_logger()
-    logger.info("Artifacts have been pushed to project server")
+    # with wandb.init(project="churnobyl", job_type="pipeline") as run:
+    #     model_artifact = wandb.Artifact("churnobyl-clf", type="model")
+    #     model_artifact.add_file(str(best_path_))
+    #     run.log_artifact(model_artifact)
+    #     preprocessors_artifact = wandb.Artifact(
+    #         "churnobyl-ohe-oe-stand", type="preprocessors"
+    #     )
+    #     preprocessors_artifact.add_dir(str(artifact_dir))
+    #     run.log_artifact(preprocessors_artifact)
+    #     plots_artifact = wandb.Artifact("plots", type="visualizations")
+    #     plots_artifact.add_dir(str(viz_dir))
+    #     run.log_artifact(plots_artifact)
+
+    # markdown_artifact = f"""### Model saved: {best_model_name}
+    # ### Model performance: {best_metric}
+    # """
+    # _ = artifacts.create_markdown_artifact(
+    #     key="model-report",
+    #     markdown=markdown_artifact,
+    #     description="Model summary report",
+    # )
     return None
 
 
@@ -250,8 +241,7 @@ def workflow(config_path: str) -> None:
     #     artifact_dir=ARTIFACT_DIR,
     #     viz_dir=VIZ_DIR,
     # )
-
-    logger.info("All tasks done. Pipeline has now been completed")
+    logger.info("Artifacts have been uploaded to remote destination")
 
 
 if __name__ == "__main__":
