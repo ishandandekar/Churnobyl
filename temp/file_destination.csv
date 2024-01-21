@@ -1,0 +1,4 @@
+File,Destination
+Models in `models` directory,WANDB
+artifacts to `preprocessors`,WANDB
+Tuning results,Prefect logs
