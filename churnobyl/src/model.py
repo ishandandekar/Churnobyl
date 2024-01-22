@@ -19,10 +19,11 @@ from sklearn import base, dummy, ensemble, linear_model, metrics, neighbors, svm
 from src.data import TransformerOutput
 from src.exceptions import ConfigValidationError
 
-estimator = t.Union[xgb.XGBClassifier, base.BaseEstimator]
+Estimator = t.Union[xgb.XGBClassifier, base.BaseEstimator]
+
 # DEV: Add models with names as key-value pair
 # Dictionary collections of supported models
-ModelFactory: t.Dict[str, estimator] = {
+ModelFactory: t.Dict[str, Estimator] = {
     "dummy": dummy.DummyClassifier,
     "knn": neighbors.KNeighborsClassifier,
     "lr": linear_model.LogisticRegression,
@@ -42,7 +43,7 @@ ModelFactory: t.Dict[str, estimator] = {
 @dataclass()
 class TunerOutput:
     studies: list[optuna.study.Study]
-    best_models: list[estimator]
+    best_models: list[Estimator]
     best_parameters: list[dict]
     best_metrics: list[float]
     names: list[str]
@@ -71,9 +72,9 @@ class TunerOutput:
             )
         )
 
-        path, model = self.best_paths[0], self.best_models[0]
-        with open(path, "wb") as f_out:
-            cpickle.dump(model, file=f_out)
+        for path, model in zip(self.best_paths, self.best_models):
+            with open(path, "wb") as f_out:
+                cpickle.dump(model, file=f_out)
 
     def as_table(self) -> pl.DataFrame:
         return pl.DataFrame(
@@ -206,8 +207,9 @@ class LearnLab:
                 list(model_param_item.values())[0].get("params"),
                 list(model_param_item.values())[0].get("n_trials"),
             )
+            base_estimator = ModelFactory.get(model_name)
 
-            def objective(trial: optuna.Trial):
+            def _objective(trial: optuna.Trial, estimator: Estimator):
                 params = dict()
                 for k, v in model_params.items():
                     args = v.get("args")
@@ -219,12 +221,12 @@ class LearnLab:
                         params[k] = trial.suggest_int(**args)
                     elif v.get("strategy") == "cat":
                         params[k] = trial.suggest_categorical(**args)
-                model = ModelFactory.get(model_name)
-                model = model(**params)
+                model = estimator(**params)
                 model.fit(X_train, y_train)
                 preds = model.predict(X_test)
                 return metrics.f1_score(y_test, preds)
 
+            objective = F.partial(_objective, estimator=base_estimator)
             study = optuna.create_study(direction="maximize")
             study.optimize(objective, n_trials=n_trials)
             best_params = study.best_params
