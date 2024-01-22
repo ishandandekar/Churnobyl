@@ -225,7 +225,6 @@ def workflow(config_path: str) -> None:
         config=config, transformed_ds=transformed_ds, model_dir=model_dir
     )
     logger.info("Best model has been acquired")
-    print(list(model_dir.glob("*.pkl")))
 
     visualize_insights(
         data=data,
