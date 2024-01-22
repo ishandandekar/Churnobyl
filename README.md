@@ -8,7 +8,7 @@
 > [!WARNING]
 > This is a work in progress. Until specified, please do not directly use the code. There will be addtition as well as improvements over the time. Use the code only to get inspiration and not for actual production usage.
 
-## [Contributions](./CONTRIBUTING.md)
+### [Contributions](./CONTRIBUTING.md)
 
 Any help is always welcomed. The project is open-sourced. The key features that are needed to be updated are marked as TODO in readme as well as in code. Some issues according to the authors of the project are highlighted in the README itself. If you think there can be any other improvement, please make a PR or an issue, and I'll go over it as soon as possible.
 
@@ -19,7 +19,7 @@ Any help is always welcomed. The project is open-sourced. The key features that 
 - Up the cloud infra using tools like Terraform or Ansible
 - Using self-hosted runners instead of Github appointed, to gain more control over functioning and logging of the pipeline
 
-### Steps to develop locally:
+### Steps to develop:
 
 - Join the org!
 - Create a PR
@@ -38,15 +38,13 @@ Any help is always welcomed. The project is open-sourced. The key features that 
 
 ### Issues:
 
-- Wandb cant seem to log preprocessors, still have to figure this out
-  > Did some experimentation, `wandb` is only logging the new preprocessors, only if I delete the previous versions, idk what other fix there is. But this'll have to do right now. I'll have to figure out the `encoder_oe` stuff before I tackle this.
-- There is no code for imputing values in pipeline. **This has been set aside temporalily**
 - The API serving code can be still be optimized. There is too much code that might seem to complicate things. Better serving solutions still need to be tested.
 - The code for monitoring can be a pain. Creating a branch for the Streamlit dashboard is one of the solutions.
 - For setting up configuration variables right now, `.yaml` seems the way to go. Some other ways like using a `.env` file can also be a method that can be benefiticial for setting up AWS credentials locally.
 - DEV notes are still needed to be added for future MLEs
 - Model training doesn't support `StackingClassifier`
 - Tuning `VotingClassifier` is not available yet
+- `wandb` is not even recognizing the new preprocessors. For this, I'll be using `mlflow`. This requires a bit of setup. This would be beneficial only if we can download the best model
 
 ### S3 directory structure
 
@@ -70,21 +68,18 @@ churnobyl/
 ### TODO:
 
 - [ ] Test out how you can upload data from python to AWS S3 bucket. [link for yt video](https://www.youtube.com/watch?v=vXiZO1c5Sk0)
-- [ ] Look into [Hopsworks](https://docs.hopsworks.ai/3.4/concepts/mlops/registry/) for model registry and deployment
 - [ ] https://www.youtube.com/watch?v=XEZ7Hx2NrO8 & https://stackoverflow.com/questions/62664183/mlflow-find-model-version-with-best-metric-using-python-code
 - [ ] Try another way to package model so that one program downloads the best transformer and predictor and another script just with inference/prediction function this then gets packged into a Docker image.
 - [ ] Update tests for this new integration
-- [x] Rewrite AWS data loading strategy, code obviously breaks. Look into [code](./churnobyl/src/data.py)
+- [ ] Update docstrings for new functions
 - [ ] Rewrite **`func`** `churnobyl.engine.push_artifact` for new code. Also get the version right.
 - [ ] Use `tempfile` module. [https://www.youtube.com/watch?v=-pmgCmWiOXo](https://www.youtube.com/watch?v=-pmgCmWiOXo)
 - [ ] Rewrite [./serve](./serve/), decouple applications, refactor code and remove [`serve yaml`](./serve/serve-config.yaml)
 - [ ] Shift all the saving to pickle files as artifacts or models to **`func`** `churnobyl.engine.push_artifact`. This is a MAYBE, will see if everything works out
 - [ ] Write a script in [`temp/`](./temp) to download data from Kaggle for better reproducibility
-- [ ] Decouple API endpoints to two different scripts i.e. `predict` and `flag` for better maintainability
 - [ ] Create [bin](./bin/) directory for shell scripts
 - [ ] Create a cleanup script to remove directories like data, figures, models
 - [ ] Another idea is to setup a new separate repository for flagged data and monitoring, this could make things easier for api deployment as well as maintenence.
-- [ ] Refer the [prototype](./temp/predict_prototype.py) for the API
 - [ ] Look into EKS cluster to display monitoring
 - [ ] Create Streamlit dashboard for monitoring
 - [ ] Integrate Streamlit to display graphs
