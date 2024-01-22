@@ -27,7 +27,7 @@ class Vizard:
             study (optuna.Study): Optuna study of the best model
             viz_dir (Path): Directory to store the plot
         """
-        _ = optuna.visualization.plot_param_importances(study).write_image(
+        optuna.visualization.plot_param_importances(study).write_image(
             viz_dir / "param_importance.png"
         )
         return None
