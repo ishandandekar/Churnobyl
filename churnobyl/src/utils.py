@@ -9,7 +9,9 @@ from pathlib import Path
 import numpy as np
 import yaml
 from box import Box
-from src.model import validate_model_config
+import polars as pl
+from prefect import artifacts
+from src.model import TunerOutput, validate_model_config
 from src.data import validate_data_config
 from src.exceptions import ConfigValidationError
 
@@ -94,5 +96,12 @@ class Pilot:
         return None
 
     @staticmethod
-    def push_artifacts():
-        ...
+    def push_artifacts(tuner: TunerOutput) -> None:
+        # Saving tuning results to prefect artifacts
+        with pl.Config(fmt_str_lengths=50):
+            artifacts.create_table_artifact(
+                key="tuning-results",
+                table=tuner.as_table().to_dict(as_series=False),
+                description="## Tuning results of the run",
+            )
+        return None
