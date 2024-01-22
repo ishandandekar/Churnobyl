@@ -9,7 +9,7 @@ from pathlib import Path
 
 import polars as pl
 from box import Box
-from prefect import artifacts, flow, get_run_logger, task
+from prefect import flow, get_run_logger, task
 from prefect.utilities.annotations import quote
 from src.data import DataEngine, TransformerOutput
 from src.model import LearnLab, TunerOutput
@@ -23,13 +23,7 @@ from src.visualize import Vizard
 )
 def setup_pipeline(
     config_filepath: str,
-) -> t.Tuple[
-    Box,
-    Path,
-    Path,
-    Path,
-    Path,
-]:
+) -> t.Tuple[Box, Path, Path, Path, Path,]:
     """
     Creates directories and sets random seed for reproducibility
     """
@@ -162,13 +156,7 @@ def push_artifacts(tuner: TunerOutput) -> None:
     """
     Pushes various artifacts such as log files, visualizations and models to respective servers and storage spaces
     """
-    # Saving tuning results to prefect artifacts
-    with pl.Config(fmt_str_lengths=50):
-        artifacts.create_table_artifact(
-            key="tuning-results",
-            table=tuner.as_table().to_dict(as_series=False),
-            description="## Tuning results of the run",
-        )
+    return Pilot.push_artifacts(tuner=tuner)
 
     # with wandb.init(project="churnobyl", job_type="pipeline") as run:
     #     model_artifact = wandb.Artifact("churnobyl-clf", type="model")
@@ -205,48 +193,49 @@ def workflow(config_path: str) -> None:
     Args:
         config_path (Path): Path for config file
     """
+    logger = get_run_logger()
+
     (
         config,
         ROOT_DIR,
-        VIZ_DIR,
-        MODEL_DIR,
-        ARTIFACT_DIR,
+        viz_dir,
+        model_dir,
+        artifact_dir,
     ) = setup_pipeline(config_filepath=config_path)
-    logger = get_run_logger()
     logger.info("Setup has been configured")
+
     data = data_loader(config=config)
     logger.info("Data has been loaded")
+
     X_train, X_test, y_train, y_test = data_splits(config=config, data=data)
     logger.info("Data splits have been made")
+
     transformed_ds = data_transformer(
         config=config,
         X_train=X_train,
         X_test=X_test,
         y_train=y_train,
         y_test=y_test,
-        artifact_dir=ARTIFACT_DIR,
+        artifact_dir=artifact_dir,
     )
     logger.info("Data transformers have been applied")
 
     results = train_models(config=config, transformed_ds=transformed_ds)
     tuner = tune_models(
-        config=config, transformed_ds=transformed_ds, model_dir=MODEL_DIR
+        config=config, transformed_ds=transformed_ds, model_dir=model_dir
     )
     logger.info("Best model has been acquired")
+    print(list(model_dir.glob("*.pkl")))
+
     visualize_insights(
         data=data,
         results=results,
         tuner=quote(tuner),
-        viz_dir=VIZ_DIR,
+        viz_dir=viz_dir,
     )
     logger.info("Visualizations have been drawn")
-    # push_artifacts(
-    #     best_type_=tuner.names[0],
-    #     best_metric=tuner.best_metrics[0],
-    #     best_path_=tuner.best_paths[0],
-    #     artifact_dir=ARTIFACT_DIR,
-    #     viz_dir=VIZ_DIR,
-    # )
+
+    push_artifacts(tuner=quote(tuner))
     logger.info("Artifacts have been uploaded to remote destination")
 
 
