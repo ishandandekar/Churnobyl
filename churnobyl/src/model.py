@@ -4,7 +4,7 @@ tune the hyperparameters and use shap values
 """
 import functools as F
 import typing as t
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 import cloudpickle as cpickle
@@ -47,7 +47,6 @@ class TunerOutput:
     best_metrics: list[float]
     names: list[str]
     best_paths: list[Path]
-    table: pl.DataFrame = field(init=False)
 
     def __post_init__(self):
         (
