@@ -550,7 +550,7 @@ class DataEngine:
         label_transformer = preprocessing.LabelBinarizer()
         feature_transformer.fit(X_train.to_pandas())
         label_transformer.fit(y_train.to_pandas())
-        preprocessor_paths = ["feature_transformer_.pkl", "label_binarizer.pkl"]
+        preprocessor_paths = ["feature_transformer.pkl", "label_binarizer.pkl"]
         preprocessors = [feature_transformer, label_transformer]
 
         def _save_to_pickle(
