@@ -7,13 +7,13 @@ import typing as t
 from pathlib import Path
 
 import numpy as np
+import polars as pl
 import yaml
 from box import Box
-import polars as pl
 from prefect import artifacts
-from src.model import TunerOutput, validate_model_config
 from src.data import validate_data_config
 from src.exceptions import ConfigValidationError
+from src.model import TunerOutput, validate_model_config
 
 
 class Pilot:
