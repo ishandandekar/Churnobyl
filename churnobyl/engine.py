@@ -123,6 +123,7 @@ def tune_models(
 @task(
     name="make_plots_and_viz",
     description="Create visualizations for model explainability and data analysis",
+    retries=2,
 )
 def visualize_insights(**kwargs) -> None:
     """
@@ -152,34 +153,11 @@ def visualize_insights(**kwargs) -> None:
     retries=3,
     retry_delay_seconds=3,
 )
-def push_artifacts(tuner: TunerOutput) -> None:
+def push_artifacts(tuner: TunerOutput, viz_dir: Path) -> None:
     """
     Pushes various artifacts such as log files, visualizations and models to respective servers and storage spaces
     """
-    return Pilot.push_artifacts(tuner=tuner)
-
-    # with wandb.init(project="churnobyl", job_type="pipeline") as run:
-    #     model_artifact = wandb.Artifact("churnobyl-clf", type="model")
-    #     model_artifact.add_file(str(best_path_))
-    #     run.log_artifact(model_artifact)
-    #     preprocessors_artifact = wandb.Artifact(
-    #         "churnobyl-ohe-oe-stand", type="preprocessors"
-    #     )
-    #     preprocessors_artifact.add_dir(str(artifact_dir))
-    #     run.log_artifact(preprocessors_artifact)
-    #     plots_artifact = wandb.Artifact("plots", type="visualizations")
-    #     plots_artifact.add_dir(str(viz_dir))
-    #     run.log_artifact(plots_artifact)
-
-    # markdown_artifact = f"""### Model saved: {best_model_name}
-    # ### Model performance: {best_metric}
-    # """
-    # _ = artifacts.create_markdown_artifact(
-    #     key="model-report",
-    #     markdown=markdown_artifact,
-    #     description="Model summary report",
-    # )
-    return None
+    return Pilot.push_artifacts(tuner=tuner, viz_dir=viz_dir)
 
 
 @flow(
@@ -234,7 +212,7 @@ def workflow(config_path: str) -> None:
     )
     logger.info("Visualizations have been drawn")
 
-    push_artifacts(tuner=quote(tuner))
+    push_artifacts(tuner=quote(tuner), viz_dir=viz_dir)
     logger.info("Artifacts have been uploaded to remote destination")
 
 
