@@ -35,6 +35,7 @@ Any help is always welcomed. The project is open-sourced. The key features that 
 - **20-9-2023**: A full forward pass from making the dataframe to preprocessing it, to predicting using a model worked... omfg, i am so done
 - **21-9-2023**: DUDE DOCKERIZE A TEMP APPLICATION WITH ALL `WANDB` STUFF WORKED LESSSGOOOOOOO!!!. Just have to work the logging the response json to s3 bucket. Other than that everything is finally done. Also, yeah, this image is taking a lot of space.
 - **21-1-2024**: The pipeline's architecture has changed a whole lot from the start. I feel I've learned more than I've worked on this. I have a better understanding on how larger scale applications may (or atleast should) work. The only part that is left is pushing artifacts to various remote storage locations. I've integrated prefect as well.
+- **28-1-2024**: MLFlow was a success, lets see where we can go from here
 
 ### Issues:
 
@@ -46,7 +47,9 @@ Any help is always welcomed. The project is open-sourced. The key features that 
 - Tuning `VotingClassifier` is not available yet
 - `wandb` is not even recognizing the new preprocessors. For this, I'll be using `mlflow`. This requires a bit of setup. This would be beneficial only if we can download the best model
 
-### S3 directory structure
+### Storage structure
+
+For S3:
 
 ```
 churnobyl/
@@ -56,6 +59,12 @@ churnobyl/
 ├─ flagged/
 ├─ train_logs/
 ```
+
+Things to store in MLFlow
+
+- All the tuned models
+- All the figures related to that run
+- Transformers related to that run
 
 ### Ideas for monitoring dashboard:
 
@@ -77,7 +86,7 @@ churnobyl/
 - [ ] Rewrite [./serve](./serve/), decouple applications, refactor code and remove [`serve yaml`](./serve/serve-config.yaml)
 - [ ] Shift all the saving to pickle files as artifacts or models to **`func`** `churnobyl.engine.push_artifact`. This is a MAYBE, will see if everything works out
 - [ ] Write a script in [`temp/`](./temp) to download data from Kaggle for better reproducibility
-- [ ] Create [bin](./bin/) directory for shell scripts
+- [x] Create [bin](./bin/) directory for shell scripts
 - [ ] Create a cleanup script to remove directories like data, figures, models
 - [ ] Another idea is to setup a new separate repository for flagged data and monitoring, this could make things easier for api deployment as well as maintenence.
 - [ ] Look into EKS cluster to display monitoring
