@@ -11,10 +11,10 @@ import cloudpickle as cpickle
 import multiprocess as mp
 import numpy as np
 import optuna
-from scipy.sparse import spmatrix
 import polars as pl
 import xgboost as xgb
 from box import Box
+from scipy.sparse import spmatrix
 from sklearn import base, dummy, ensemble, linear_model, metrics, neighbors, svm, tree
 from src.data import TransformerOutput
 from src.exceptions import ConfigValidationError
@@ -40,7 +40,7 @@ ModelFactory: t.Dict[str, Estimator] = {
 
 
 # Class to encapsulate output of the tuning the models
-@dataclass()
+@dataclass
 class TunerOutput:
     studies: list[optuna.study.Study]
     best_models: list[Estimator]
@@ -72,9 +72,9 @@ class TunerOutput:
             )
         )
 
-        for path, model in zip(self.best_paths, self.best_models):
-            with open(path, "wb") as f_out:
-                cpickle.dump(model, file=f_out)
+        path, model = self.best_paths[0], self.best_models[0]
+        with open(path, "wb") as f_out:
+            cpickle.dump(model, file=f_out)
 
     def as_table(self) -> pl.DataFrame:
         return pl.DataFrame(
@@ -209,7 +209,7 @@ class LearnLab:
             )
             base_estimator = ModelFactory.get(model_name)
 
-            def _objective(trial: optuna.Trial, estimator: Estimator):
+            def _create_param_dict(trial: optuna.Trial, model_params: dict) -> dict:
                 params = dict()
                 for k, v in model_params.items():
                     args = v.get("args")
@@ -221,6 +221,10 @@ class LearnLab:
                         params[k] = trial.suggest_int(**args)
                     elif v.get("strategy") == "cat":
                         params[k] = trial.suggest_categorical(**args)
+                return params
+
+            def _objective(trial: optuna.Trial, estimator: Estimator):
+                params = _create_param_dict(trial=trial, model_params=model_params)
                 model = estimator(**params)
                 model.fit(X_train, y_train)
                 preds = model.predict(X_test)
@@ -230,9 +234,7 @@ class LearnLab:
             study = optuna.create_study(direction="maximize")
             study.optimize(objective, n_trials=n_trials)
             best_params = study.best_params
-            best_model = ModelFactory.get(model_name)(**best_params).fit(
-                X_train, y_train
-            )
+            best_model = base_estimator(**best_params).fit(X_train, y_train)
             best_metric = study.best_value
             path_ = model_dir / f"{model_name}.pkl"
             return study, best_model, best_params, best_metric, model_name, path_
