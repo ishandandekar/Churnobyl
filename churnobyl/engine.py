@@ -153,11 +153,11 @@ def visualize_insights(**kwargs) -> None:
     retries=3,
     retry_delay_seconds=3,
 )
-def push_artifacts(tuner: TunerOutput, viz_dir: Path) -> None:
+def push_artifacts(tuner: TunerOutput, viz_dir: Path, artifact_dir: Path) -> None:
     """
     Pushes various artifacts such as log files, visualizations and models to respective servers and storage spaces
     """
-    return Pilot.push_artifacts(tuner=tuner, viz_dir=viz_dir)
+    return Pilot.push_artifacts(tuner=tuner, viz_dir=viz_dir, artifact_dir=artifact_dir)
 
 
 @flow(
@@ -212,7 +212,7 @@ def workflow(config_path: str) -> None:
     )
     logger.info("Visualizations have been drawn")
 
-    push_artifacts(tuner=quote(tuner), viz_dir=viz_dir)
+    push_artifacts(tuner=quote(tuner), viz_dir=viz_dir, artifact_dir=artifact_dir)
     logger.info("Artifacts have been uploaded to remote destination")
 
 
