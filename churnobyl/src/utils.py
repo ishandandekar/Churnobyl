@@ -14,6 +14,7 @@ import yaml
 from box import Box
 from PIL import Image
 from prefect import artifacts
+from sklearn.pipeline import Pipeline
 from src.data import validate_data_config
 from src.exceptions import ConfigValidationError
 from src.model import TunerOutput, validate_model_config
@@ -99,7 +100,7 @@ class Pilot:
         return None
 
     @staticmethod
-    def push_artifacts(tuner: TunerOutput, viz_dir: Path) -> None:
+    def push_artifacts(tuner: TunerOutput, viz_dir: Path, artifact_dir: Path) -> None:
         # Saving tuning results to prefect artifacts
         tuner_table = tuner.as_table()
         with pl.Config(fmt_str_lengths=50):
@@ -108,22 +109,24 @@ class Pilot:
                 table=tuner_table.to_dict(as_series=False),
                 description="## Tuning results of the run",
             )
+
         mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI"))
         mlflow.set_experiment(experiment_name="churnobyl")
-
         with mlflow.start_run():
             for image_path in viz_dir.glob("*.png"):
                 mlflow.log_image(image=Image.open(image_path))
 
-            for model_item in tuner_table.to_dicts():
-                name, metric, path = model_item.values()
-                with open(path, "rb") as f_in:
-                    model = pickle.loads(f_in.read())
-                mlflow.log_metric("f1score", metric)
-                if name == "xgb":
-                    mlflow.xgboost.log_model(model, artifact_path="model")
-                else:
-                    mlflow.sklearn.log_model(model, artifact_path="model")
-                break
-
+            _, metric, model_path = tuner_table.to_dicts()[0].values()
+            preprocessor_path = artifact_dir / "features_transformer.pkl"
+            preprocessor = pickle.loads(open(preprocessor_path, "rb").read())
+            model = pickle.loads(open(model_path, "rb").read())
+            pipe = Pipeline(
+                steps=[("feature_transformer", preprocessor), ("model", model)]
+            )
+            mlflow.log_metric("f1score", metric)
+            mlflow.sklearn.log_model(
+                pipe,
+                artifact_path="model",
+                serialization_format=mlflow.sklearn.SERIALIZATION_FORMAT_CLOUDPICKLE,
+            )
         return None
