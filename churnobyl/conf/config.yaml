@@ -57,6 +57,10 @@ model:
             kernel: rbf
             degree: 4
             gamma: auto
+      - xgb:
+          params:
+            n_estimators: 300
+            max_depth: 3
       - voting:
           params:
             estimators:
@@ -72,7 +76,7 @@ model:
                     solver: liblinear
             voting: hard
   tune:
-    multiprocess: False
+    multiprocess: True
     models:
       - lr:
           params:
@@ -88,6 +92,27 @@ model:
                 low: 1.9
                 step: 0.05
           n_trials: 5
+      - xgb:
+          params:
+            n_estimators:
+              strategy: int
+              args:
+                high: 300
+                low: 50
+                step: 50
+            max_depth:
+              strategy: int
+              args:
+                high: 5
+                low: 1
+                step: 1
+            booster:
+              strategy: cat
+              args:
+                choices:
+                  - gblinear
+                  - dart
+          n_trials: 25
       - svm:
           params:
             C:
