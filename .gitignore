@@ -17,3 +17,4 @@ docker_push_commands.png
 **/*.pkl
 .mypy_cache/
 .dockerfile.temp
+mlruns/
