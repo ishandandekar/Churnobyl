@@ -114,10 +114,13 @@ class Pilot:
         mlflow.set_experiment(experiment_name="churnobyl")
         with mlflow.start_run():
             for image_path in viz_dir.glob("*.png"):
-                mlflow.log_image(image=Image.open(image_path))
+                mlflow.log_image(
+                    image=Image.open(image_path),
+                    artifact_file=f"figures/{image_path.name}",
+                )
 
             _, metric, model_path = tuner_table.to_dicts()[0].values()
-            preprocessor_path = artifact_dir / "features_transformer.pkl"
+            preprocessor_path = artifact_dir / "feature_transformer.pkl"
             preprocessor = pickle.loads(open(preprocessor_path, "rb").read())
             model = pickle.loads(open(model_path, "rb").read())
             pipe = Pipeline(
