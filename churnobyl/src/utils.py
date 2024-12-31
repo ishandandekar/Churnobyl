@@ -81,7 +81,9 @@ class Pilot:
             )
         else:
             FileNotFoundError(
-                f"Please check if {filepath} is either `.yaml` or `.yml` is present on the correct location."
+                "Please check if"
+                + f"{filepath}"
+                + " is either `.yaml` or `.yml` is present on the correct location."
             )
 
     @staticmethod
@@ -123,11 +125,14 @@ class Pilot:
             _, metric, model_path = tuner_table.to_dicts()[0].values()
             preprocessor_path = artifact_dir / "feature_transformer.pkl"
             preprocessor = pickle.loads(open(preprocessor_path, "rb").read())
+            label_encoder_path = artifact_dir / "label_binarizer.pkl"
+            # label_encoder = pickle.loads(open(label_encoder_path, "rb").read())
             model = pickle.loads(open(model_path, "rb").read())
             pipe = Pipeline(
                 steps=[("feature_transformer", preprocessor), ("model", model)]
             )
             mlflow.log_metric("f1score", metric)
+            mlflow.log_artifact(label_encoder_path)
             mlflow.sklearn.log_model(
                 pipe,
                 artifact_path="model",

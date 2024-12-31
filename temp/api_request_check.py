@@ -1,6 +1,4 @@
 import requests
-import json
-import pandas as pd
 from requests import Response
 
 url = "http://localhost:8000/"

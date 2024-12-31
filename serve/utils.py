@@ -1,18 +1,19 @@
 """
 Utility/helper functions and variables for api
 """
-from pathlib import Path
-import pickle as pkl
-from datetime import datetime
+
+import os
 import typing as t
+from datetime import datetime
 from functools import wraps
-from pandera import Check, Column, DataFrameSchema, Index
-import pandas as pd
-import pandera as pa
-from pydantic import BaseModel
+from typing import Optional
+
 import fastapi
-import wandb
-import yaml
+import mlflow
+import pandera as pa
+from mlflow.tracking import MlflowClient
+from pandera import Check, Column, DataFrameSchema, Index
+from pydantic import BaseModel
 
 checks: t.Dict[str, t.List[Check]] = {
     "customerID": [],
@@ -625,6 +626,72 @@ class FlagEndpointInputSchema(BaseModel):
     predicted_probaChurn: float
 
 
+def fetch_best_run_artifacts(
+    experiment_name: str,
+    metric_name: str = "f1_score",
+    tracking_uri: Optional[str] = None,
+    artifact_path: Optional[str] = None,
+    local_dir: str = "downloaded_artifacts",
+) -> None:
+    """
+    Fetch artifacts from the MLflow run with the highest specified metric value.
+
+    Args:
+        experiment_name (str): Name of the MLflow experiment
+        metric_name (str): Name of the metric to sort by (default: "f1_score")
+        tracking_uri (Optional[str]): MLflow tracking server URI
+        artifact_path (Optional[str]): Specific artifact path to download. If None, downloads all artifacts
+        local_dir (str): Local directory to save artifacts to
+    """
+    # Set up MLflow client
+    if tracking_uri:
+        mlflow.set_tracking_uri(tracking_uri)
+    client = MlflowClient()
+
+    # Get experiment ID
+    experiment = client.get_experiment_by_name(experiment_name)
+    if not experiment:
+        raise ValueError(f"Experiment '{experiment_name}' not found")
+
+    # Get all runs for the experiment
+    runs = client.search_runs(
+        experiment_ids=[experiment.experiment_id],
+        filter_string="",
+        order_by=[f"metrics.{metric_name} DESC"],
+    )
+
+    if not runs:
+        raise ValueError(f"No runs found in experiment '{experiment_name}'")
+
+    # Get the best run (first run since we ordered by metric DESC)
+    best_run = runs[0]
+    print(f"Best run ID: {best_run.info.run_id}")
+    # print(f"Best {metric_name}: {
+    #       best_run.data.metrics.get(metric_name, 'N/A')}")
+    #
+    # Create local directory if it doesn't exist
+    os.makedirs(local_dir, exist_ok=True)
+
+    # Download artifacts
+    if artifact_path:
+        # Download specific artifact or directory
+        client.download_artifacts(
+            run_id=best_run.info.run_id, path=artifact_path, dst_path=local_dir
+        )
+        # print(
+        #     f"Downloaded artifact(s) from path '{
+        #         artifact_path}' to '{local_dir}'"
+        # )
+    else:
+        # Download all artifacts
+        artifacts = client.list_artifacts(best_run.info.run_id)
+        for artifact in artifacts:
+            client.download_artifacts(
+                run_id=best_run.info.run_id, path=artifact.path, dst_path=local_dir
+            )
+        print(f"Downloaded all artifacts to '{local_dir}'")
+
+
 def construct_response(func):
     """
     Construct a JSON response for and endpoint
@@ -646,24 +713,3 @@ def construct_response(func):
         return response
 
     return wrap
-
-
-def set_config(config_path: Path, WANDB_API_KEY: str) -> Munch:
-    if config_path.exists():
-        with open(config_path, "r") as stream:
-            try:
-                config = yaml.safe_load(stream)
-                wandb.login(key=WANDB_API_KEY)
-                return Munch(config)
-            except yaml.YAMLError as exc:
-                print(exc)
-    else:
-        raise Exception("Path error occured. File does not exist")
-
-
-def unpickle_artifacts(artifacts: t.Dict) -> t.Dict:
-    """
-    Unpickle artifacts
-    """
-    artifacts: t.Dict = {k: pkl.load(open(v, "rb")) for k, v in artifacts.items()}
-    return artifacts

@@ -548,7 +548,7 @@ class DataEngine:
                 ("cat_oe", preprocessing.OrdinalEncoder(), config.ordinal),
             ]
         )
-        label_transformer = preprocessing.LabelBinarizer()
+        label_transformer: preprocessing.LabelBinarizer = preprocessing.LabelBinarizer()
         feature_transformer.fit(X_train.to_pandas())
         label_transformer.fit(y_train.to_pandas())
         preprocessor_paths = ["feature_transformer.pkl", "label_binarizer.pkl"]
@@ -567,7 +567,6 @@ class DataEngine:
         # Saving trained preprocessors
         for path, preprocessor in zip(preprocessor_paths, preprocessors):
             _save_to_pickle(path, preprocessor)
-
         transformed_dataset = TransformerOutput(
             feature_transformer.transform(X_train.to_pandas()),
             feature_transformer.transform(X_test.to_pandas()),
@@ -610,10 +609,11 @@ def validate_data_config(config: Box) -> None:
 
     # Validating load args
     load_config = data_config.load
-    if load_config.strategy not in DataLoaderStrategyFactory.keys():
-        raise ConfigValidationError(
-            f"Strategy '{load_config.strategy}' not valid data loading strategy. Choose one of {list(DataLoaderStrategyFactory.keys())}."
-        )
+    # if load_config.strategy not in DataLoaderStrategyFactory.keys():
+    #     raise ConfigValidationError(
+    #         f"Strategy '{load_config.strategy}' not valid data loading strategy. Choose one of {
+    #             list(DataLoaderStrategyFactory.keys())}."
+    #     )
     del load_config
 
     # Validating split args
@@ -640,7 +640,9 @@ def validate_data_config(config: Box) -> None:
     for param in transform_config.keys():
         if param not in transform_params:
             raise ConfigValidationError(
-                f"{param} not present in transformation parameters {transform_params}"
+                f"{param}"
+                + "not present in transformation parameters"
+                + f"{transform_params}"
             )
     cols = list()
     for param in transform_params:

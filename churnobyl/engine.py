@@ -223,9 +223,9 @@ def workflow(config_path: str) -> None:
 
 
 if __name__ == "__main__":
-    assert (
-        Path.cwd().stem == "churninator"
-    ), "Run code from 'churninator', not from `churnobyl`"
+    # assert (
+    #     Path.cwd().stem == "churninator"
+    # ), "Run code from 'churninator', not from `churnobyl`"
     parser = argparse.ArgumentParser(
         prog="Churnobyl-69420",
         description="For config file only",

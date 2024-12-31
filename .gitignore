@@ -18,3 +18,6 @@ docker_push_commands.png
 .mypy_cache/
 .dockerfile.temp
 mlruns/
+.envrc
+dashboard/
+.ruff_cache/
