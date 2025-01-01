@@ -9,6 +9,7 @@ from pathlib import Path
 
 import boto3
 import cloudpickle as cpickle
+import kagglehub
 import numpy as np
 import pandera as pa
 import polars as pl
@@ -368,6 +369,26 @@ class DirDataLoaderStrategy(BaseDataLoaderStrategy):
 
 
 @dataclass
+class KaggleDataLoaderStrategy(BaseDataLoaderStrategy):
+    dataset_name: str
+    path_name: str
+
+    def __call__(self) -> pl.DataFrame:
+        ds_path = kagglehub.dataset_download(
+            self.dataset_name, self.path_name, force_download=True
+        )
+        return (
+            pl.scan_csv(ds_path, dtypes={"TotalCharges": pl.String})
+            .with_columns(
+                pl.col("TotalCharges")
+                .str.replace(pattern=" ", value="0")
+                .alias("TotalCharges")
+            )
+            .collect()
+        )
+
+
+@dataclass
 class AwsS3DataLoaderStrategy(BaseDataLoaderStrategy):
     """
     Strategy to load `.csv` files from AWS S3 bucket
@@ -425,6 +446,7 @@ class AwsS3DataLoaderStrategy(BaseDataLoaderStrategy):
 DataLoaderStrategyFactory: t.Dict[str, t.Type[BaseDataLoaderStrategy]] = {
     "dir": DirDataLoaderStrategy,
     "aws_s3": AwsS3DataLoaderStrategy,
+    "kaggle": KaggleDataLoaderStrategy,
 }
 
 

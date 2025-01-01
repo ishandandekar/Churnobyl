@@ -7,9 +7,10 @@ path:
 
 data:
   load:
-    strategy: dir
+    strategy: kaggle
     args:
-      dir: data
+      dataset_name: blastchar/telco-customer-churn
+      path_name: WA_Fn-UseC_-Telco-Customer-Churn.csv
   split:
     ratio: 0.1
     stratify: True
@@ -92,27 +93,6 @@ model:
                 low: 1.9
                 step: 0.05
           n_trials: 5
-      - xgb:
-          params:
-            n_estimators:
-              strategy: int
-              args:
-                high: 300
-                low: 50
-                step: 50
-            max_depth:
-              strategy: int
-              args:
-                high: 5
-                low: 1
-                step: 1
-            booster:
-              strategy: cat
-              args:
-                choices:
-                  - gblinear
-                  - dart
-          n_trials: 25
       - svm:
           params:
             C:

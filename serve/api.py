@@ -3,11 +3,15 @@ import pickle
 import typing as t
 import warnings
 from http import HTTPStatus
+from typing import Union
 
-import endpoints
 import fastapi
 import mlflow
-import utils
+import pandas as pd
+import sklearn
+from pydantic import BaseModel, Field
+
+from . import utils
 
 warnings.simplefilter("ignore")
 
@@ -39,21 +43,66 @@ def _index(request: fastapi.Request) -> t.Dict:
     return response
 
 
+class PredictionInputSchema(BaseModel):
+    customerID: str
+    gender: str
+    SeniorCitizen: int = Field(ge=0, le=1)  # Binary field 0 or 1
+    Partner: str
+    Dependents: str
+    tenure: int = Field(ge=0)  # Non-negative integer
+    PhoneService: str
+    MultipleLines: str
+    InternetService: str
+    OnlineSecurity: str
+    OnlineBackup: str
+    DeviceProtection: str
+    TechSupport: str
+    StreamingTV: str
+    StreamingMovies: str
+    Contract: str
+    PaperlessBilling: str
+    PaymentMethod: str
+    MonthlyCharges: float = Field(ge=0.0)  # Non-negative float
+    TotalCharges: Union[str, float]  # Can be either string or float
+    #
+    # class Config:
+    #     from_attributes = True
+
+
+def predict_churn(
+    data: dict,
+    model_pipeline: sklearn.pipeline.Pipeline,
+    label_encoder: sklearn.preprocessing.LabelBinarizer,
+) -> dict:
+    da = {k: [v] for k, v in data.items()}
+    df = pd.DataFrame(da)
+    pred_label = model_pipeline.predict(df)
+    pred_class = label_encoder.inverse_transform(pred_label).tolist()[0]
+    pred_prob = model_pipeline.predict_proba(df).tolist()[0]
+    print({"prediction_label": pred_class, "prediction_probability": pred_prob})
+    return {"prediction_label": pred_class, "prediction_probability": pred_prob}
+
+
 # TODO: this
 @app.post("/predict", tags=["Prediction"])
-def predict(resquest: fastapi.Request, data: endpoints.PredictionInputSchema) -> t.Dict:
+@utils.construct_response
+def predict(request: fastapi.Request, data: PredictionInputSchema) -> t.Dict:
     """
     API endpoint to get predictions for one single data point
     """
     result = {}
+    print("IN PREDICT ENDPOINT")
     result["data"] = data.model_dump()
+    print(data.model_dump())
     try:
-        prediction_output: dict = endpoints.predict(
+        prediction_output: dict = predict_churn(
             data.model_dump(), model_pipeline, label_encoder
         )
         result["message"] = prediction_output
+        result["status-code"] = HTTPStatus.OK
     except Exception as e:
         result["errors"] = e
+        result["status-code"] = HTTPStatus.INTERNAL_SERVER_ERROR
     return result
 
 

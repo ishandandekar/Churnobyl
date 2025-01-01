@@ -112,10 +112,19 @@ class Pilot:
                 table=tuner_table.to_dict(as_series=False),
                 description="## Tuning results of the run",
             )
+        print("MLFLOW EXPERIMENT NAME ,", os.getenv("MLFLOW_EXPERIMENT_NAME"))
+        mlflow.set_tracking_uri(os.getenv("MLFLOW_EXPERIMENT_TRACKING_URI"))
+        experiment = mlflow.get_experiment_by_name(os.getenv("MLFLOW_EXPERIMENT_NAME"))
+        if experiment is None:
+            # Create new experiment
+            experiment_id = mlflow.create_experiment(
+                os.getenv("MLFLOW_EXPERIMENT_NAME")
+            )
+        else:
+            experiment_id = experiment.experiment_id
 
-        mlflow.set_tracking_uri(os.getenv("MLFLOW_TRACKING_URI"))
-        mlflow.set_experiment(experiment_name="churnobyl")
-        with mlflow.start_run():
+        mlflow.set_experiment(experiment_id)
+        with mlflow.start_run(experiment_id=experiment_id):
             for image_path in viz_dir.glob("*.png"):
                 mlflow.log_image(
                     image=Image.open(image_path),

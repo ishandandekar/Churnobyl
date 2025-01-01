@@ -33,10 +33,60 @@ jobs:
         shell: bash
         run: |
           pip install -r requirements.txt
-      # - name: Setup Wandb and Prefect
-      #   shell: bash
-      #   env:
-      #     WANDB_API: ${{ secrets.WANDB_KEY }}
-      #     API_KEY: ${{ secrets.PREFECT_API_KEY_CHURNOBYL }}
-      #   run: |
-      #     make setup_workspace
+      
+      - name: Setup Prefect workspace
+        shell: bash
+        run: |
+          prefect cloud login -k $PREFECT_API_KEY --workspace $PREFECT_WORKSPACE
+
+      - name: Run train engine
+        shell: bash
+        run: |
+          python churnobyl/engine.py
+
+  dockerize-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Checkout repository
+        uses: 'actions/checkout@v4'
+
+      - name: Google Cloud Auth
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: '${{ secrets.GCP_SA_TOKEN }}'
+          project_id: ${{ env.PROJECT_ID }}
+
+      - name: Set up Cloud SDK
+        uses: 'google-github-actions/setup-gcloud@v2'
+
+      - name: Configure Docker
+        run: |
+          gcloud auth configure-docker us-central1-docker.pkg.dev
+
+      - name: Configure Docker 2
+        run: |
+          gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://us-central1-docker.pkg.dev
+
+      - name: Build and Push Docker Image
+        run: |
+          docker build -t ${{ env.DOCKER_IMAGE_URL }}:latest --build-arg MLFLOW_EXPERIMENT_NAME=${{ env.MLFLOW_EXPERIMENT_NAME}} \
+          --build-arg MLFLOW_TRACKING_USERNAME=${{ env.MLFLOW_TRACKING_USERNAME }} \
+          --build-arg MLFLOW_TRACKING_PASSWORD=${{ env.MLFLOW_TRACKING_PASSWORD }} \
+          --build-arg MLFLOW_EXPERIMENT_TRACKING_URI=${{ env.MLFLOW_EXPERIMENT_TRACKING_URI }} .
+          echo 'DOCKER IMAGE BUILT'
+          docker image ls
+          docker push ${{ env.DOCKER_IMAGE_URL }}:latest
+
+      - name: Deploy to Cloud Run
+        run: |
+          echo SERVICE_NAME $SERVICE_NAME
+          gcloud run deploy $SERVICE_NAME \
+            --image ${{ env.DOCKER_IMAGE_URL }}:latest \
+            --platform managed \
+            --region us-east1 \
+            --allow-unauthenticated
