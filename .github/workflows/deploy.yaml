@@ -1,19 +1,19 @@
 name: Deploy
 
 
-# env:
-#   SERVICE_NAME: '${{ secrets.SERVICE_NAME }}'
-#   PROJECT_ID: '${{ secrets.PROJECT_ID }}'
-#   DOCKER_IMAGE_URL: '${{ secrets.IMAGE_URL }}'
-#   MLFLOW_EXPERIMENT_NAME: '${{ secrets.MLFLOW_EXPERIMENT_NAME }}'
-#   MLFLOW_TRACKING_USERNAME: '${{ secrets.MLFLOW_TRACKING_USERNAME }}'
-#   MLFLOW_TRACKING_PASSWORD: '${{ secrets.MLFLOW_TRACKING_PASSWORD }}'
-#   MLFLOW_EXPERIMENT_TRACKING_URI: '${{ secrets.MLFLOW_EXPERIMENT_TRACKING_URI }}'
-#   PREFECT_API_KEY: '${{ secrets.PREFECT_API_KEY }}'
-#   PREFECT_WORKSPACE: '${{ secrets.PREFECT_WORKSPACE }}'
-#   GGCLOUD_SA_KEY: '${{ secrets.GCLOUD_SA_KEY }}'
-#   KAGGLE_USERNAME: '${{ secrets.KAGGLE_USERNAME }}'
-#   KAGGLE_KEY: '${{ secrets.KAGGLE_KEY }}'
+env:
+  SERVICE_NAME: '${{ secrets.SERVICE_NAME }}'
+  PROJECT_ID: '${{ secrets.PROJECT_ID }}'
+  DOCKER_IMAGE_URL: '${{ secrets.IMAGE_URL }}'
+  MLFLOW_EXPERIMENT_NAME: '${{ secrets.MLFLOW_EXPERIMENT_NAME }}'
+  MLFLOW_TRACKING_USERNAME: '${{ secrets.MLFLOW_TRACKING_USERNAME }}'
+  MLFLOW_TRACKING_PASSWORD: '${{ secrets.MLFLOW_TRACKING_PASSWORD }}'
+  MLFLOW_EXPERIMENT_TRACKING_URI: '${{ secrets.MLFLOW_EXPERIMENT_TRACKING_URI }}'
+  PREFECT_API_KEY: '${{ secrets.PREFECT_API_KEY }}'
+  PREFECT_WORKSPACE: '${{ secrets.PREFECT_WORKSPACE }}'
+  GGCLOUD_SA_KEY: '${{ secrets.GCLOUD_SA_KEY }}'
+  KAGGLE_USERNAME: '${{ secrets.KAGGLE_USERNAME }}'
+  KAGGLE_KEY: '${{ secrets.KAGGLE_KEY }}'
 
 on: workflow_dispatch
 
@@ -46,6 +46,7 @@ jobs:
 
   dockerize-and-deploy:
     runs-on: ubuntu-latest
+    needs: run-pipeline
     steps:
       - name: Setup Python
         uses: actions/setup-python@v5
