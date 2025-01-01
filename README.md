@@ -1,31 +1,23 @@
 # Churnobyl
 
 [![Deploy](https://github.com/ishandandekar/Churnobyl/actions/workflows/deploy.yaml/badge.svg)](https://github.com/ishandandekar/Churnobyl/actions/workflows/deploy.yaml)
-[![Tests](https://github.com/ishandandekar/Churnobyl/actions/workflows/tests.yaml/badge.svg)](https://github.com/ishandandekar/Churnobyl/actions/workflows/tests.yaml)
+<!--[![Tests](https://github.com/ishandandekar/Churnobyl/actions/workflows/tests.yaml/badge.svg)](https://github.com/ishandandekar/Churnobyl/actions/workflows/tests.yaml)-->
 
-[LICENCE](LICENCE)
 
-> [!WARNING]
-> This is a work in progress. Until specified, please do not directly use the code. There will be addtition as well as improvements over the time. Use the code only to get inspiration and not for actual production usage.
+Super excited to say the project is now complete and has achieved OPERATION VACATION!! The whole pipeline runs via Github Actions and deploys a docker container on a gcloud instance.
 
-### [Contributions](./CONTRIBUTING.md)
+You can use this as a template to run and deploy an MLOps project
 
-Any help is always welcomed. The project is open-sourced. The key features that are needed to be updated are marked as TODO in readme as well as in code. Some issues according to the authors of the project are highlighted in the README itself. If you think there can be any other improvement, please make a PR or an issue, and I'll go over it as soon as possible.
+
 
 ## Future additions:
 
-- Add more configurations that can be changed by the "DEV". For example, add config for hyperparameter tuning, like specifying the model and its params
 - Minimize human intervention. The pipeline must run automatically, if the production metric goes below a certain threshold
-- Up the cloud infra using tools like Terraform or Ansible
+- Adding storing of prediction endpoint, right now it does not store any data
+- Adding a flag endpoint to capture wrong predictions submitted by users
 - Using self-hosted runners instead of Github appointed, to gain more control over functioning and logging of the pipeline
-
-### Steps to develop:
-
-- Join the org!
-- Create a PR
-- Get the keys
-- Notify owners and reviewers of repo/project
-- Push code to branch, some tests must be passes by the branch
+- Model training doesn't support `StackingClassifier`
+- Tuning `VotingClassifier` is not available yet
 
 ## Milestones
 
@@ -37,65 +29,24 @@ Any help is always welcomed. The project is open-sourced. The key features that 
 - **21-1-2024**: The pipeline's architecture has changed a whole lot from the start. I feel I've learned more than I've worked on this. I have a better understanding on how larger scale applications may (or atleast should) work. The only part that is left is pushing artifacts to various remote storage locations. I've integrated prefect as well.
 - **28-1-2024**: MLFlow was a success, lets see where we can go from here
 - **28-12-2024**: So I tried to deploy an API via GCP and it worked (after I tried for 4 hours), now I'm thinking the artifacts will be downloaded and packaged into the image so that only necessary things go to image
+- **1-1-2025**: API has been deployed! OPERATION VACATION has been achieved!!!!
 
-### Issues:
 
-- The API serving code can be still be optimized. There is too much code that might seem to complicate things. Better serving solutions still need to be tested.
-- The code for monitoring can be a pain. Creating a branch for the Streamlit dashboard is one of the solutions.
-- For setting up configuration variables right now, `.yaml` seems the way to go. Some other ways like using a `.env` file can also be a method that can be benefiticial for setting up AWS credentials locally.
-- DEV notes are still needed to be added for future MLEs
-- Model training doesn't support `StackingClassifier`
-- Tuning `VotingClassifier` is not available yet
-- `wandb` is not even recognizing the new preprocessors. For this, I'll be using `mlflow`. This requires a bit of setup. This would be beneficial only if we can download the best model
+### [Contributions](./CONTRIBUTING.md)
 
-### Storage structure
+Any help is always welcomed. The project is open-sourced. The key features that are needed to be updated are marked as TODO in readme as well as in code. Some issues according to the authors of the project are highlighted in the README itself. If you think there can be any other improvement, please make a PR or an issue, and I'll go over it as soon as possible.
 
-For S3:
 
-```
-churnobyl/
-├─ api_logs/
-│  ├─ predict_logs/
-│  ├─ flag_logs/
-├─ flagged/
-├─ train_logs/
-```
+### Steps to develop:
 
-Things to store in MLFlow
+- Join the org!
+- Create a PR
+- Get the keys
+- Notify owners and reviewers of repo/project
+- Push code to branch, some tests must be passes by the branch
+[LICENCE](LICENCE)
 
-- All the tuned models
-- All the figures related to that run
-- Transformers related to that run
-
-### Ideas for monitoring dashboard:
-
-- Prediction rate
-- Monthly/daily frequency of requests
-- Flag rate
-- alert after flags cross certain threshold
-- Add probability data
-
-### TODO:
-
-- [ ] Test out how you can upload data from python to AWS S3 bucket. [link for yt video](https://www.youtube.com/watch?v=vXiZO1c5Sk0)
-- [ ] https://www.youtube.com/watch?v=XEZ7Hx2NrO8 & https://stackoverflow.com/questions/62664183/mlflow-find-model-version-with-best-metric-using-python-code
-- [ ] Try another way to package model so that one program downloads the best transformer and predictor and another script just with inference/prediction function this then gets packged into a Docker image.
-- [ ] Update tests for this new integration
-- [ ] Update docstrings for new functions
-- [x] Rewrite **`func`** `churnobyl.engine.push_artifact` for new code. Also get the version right.
-- [ ] Use `tempfile` module. [https://www.youtube.com/watch?v=-pmgCmWiOXo](https://www.youtube.com/watch?v=-pmgCmWiOXo)
-- [ ] Rewrite [./serve](./serve/), decouple applications, refactor code and remove [`serve yaml`](./serve/serve-config.yaml)
-- [ ] Shift all the saving to pickle files as artifacts or models to **`func`** `churnobyl.engine.push_artifact`. This is a MAYBE, will see if everything works out
-- [ ] Write a script in [`temp/`](./temp) to download data from Kaggle for better reproducibility
-- [x] Create [bin](./bin/) directory for shell scripts
-- [ ] Create a cleanup script to remove directories like data, figures, models
-- [ ] Another idea is to setup a new separate repository for flagged data and monitoring, this could make things easier for api deployment as well as maintenence.
-- [ ] Look into EKS cluster to display monitoring
-- [ ] Create Streamlit dashboard for monitoring
-- [ ] Integrate Streamlit to display graphs
-- [ ] Write a report on the project explaining all the components
-
-### Refs:
+Refs:
 
 - Pulumi seems like a great automation tool to "up" the infra, would have to look into ECS first, but lets see. Very hopeful about this
 - https://www.youtube.com/watch?app=desktop&v=ZaTVXLuCXQ8
@@ -110,14 +61,10 @@ Things to store in MLFlow
 - https://blog.searce.com/fastapi-container-app-deployment-using-aws-lambda-and-api-gateway-6721904531d0
 - https://www.youtube.com/watch?v=rpVLOVeky6A&ab_channel=VincentStevenson
 - https://www.youtube.com/watch?v=UXMTOBkdvMY
-
----
-
 - https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#adding-a-job-summary
 - https://github.blog/2022-05-09-supercharging-github-actions-with-job-summaries/
 - https://cml.dev/doc/usage
 - https://docs.aws.amazon.com/AmazonECR/latest/userguide/image-push.html
-
 - https://medium.com/akava/deploying-containerized-aws-lambda-functions-with-terraform-7147b9815599
 - https://developer.hashicorp.com/terraform/tutorials/aws/lambda-api-gateway
 - https://www.youtube.com/watch?v=VYk3lwZbHBU&ab_channel=TalhaAnwar
