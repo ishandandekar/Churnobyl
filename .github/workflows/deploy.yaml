@@ -1,31 +1,42 @@
 name: Deploy
 
+
+# env:
+#   SERVICE_NAME: '${{ secrets.SERVICE_NAME }}'
+#   PROJECT_ID: '${{ secrets.PROJECT_ID }}'
+#   DOCKER_IMAGE_URL: '${{ secrets.IMAGE_URL }}'
+#   MLFLOW_EXPERIMENT_NAME: '${{ secrets.MLFLOW_EXPERIMENT_NAME }}'
+#   MLFLOW_TRACKING_USERNAME: '${{ secrets.MLFLOW_TRACKING_USERNAME }}'
+#   MLFLOW_TRACKING_PASSWORD: '${{ secrets.MLFLOW_TRACKING_PASSWORD }}'
+#   MLFLOW_EXPERIMENT_TRACKING_URI: '${{ secrets.MLFLOW_EXPERIMENT_TRACKING_URI }}'
+#   PREFECT_API_KEY: '${{ secrets.PREFECT_API_KEY }}'
+#   PREFECT_WORKSPACE: '${{ secrets.PREFECT_WORKSPACE }}'
+#   GGCLOUD_SA_KEY: '${{ secrets.GCLOUD_SA_KEY }}'
+#   KAGGLE_USERNAME: '${{ secrets.KAGGLE_USERNAME }}'
+#   KAGGLE_KEY: '${{ secrets.KAGGLE_KEY }}'
+
 on: workflow_dispatch
 
 jobs:
   run-pipeline:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3.5.3
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-region: us-east-2
-          aws-access-key-id: ${{ secrets.CHURNOBYL_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.CHURNOBYL_SECRET_KEY }}
       - name: Setup Python
-        uses: actions/setup-python@v4.7.0
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.9"
+          python-version: 3.10
+
+      - name: Checkout repository
+        uses: 'actions/checkout@v4'
+
       - name: Install dependancies
         shell: bash
         run: |
-          make install_reqs
-      - name: Setup Wandb and Prefect
-        shell: bash
-        env:
-          WANDB_API: ${{ secrets.WANDB_KEY }}
-          API_KEY: ${{ secrets.PREFECT_API_KEY_CHURNOBYL }}
-        run: |
-          make setup_workspace
+          pip install -r requirements.txt
+      # - name: Setup Wandb and Prefect
+      #   shell: bash
+      #   env:
+      #     WANDB_API: ${{ secrets.WANDB_KEY }}
+      #     API_KEY: ${{ secrets.PREFECT_API_KEY_CHURNOBYL }}
+      #   run: |
+      #     make setup_workspace

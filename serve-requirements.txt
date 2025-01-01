@@ -1,10 +1,8 @@
 pandas
-pandera
+python-box
 scikit-learn
 xgboost
 fastapi
-wandb
-boto3
 uvicorn
-munch
 pydantic
+mlflow
