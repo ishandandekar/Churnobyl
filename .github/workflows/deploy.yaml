@@ -11,7 +11,7 @@ env:
   MLFLOW_EXPERIMENT_TRACKING_URI: '${{ secrets.MLFLOW_EXPERIMENT_TRACKING_URI }}'
   PREFECT_API_KEY: '${{ secrets.PREFECT_API_KEY }}'
   PREFECT_WORKSPACE: '${{ secrets.PREFECT_WORKSPACE }}'
-  GGCLOUD_SA_KEY: '${{ secrets.GCLOUD_SA_KEY }}'
+  GCLOUD_SA_KEY: '${{ secrets.GCLOUD_SA_KEY }}'
   KAGGLE_USERNAME: '${{ secrets.KAGGLE_USERNAME }}'
   KAGGLE_KEY: '${{ secrets.KAGGLE_KEY }}'
 
@@ -59,7 +59,7 @@ jobs:
       - name: Google Cloud Auth
         uses: 'google-github-actions/auth@v2'
         with:
-          credentials_json: '${{ secrets.GCP_SA_TOKEN }}'
+          credentials_json: '${{ env.GCLOUD_SA_KEY }}'
           project_id: ${{ env.PROJECT_ID }}
 
       - name: Set up Cloud SDK
