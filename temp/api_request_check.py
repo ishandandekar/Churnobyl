@@ -1,21 +1,22 @@
 import requests
-from requests import Response
 
-url = "http://localhost:8000/"
+#
+# url = "http://localhost:8000/"
+#
+# try:
+#     response: Response = requests.get(url)
+#     if response.status_code == 200:
+#         print("Request was successful!")
+#         print("Response content:")
+#         print(response.json())
+#     else:
+#         print(f"Request failed with status code: {response.status_code}")
+# except requests.exceptions.RequestException as e:
+#     print("An error occurred:", e)
 
-try:
-    response: Response = requests.get(url)
-    if response.status_code == 200:
-        print("Request was successful!")
-        print("Response content:")
-        print(response.json())
-    else:
-        print(f"Request failed with status code: {response.status_code}")
-except requests.exceptions.RequestException as e:
-    print("An error occurred:", e)
 
-
-PREDICT_URL = "http://localhost:8000/predict"
+# PREDICT_URL = "http://localhost:8000/predict"
+PREDICT_URL = "https://churnobyl-api-service-968699229335.us-east1.run.app/predict"
 
 print("\n\n")
 print("#####" * 3)
@@ -47,7 +48,7 @@ try:
     }
     # payload = json.dumps(payload)
     headers = {"Content-Type": "application/json"}
-    response = requests.get(PREDICT_URL, json=payload, headers=headers)
+    response = requests.post(PREDICT_URL, json=payload, headers=headers)
     if response.status_code == 200:
         print("Request was successful!")
         print("Response content:")
