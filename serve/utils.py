@@ -699,20 +699,23 @@ def construct_response(func):
             "errors": results.get("errors", list()),
             "IP": request.client.host,
         }
-        try:
-            upload_response_to_bucket(response)
-        except Exception as e:
-            response["errors"].append(e)
+        # try:
+        upload_response_to_bucket(response)
+        # except Exception as e:
+        #     response["errors"].append(str(e))
         return response
 
     return wrap
 
 
 def upload_response_to_bucket(response: dict):
+    if "predict" not in response["urlPath"]:
+        return None
+
     gcloud_sa_key_fp = json.dump(
-        os.environ["GCLOUD_SA_KEY"], open("gcloud_sa_key", "w")
+        json.loads(os.environ["GCLOUD_SA_KEY"]), open("gcloud_sa_key.json", "w")
     )
-    storage_client = storage.Client.from_service_account_json(gcloud_sa_key_fp)
+    storage_client = storage.Client.from_service_account_json("gcloud_sa_key.json")
     bucket = storage_client.get_bucket(os.environ["GCS_BUCKET_NAME"])
     uid = str(uuid.uuid4())
     curr_time = datetime.now().strftime("%H-%M-%S")

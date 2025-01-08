@@ -74,13 +74,12 @@ def predict_churn(
     da = {k: [v] for k, v in data.items()}
     df = pd.DataFrame(da)
     pred_label = model_pipeline.predict(df)
-    pred_class = label_encoder.inverse_transform(pred_label).tolist()[0]
-    pred_prob = model_pipeline.predict_proba(df).tolist()[0]
+    pred_class = label_encoder.inverse_transform(pred_label).tolist()
+    pred_prob = model_pipeline.predict_proba(df).tolist()
     print({"prediction_label": pred_class, "prediction_probability": pred_prob})
     return {"prediction_label": pred_class, "prediction_probability": pred_prob}
 
 
-# TODO: this
 @app.post("/predict", tags=["Prediction"])
 @utils.construct_response
 def predict(request: fastapi.Request, data: PredictionInputSchema) -> t.Dict:
@@ -88,9 +87,7 @@ def predict(request: fastapi.Request, data: PredictionInputSchema) -> t.Dict:
     API endpoint to get predictions for one single data point
     """
     result = {}
-    print("IN PREDICT ENDPOINT")
     result["data"] = data.model_dump()
-    print(data.model_dump())
     try:
         prediction_output: dict = predict_churn(
             data.model_dump(), model_pipeline, label_encoder
@@ -99,7 +96,7 @@ def predict(request: fastapi.Request, data: PredictionInputSchema) -> t.Dict:
         result["status-code"] = HTTPStatus.OK
     except Exception as e:
         result["errors"] = list()
-        result["errors"].append(e)
+        result["errors"].append(str(e))
         result["status-code"] = HTTPStatus.INTERNAL_SERVER_ERROR
     return result
 
