@@ -2,18 +2,20 @@
 Utility/helper functions and variables for api
 """
 
+import json
 import os
 import typing as t
+import uuid
 from datetime import datetime
 from functools import wraps
 from typing import Optional
 
 import fastapi
 import mlflow
+from google.cloud import storage
 from mlflow.tracking import MlflowClient
 
 # from pandera import Check, Column, DataFrameSchema, Index
-from pydantic import BaseModel
 
 # checks: t.Dict[str, t.List[Check]] = {
 #     "customerID": [],
@@ -576,54 +578,55 @@ from pydantic import BaseModel
 #     description=None,
 # )
 
-
-class PredictionEndpointInputSchema(BaseModel):
-    customerID: str
-    gender: str
-    SeniorCitizen: int
-    Partner: str
-    Dependents: str
-    tenure: int
-    PhoneService: str
-    MultipleLines: str
-    InternetService: str
-    OnlineSecurity: str
-    OnlineBackup: str
-    DeviceProtection: str
-    TechSupport: str
-    StreamingTV: str
-    StreamingMovies: str
-    Contract: str
-    PaperlessBilling: str
-    PaymentMethod: str
-    MonthlyCharges: float
-    TotalCharges: str
-
-
-class FlagEndpointInputSchema(BaseModel):
-    customerID: str
-    gender: str
-    SeniorCitizen: int
-    Partner: str
-    Dependents: str
-    tenure: int
-    PhoneService: str
-    MultipleLines: str
-    InternetService: str
-    OnlineSecurity: str
-    OnlineBackup: str
-    DeviceProtection: str
-    TechSupport: str
-    StreamingTV: str
-    StreamingMovies: str
-    Contract: str
-    PaperlessBilling: str
-    PaymentMethod: str
-    MonthlyCharges: float
-    TotalCharges: str
-    actualChurn: int
-    predictedChurn: int
-    predicted_probaChurn: float
+#
+# class PredictionEndpointInputSchema(BaseModel):
+#     customerID: str
+#     gender: str
+#     SeniorCitizen: int
+#     Partner: str
+#     Dependents: str
+#     tenure: int
+#     PhoneService: str
+#     MultipleLines: str
+#     InternetService: str
+#     OnlineSecurity: str
+#     OnlineBackup: str
+#     DeviceProtection: str
+#     TechSupport: str
+#     StreamingTV: str
+#     StreamingMovies: str
+#     Contract: str
+#     PaperlessBilling: str
+#     PaymentMethod: str
+#     MonthlyCharges: float
+#     TotalCharges: str
+#
+#
+# class FlagEndpointInputSchema(BaseModel):
+#     customerID: str
+#     gender: str
+#     SeniorCitizen: int
+#     Partner: str
+#     Dependents: str
+#     tenure: int
+#     PhoneService: str
+#     MultipleLines: str
+#     InternetService: str
+#     OnlineSecurity: str
+#     OnlineBackup: str
+#     DeviceProtection: str
+#     TechSupport: str
+#     StreamingTV: str
+#     StreamingMovies: str
+#     Contract: str
+#     PaperlessBilling: str
+#     PaymentMethod: str
+#     MonthlyCharges: float
+#     TotalCharges: str
+#     actualChurn: int
+#     predictedChurn: int
+#     predicted_probaChurn: float
+#
 
 
 def fetch_best_run_artifacts(
@@ -643,17 +646,14 @@ def fetch_best_run_artifacts(
         artifact_path (Optional[str]): Specific artifact path to download. If None, downloads all artifacts
         local_dir (str): Local directory to save artifacts to
     """
-    # Set up MLflow client
     if tracking_uri:
         mlflow.set_tracking_uri(tracking_uri)
     client = MlflowClient()
 
-    # Get experiment ID
     experiment = client.get_experiment_by_name(experiment_name)
     if not experiment:
         raise ValueError(f"Experiment '{experiment_name}' not found")
 
-    # Get all runs for the experiment
     runs = client.search_runs(
         experiment_ids=[experiment.experiment_id],
         filter_string="",
@@ -663,27 +663,15 @@ def fetch_best_run_artifacts(
     if not runs:
         raise ValueError(f"No runs found in experiment '{experiment_name}'")
 
-    # Get the best run (first run since we ordered by metric DESC)
     best_run = runs[0]
     print(f"Best run ID: {best_run.info.run_id}")
-    # print(f"Best {metric_name}: {
-    #       best_run.data.metrics.get(metric_name, 'N/A')}")
-    #
-    # Create local directory if it doesn't exist
     os.makedirs(local_dir, exist_ok=True)
 
-    # Download artifacts
     if artifact_path:
-        # Download specific artifact or directory
         client.download_artifacts(
             run_id=best_run.info.run_id, path=artifact_path, dst_path=local_dir
         )
-        # print(
-        #     f"Downloaded artifact(s) from path '{
-        #         artifact_path}' to '{local_dir}'"
-        # )
     else:
-        # Download all artifacts
         artifacts = client.list_artifacts(best_run.info.run_id)
         for artifact in artifacts:
             client.download_artifacts(
@@ -706,10 +694,30 @@ def construct_response(func):
             "status-code": results["status-code"],
             "timestamp": datetime.now().isoformat(),
             "url": request.url._url,
+            "urlPath": request.url.path,
             "data": results.get("data", None),
-            "errors": results.get("errors", None),
+            "errors": results.get("errors", list()),
             "IP": request.client.host,
         }
+        try:
+            upload_response_to_bucket(response)
+        except Exception as e:
+            response["errors"].append(e)
         return response
 
     return wrap
+
+
+def upload_response_to_bucket(response: dict):
+    gcloud_sa_key_fp = json.dump(
+        os.environ["GCLOUD_SA_KEY"], open("gcloud_sa_key", "w")
+    )
+    storage_client = storage.Client.from_service_account_json(gcloud_sa_key_fp)
+    bucket = storage_client.get_bucket(os.environ["GCS_BUCKET_NAME"])
+    uid = str(uuid.uuid4())
+    curr_time = datetime.now().strftime("%H-%M-%S")
+    fname = f"{uid}-{curr_time}.json"
+    if "predict" in response["urlPath"]:
+        fname = "predict/" + fname
+    blob = bucket.blob(fname)
+    blob.upload_from_string(json.dumps(response))

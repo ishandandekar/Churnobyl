@@ -64,9 +64,6 @@ class PredictionInputSchema(BaseModel):
     PaymentMethod: str
     MonthlyCharges: float = Field(ge=0.0)  # Non-negative float
     TotalCharges: Union[str, float]  # Can be either string or float
-    #
-    # class Config:
-    #     from_attributes = True
 
 
 def predict_churn(
@@ -101,21 +98,22 @@ def predict(request: fastapi.Request, data: PredictionInputSchema) -> t.Dict:
         result["message"] = prediction_output
         result["status-code"] = HTTPStatus.OK
     except Exception as e:
-        result["errors"] = e
+        result["errors"] = list()
+        result["errors"].append(e)
         result["status-code"] = HTTPStatus.INTERNAL_SERVER_ERROR
     return result
 
 
 # TODO: and this
-@app.post("/flag", tags=["Flagging"])
-def flag(data: utils.FlagEndpointInputSchema):
-    """
-    API endpoint to flag a prediction. Must contain the predicted label, prediction probability and the actual label
-    """
-
-    response = {
-        "message": HTTPStatus.NOT_IMPLEMENTED.phrase,
-        "status-code": HTTPStatus.NOT_IMPLEMENTED,
-        "data": {data.model_dump()},
-    }
-    return response
+# @app.post("/flag", tags=["Flagging"])
+# def flag(data: utils.FlagEndpointInputSchema):
+#     """
+#     API endpoint to flag a prediction. Must contain the predicted label, prediction probability and the actual label
+#     """
+#
+#     response = {
+#         "message": HTTPStatus.NOT_IMPLEMENTED.phrase,
+#         "status-code": HTTPStatus.NOT_IMPLEMENTED,
+#         "data": {data.model_dump()},
+#     }
+#     return response
