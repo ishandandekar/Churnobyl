@@ -6,3 +6,4 @@ fastapi
 uvicorn
 pydantic
 mlflow
+google-cloud-storage
