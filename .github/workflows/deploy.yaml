@@ -78,6 +78,7 @@ jobs:
         run: |
           docker build -t ${{ env.DOCKER_IMAGE_URL }}:latest --build-arg MLFLOW_EXPERIMENT_NAME=${{ env.MLFLOW_EXPERIMENT_NAME}} \
           --build-arg MLFLOW_TRACKING_USERNAME=${{ env.MLFLOW_TRACKING_USERNAME }} \
+          --build-arg GCLOUD_SA_KEY=${{ env.GCLOUD_SA_KEY }} \
           --build-arg MLFLOW_TRACKING_PASSWORD=${{ env.MLFLOW_TRACKING_PASSWORD }} \
           --build-arg MLFLOW_EXPERIMENT_TRACKING_URI=${{ env.MLFLOW_EXPERIMENT_TRACKING_URI }} .
           echo 'DOCKER IMAGE BUILT'
