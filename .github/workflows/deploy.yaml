@@ -12,6 +12,7 @@ env:
   PREFECT_API_KEY: '${{ secrets.PREFECT_API_KEY }}'
   PREFECT_WORKSPACE: '${{ secrets.PREFECT_WORKSPACE }}'
   GCLOUD_SA_KEY: '${{ secrets.GCLOUD_SA_KEY }}'
+  GCS_BUCKET_NAME: '${{ secrets.GCS_BUCKET_NAME }}'
   KAGGLE_USERNAME: '${{ secrets.KAGGLE_USERNAME }}'
   KAGGLE_KEY: '${{ secrets.KAGGLE_KEY }}'
 
