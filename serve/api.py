@@ -19,6 +19,7 @@ app = fastapi.FastAPI(
     title="Churnobyl", description="Predict the churn, and DO NOT BURN", version="0.1"
 )
 
+
 MLFLOW_EXPERIMENT_NAME = os.getenv("MLFLOW_EXPERIMENT_NAME")
 MLFLOW_TRACKING_URI = os.getenv("MLFLOW_EXPERIMENT_TRACKING_URI")
 ARTIFACT_DIR = "best_run_artifacts"
@@ -76,7 +77,6 @@ def predict_churn(
     pred_label = model_pipeline.predict(df)
     pred_class = label_encoder.inverse_transform(pred_label).tolist()
     pred_prob = model_pipeline.predict_proba(df).tolist()
-    print({"prediction_label": pred_class, "prediction_probability": pred_prob})
     return {"prediction_label": pred_class, "prediction_probability": pred_prob}
 
 
@@ -88,6 +88,7 @@ def predict(request: fastapi.Request, data: PredictionInputSchema) -> t.Dict:
     """
     result = {}
     result["data"] = data.model_dump()
+    result["errors"] = list()
     try:
         prediction_output: dict = predict_churn(
             data.model_dump(), model_pipeline, label_encoder
@@ -95,7 +96,6 @@ def predict(request: fastapi.Request, data: PredictionInputSchema) -> t.Dict:
         result["message"] = prediction_output
         result["status-code"] = HTTPStatus.OK
     except Exception as e:
-        result["errors"] = list()
         result["errors"].append(str(e))
         result["status-code"] = HTTPStatus.INTERNAL_SERVER_ERROR
     return result

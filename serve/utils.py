@@ -1,6 +1,4 @@
-"""
-Utility/helper functions and variables for api
-"""
+"""Utility/helper functions and variables for api"""
 
 import json
 import os
@@ -8,6 +6,7 @@ import typing as t
 import uuid
 from datetime import datetime
 from functools import wraps
+from http import HTTPStatus
 from typing import Optional
 
 import fastapi
@@ -687,7 +686,14 @@ def construct_response(func):
 
     @wraps(func)
     def wrap(request: fastapi.Request, *args, **kwargs) -> t.Dict:
-        results: dict = func(request, *args, **kwargs)
+        try:
+            results: dict = func(request, *args, **kwargs)
+        except Exception as e:
+            results = {}
+            results["message"] = "HOUSTON THERE SEEMS TO BE A PROBLEM"
+            results["status-code"] = HTTPStatus.INTERNAL_SERVER_ERROR
+            results["errors"] = list()
+            results["errors"].append(str(e))
         response = {
             "message": results["message"],
             "method": request.method,
@@ -712,11 +718,12 @@ def upload_response_to_bucket(response: dict):
     if "predict" not in response["urlPath"]:
         return None
 
-    gcloud_sa_key_fp = json.dump(
-        json.loads(os.environ["GCLOUD_SA_KEY"]), open("gcloud_sa_key.json", "w")
+    # credentials = Credentials(token=os.environ["GCLOUD_ACCESS_TOKEN"])
+    storage_client = storage.Client(
+        # project=os.environ["PROJECT_ID"], credentials=credentials
     )
-    storage_client = storage.Client.from_service_account_json("gcloud_sa_key.json")
-    bucket = storage_client.get_bucket(os.environ["GCS_BUCKET_NAME"])
+    bucket = storage_client.bucket(os.environ["GCS_BUCKET_NAME"])
+
     uid = str(uuid.uuid4())
     curr_time = datetime.now().strftime("%H-%M-%S")
     fname = f"{uid}-{curr_time}.json"
