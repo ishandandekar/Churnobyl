@@ -75,13 +75,15 @@ jobs:
           gcloud auth print-access-token | docker login -u oauth2accesstoken --password-stdin https://us-central1-docker.pkg.dev
       
       - name: Create service account key file
-        run: echo "${{ env.GCLOUD_SA_KEY }}" > key.json
+        run: |
+          echo "${{ env.GCLOUD_SA_KEY }}" | jq '.' > key.json
+        shell: bash
 
       - name: Build and Push Docker Image
         run: |
           docker build -t ${{ env.DOCKER_IMAGE_URL }}:latest --build-arg MLFLOW_EXPERIMENT_NAME=${{ env.MLFLOW_EXPERIMENT_NAME}} \
           --build-arg MLFLOW_TRACKING_USERNAME=${{ env.MLFLOW_TRACKING_USERNAME }} \
-          --build-arg MLFLOW_TRACKING_USERNAME=${{ env.MLFLOW_TRACKING_USERNAME }} \
+          --build-arg MLFLOW_TRACKING_PASSWORD=${{ env.MLFLOW_TRACKING_PASSWORD }} \
           --build-arg GCS_BUCKET_NAME=${{ env.GCS_BUCKET_NAME }} \
           --build-arg MLFLOW_EXPERIMENT_TRACKING_URI=${{ env.MLFLOW_EXPERIMENT_TRACKING_URI }} .
           echo 'DOCKER IMAGE BUILT'
