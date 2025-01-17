@@ -62,7 +62,9 @@ jobs:
         with:
           credentials_json: '${{ env.GCLOUD_SA_KEY }}'
           project_id: ${{ env.PROJECT_ID }}
-
+          export_environment_variables: true
+          create_credentials_file: true
+      
       - name: Set up Cloud SDK
         uses: 'google-github-actions/setup-gcloud@v2'
 
@@ -76,7 +78,8 @@ jobs:
       
       - name: Create service account key file
         run: |
-          echo "${{ env.GCLOUD_SA_KEY }}" | jq '.' > key.json
+          # echo "${{ env. }}" | jq '.' > key.json
+          cat ${{ env.GOOGLE_APPLICATION_CREDENTIALS }} | jq '.' > key.json
         shell: bash
 
       - name: Build and Push Docker Image
