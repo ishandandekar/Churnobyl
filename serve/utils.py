@@ -695,7 +695,7 @@ def construct_response(func):
             results["errors"] = list()
             results["errors"].append(str(e))
         response = {
-            "message": results["message"],
+            "message": results.get("message", None),
             "method": request.method,
             "status-code": results["status-code"],
             "timestamp": datetime.now().isoformat(),

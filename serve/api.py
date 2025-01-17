@@ -96,6 +96,7 @@ def predict(request: fastapi.Request, data: PredictionInputSchema) -> t.Dict:
         result["message"] = prediction_output
         result["status-code"] = HTTPStatus.OK
     except Exception as e:
+        result["message"] = HTTPStatus.INTERNAL_SERVER_ERROR.phrase
         result["errors"].append(str(e))
         result["status-code"] = HTTPStatus.INTERNAL_SERVER_ERROR
     return result
