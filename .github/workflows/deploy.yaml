@@ -78,7 +78,6 @@ jobs:
       
       - name: Create service account key file
         run: |
-          # echo "${{ env. }}" | jq '.' > key.json
           cat ${{ env.GOOGLE_APPLICATION_CREDENTIALS }} | jq '.' > key.json
         shell: bash
 
