@@ -2,630 +2,16 @@
 
 import json
 import os
-import typing as t
 import uuid
 from datetime import datetime
 from functools import wraps
 from http import HTTPStatus
-from typing import Optional
+from typing import Dict, Optional
 
 import fastapi
 import mlflow
 from google.cloud import storage
 from mlflow.tracking import MlflowClient
-
-# from pandera import Check, Column, DataFrameSchema, Index
-
-# checks: t.Dict[str, t.List[Check]] = {
-#     "customerID": [],
-#     "gender": [Check.isin(["Male", "Female"])],
-#     "SeniorCitizen": [Check.isin([0, 1])],
-#     "Partner": [Check.isin(["Yes", "No"])],
-#     "Dependents": [Check.isin(["Yes", "No"])],
-#     "tenure": [
-#         Check.greater_than_or_equal_to(min_value=0.0),
-#         Check.less_than_or_equal_to(max_value=72.0),
-#     ],
-#     "PhoneService": [Check.isin(["No", "Yes"])],
-#     "MultipleLines": [Check.isin(["No", "Yes", "No phone service"])],
-#     "InternetService": [Check.isin(["DSL", "Fiber optic", "No"])],
-#     "OnlineSecurity": [Check.isin(["No", "Yes", "No internet service"])],
-#     "OnlineBackup": [Check.isin(["Yes", "No", "No internet service"])],
-#     "DeviceProtection": [Check.isin(["No", "Yes", "No internet service"])],
-#     "TechSupport": [Check.isin(["No", "Yes", "No internet service"])],
-#     "StreamingTV": [Check.isin(["No", "Yes", "No internet service"])],
-#     "StreamingMovies": [Check.isin(["No", "Yes", "No internet service"])],
-#     "Contract": [Check.isin(["Month-to-month", "One year", "Two year"])],
-#     "PaperlessBilling": [Check.isin(["Yes", "No"])],
-#     "PaymentMethod": [
-#         Check.isin(
-#             [
-#                 "Electronic check",
-#                 "Mailed check",
-#                 "Bank transfer (automatic)",
-#                 "Credit card (automatic)",
-#             ]
-#         )
-#     ],
-#     "MonthlyCharges": [],
-#     "TotalCharges": [],
-#     "TrueChurn": [Check.isin(["No", "Yes"])],
-#     "PredictedChurn": [Check.isin(["No", "Yes"])],
-#     "PredictedChurnProbability": [],
-# }
-
-# INPUT_SCHEMA = DataFrameSchema(
-#     columns={
-#         "customerID": Column(
-#             dtype="object",
-#             checks=checks.get("customerID"),
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#         "gender": Column(
-#             dtype="object",
-#             checks=checks.get("gender"),
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#         "SeniorCitizen": Column(
-#             dtype="int64",
-#             checks=checks.get("SeniorCitizen"),
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#         "Partner": Column(
-#             dtype="object",
-#             checks=checks.get("Partner"),
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#         "Dependents": Column(
-#             dtype="object",
-#             checks=checks.get("Dependents"),
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#         "tenure": Column(
-#             dtype="int64",
-#             checks=checks.get("tenure"),
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#         "PhoneService": Column(
-#             dtype="object",
-#             checks=checks.get("PhoneService"),
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#         "MultipleLines": Column(
-#             dtype="object",
-#             checks=checks.get("MultipleLines"),
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#         "InternetService": Column(
-#             dtype="object",
-#             checks=checks.get("InternetService"),
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#         "OnlineSecurity": Column(
-#             dtype="object",
-#             checks=checks.get("OnlineSecurity"),
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#         "OnlineBackup": Column(
-#             dtype="object",
-#             checks=checks.get("OnlineBackup"),
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#         "DeviceProtection": Column(
-#             dtype="object",
-#             checks=checks.get("DeviceProtection"),
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#         "TechSupport": Column(
-#             dtype="object",
-#             checks=checks.get("TechSupport"),
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#         "StreamingTV": Column(
-#             dtype="object",
-#             checks=checks.get("StreamingTV"),
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#         "StreamingMovies": Column(
-#             dtype="object",
-#             checks=checks.get("StreamingMovies"),
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#         "Contract": Column(
-#             dtype="object",
-#             checks=checks.get("Contract"),
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#         "PaperlessBilling": Column(
-#             dtype="object",
-#             checks=None,
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#         "PaymentMethod": Column(
-#             dtype="object",
-#             checks=checks.get("PaymentMethod"),
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#         "MonthlyCharges": Column(
-#             dtype="float64",
-#             checks=checks.get("MonthlyCharges"),
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#         "TotalCharges": Column(
-#             dtype="object",
-#             checks=checks.get("TotalCharges"),
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#     },
-#     checks=None,
-#     index=Index(
-#         dtype="int64",
-#         checks=[],
-#         nullable=False,
-#         coerce=False,
-#         name=None,
-#         description=None,
-#         title=None,
-#     ),
-#     dtype=None,
-#     coerce=True,
-#     strict=False,
-#     name=None,
-#     ordered=False,
-#     unique=None,
-#     report_duplicates="all",
-#     unique_column_names=False,
-#     title=None,
-#     description=None,
-# )
-
-# FLAG_SCHEMA: pa.DataFrameSchema = DataFrameSchema(
-#     columns={
-#         "customerID": Column(
-#             dtype="object",
-#             checks=checks.get("customerID"),
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#         "gender": Column(
-#             dtype="object",
-#             checks=checks.get("gender"),
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#         "SeniorCitizen": Column(
-#             dtype="int64",
-#             checks=checks.get("SeniorCitizen"),
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#         "Partner": Column(
-#             dtype="object",
-#             checks=checks.get("Partner"),
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#         "Dependents": Column(
-#             dtype="object",
-#             checks=checks.get("Dependents"),
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#         "tenure": Column(
-#             dtype="int64",
-#             checks=checks.get("tenure"),
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#         "PhoneService": Column(
-#             dtype="object",
-#             checks=checks.get("PhoneService"),
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#         "MultipleLines": Column(
-#             dtype="object",
-#             checks=checks.get("MultipleLines"),
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#         "InternetService": Column(
-#             dtype="object",
-#             checks=checks.get("InternetService"),
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#         "OnlineSecurity": Column(
-#             dtype="object",
-#             checks=checks.get("OnlineSecurity"),
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#         "OnlineBackup": Column(
-#             dtype="object",
-#             checks=checks.get("OnlineBackup"),
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#         "DeviceProtection": Column(
-#             dtype="object",
-#             checks=checks.get("DeviceProtection"),
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#         "TechSupport": Column(
-#             dtype="object",
-#             checks=checks.get("TechSupport"),
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#         "StreamingTV": Column(
-#             dtype="object",
-#             checks=checks.get("StreamingTV"),
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#         "StreamingMovies": Column(
-#             dtype="object",
-#             checks=checks.get("StreamingMovies"),
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#         "Contract": Column(
-#             dtype="object",
-#             checks=checks.get("Contract"),
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#         "PaperlessBilling": Column(
-#             dtype="object",
-#             checks=None,
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#         "PaymentMethod": Column(
-#             dtype="object",
-#             checks=checks.get("PaymentMethod"),
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#         "MonthlyCharges": Column(
-#             dtype="float64",
-#             checks=checks.get("MonthlyCharges"),
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#         "TotalCharges": Column(
-#             dtype="object",
-#             checks=checks.get("TotalCharges"),
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#         "actualChurn": Column(
-#             dtype="int64",
-#             checks=checks.get("actualChurn"),
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#         "predictedChurn": Column(
-#             dtype="int64",
-#             checks=checks.get("predictedChurn"),
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#         "predicted_probaChurn": Column(
-#             dtype="float64",
-#             checks=checks.get("predicted_probaChurn"),
-#             nullable=False,
-#             unique=False,
-#             coerce=False,
-#             required=True,
-#             regex=False,
-#             description=None,
-#             title=None,
-#         ),
-#     },
-#     checks=None,
-#     index=Index(
-#         dtype="int64",
-#         checks=[],
-#         nullable=False,
-#         coerce=False,
-#         name=None,
-#         description=None,
-#         title=None,
-#     ),
-#     dtype=None,
-#     coerce=True,
-#     strict=False,
-#     name=None,
-#     ordered=False,
-#     unique=None,
-#     report_duplicates="all",
-#     unique_column_names=False,
-#     title=None,
-#     description=None,
-# )
-
-#
-# class PredictionEndpointInputSchema(BaseModel):
-#     customerID: str
-#     gender: str
-#     SeniorCitizen: int
-#     Partner: str
-#     Dependents: str
-#     tenure: int
-#     PhoneService: str
-#     MultipleLines: str
-#     InternetService: str
-#     OnlineSecurity: str
-#     OnlineBackup: str
-#     DeviceProtection: str
-#     TechSupport: str
-#     StreamingTV: str
-#     StreamingMovies: str
-#     Contract: str
-#     PaperlessBilling: str
-#     PaymentMethod: str
-#     MonthlyCharges: float
-#     TotalCharges: str
-#
-#
-# class FlagEndpointInputSchema(BaseModel):
-#     customerID: str
-#     gender: str
-#     SeniorCitizen: int
-#     Partner: str
-#     Dependents: str
-#     tenure: int
-#     PhoneService: str
-#     MultipleLines: str
-#     InternetService: str
-#     OnlineSecurity: str
-#     OnlineBackup: str
-#     DeviceProtection: str
-#     TechSupport: str
-#     StreamingTV: str
-#     StreamingMovies: str
-#     Contract: str
-#     PaperlessBilling: str
-#     PaymentMethod: str
-#     MonthlyCharges: float
-#     TotalCharges: str
-#     actualChurn: int
-#     predictedChurn: int
-#     predicted_probaChurn: float
-#
 
 
 def fetch_best_run_artifacts(
@@ -685,7 +71,7 @@ def construct_response(func):
     """
 
     @wraps(func)
-    def wrap(request: fastapi.Request, *args, **kwargs) -> t.Dict:
+    def wrap(request: fastapi.Request, *args, **kwargs) -> Dict:
         try:
             results: dict = func(request, *args, **kwargs)
         except Exception as e:
@@ -705,10 +91,10 @@ def construct_response(func):
             "errors": results.get("errors", list()),
             "IP": request.client.host,
         }
-        # try:
-        upload_response_to_bucket(response)
-        # except Exception as e:
-        #     response["errors"].append(str(e))
+        try:
+            upload_response_to_bucket(response)
+        except Exception as e:
+            response["errors"].append(str(e))
         return response
 
     return wrap
@@ -718,10 +104,7 @@ def upload_response_to_bucket(response: dict):
     if "predict" not in response["urlPath"]:
         return None
 
-    # credentials = Credentials(token=os.environ["GCLOUD_ACCESS_TOKEN"])
-    storage_client = storage.Client(
-        # project=os.environ["PROJECT_ID"], credentials=credentials
-    )
+    storage_client = storage.Client()
     bucket = storage_client.bucket(os.environ["GCS_BUCKET_NAME"])
 
     uid = str(uuid.uuid4())
@@ -731,3 +114,28 @@ def upload_response_to_bucket(response: dict):
         fname = "predict/" + fname
     blob = bucket.blob(fname)
     blob.upload_from_string(json.dumps(response))
+
+
+#
+# async def construct_response_and_upload_to_gcloud(request: fastapi.Request, call_next):
+#     try:
+#         results: dict = await call_next(request)
+#     except Exception as e:
+#         results = {}
+#         results["message"] = "HOUSTON THERE SEEMS TO BE A PROBLEM"
+#         results["status-code"] = HTTPStatus.INTERNAL_SERVER_ERROR
+#         results["errors"] = list()
+#         results["errors"].append(str(e))
+#     response = {
+#         "message": results.get("message", None),
+#         "method": request.method,
+#         "status-code": results["status-code"],
+#         "timestamp": datetime.now().isoformat(),
+#         "url": request.url._url,
+#         "urlPath": request.url.path,
+#         "data": results.get("data", None),
+#         "errors": results.get("errors", list()),
+#         "IP": request.client.host,
+#     }
+#     upload_response_to_bucket(response)
+#     return response
