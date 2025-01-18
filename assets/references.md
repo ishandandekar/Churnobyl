@@ -1,0 +1,46 @@
+
+Refs:
+
+- Pulumi seems like a great automation tool to "up" the infra, would have to look into ECS first, but lets see. Very hopeful about this
+- https://www.youtube.com/watch?app=desktop&v=ZaTVXLuCXQ8
+- https://stackoverflow.com/questions/19555525/saving-plots-axessubplot-generated-from-python-pandas-with-matplotlibs-savefi
+- https://www.youtube.com/watch?v=iqrS7Q174Ac & https://www.youtube.com/watch?v=h5wLuVDr0oc&t=397s
+- https://github.com/vb100/github-action-to-ecr/blob/main/.github/workflows/main.yml & https://www.youtube.com/watch?v=m1OFz_Y9bYo & https://www.youtube.com/watch?v=2qE4Kd1Lxmc
+- https://github.com/ricardo-vaca/serverless-fastapi
+- https://www.ravirajag.dev/blog/mlops-monitoring
+- https://www.deadbear.io/simple-serverless-fastapi-with-aws-lambda/
+- https://www.eliasbrange.dev/posts/deploy-fastapi-on-aws-part-1-lambda-api-gateway/
+- https://github.com/eliasbrange/aws-fastapi/tree/main/lambda-api-gateway
+- https://blog.searce.com/fastapi-container-app-deployment-using-aws-lambda-and-api-gateway-6721904531d0
+- https://www.youtube.com/watch?v=rpVLOVeky6A&ab_channel=VincentStevenson
+- https://www.youtube.com/watch?v=UXMTOBkdvMY
+- https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#adding-a-job-summary
+- https://github.blog/2022-05-09-supercharging-github-actions-with-job-summaries/
+- https://cml.dev/doc/usage
+- https://docs.aws.amazon.com/AmazonECR/latest/userguide/image-push.html
+- https://medium.com/akava/deploying-containerized-aws-lambda-functions-with-terraform-7147b9815599
+- https://developer.hashicorp.com/terraform/tutorials/aws/lambda-api-gateway
+- https://www.youtube.com/watch?v=VYk3lwZbHBU&ab_channel=TalhaAnwar
+- https://www.baeldung.com/ops/dockerfile-env-variable
+- https://www.youtube.com/watch?v=9ciujhGdAOs&ab_channel=TechplanetAI
+- https://docs.aws.amazon.com/lambda/latest/dg/configuration-envvars.html
+- https://www.youtube.com/watch?v=M91vXdjve7A&ab_channel=BeABetterDev
+- https://octopus.com/blog/githubactions-docker-ecr
+- https://aws.amazon.com/blogs/compute/using-aws-lambda-extensions-to-send-logs-to-custom-destinations/
+- https://madewithml.com/courses/mlops/testing/
+- https://neptune.ai/blog/ml-model-testing-teams-share-how-they-test-models
+- https://github.com/whylabs/whylogs/tree/mainline
+- https://whylogs.readthedocs.io/en/stable/examples/integrations/flask_streaming/flask_with_whylogs.html
+- https://aws.amazon.com/blogs/compute/deploying-machine-learning-models-with-serverless-templates/
+- https://betterprogramming.pub/deploying-ml-models-using-aws-lambda-and-api-gateway-f1f349515c81
+- https://aws.amazon.com/blogs/machine-learning/deploy-a-machine-learning-inference-data-capture-solution-on-aws-lambda/
+- https://blog.devgenius.io/how-to-put-an-ml-model-into-production-dc3a99eeb2cc
+- https://aws.amazon.com/blogs/machine-learning/build-a-ci-cd-pipeline-for-deploying-custom-machine-learning-models-using-aws-services/
+- https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://towardsai.net/p/l/model-monitoring-dashboards-made-easy-1-3%3Famp%3D1&ved=2ahUKEwjF06zUrI2AAxVQcGwGHekJDvEQFnoECCcQAQ&usg=AOvVaw1a1kNPwMKpByjAb8PkguQ9
+- https://docs.arize.com/arize/quickstart
+- https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://neptune.ai/blog/ml-model-monitoring-best-tools&ved=2ahUKEwjF06zUrI2AAxVQcGwGHekJDvEQFnoECCUQAQ&usg=AOvVaw0cWnCVHcV7-lAU9ivcr-lf
+- https://retool.com/templates/machine-learning-model-monitoring-dashboard
+- https://docs.dominodatalab.com/en/5.3/user_guide/715969/model-monitoring/
+- https://stackoverflow.com/questions/65602056/how-to-set-and-access-environment-variables-in-python-file-for-streamlit-app
+- https://docs.wandb.ai/guides/artifacts/download-and-use-an-artifact
+
