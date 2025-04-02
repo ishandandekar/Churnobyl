@@ -7,7 +7,7 @@ from http import HTTPStatus
 import fastapi
 import mlflow
 
-from . import predict, utils
+from . import flag, predict, utils
 
 warnings.simplefilter("ignore")
 
@@ -42,7 +42,9 @@ def _index(request: fastapi.Request) -> t.Dict:
 
 @app.post("/predict", tags=["Prediction"])
 @utils.construct_response
-def predict(request: fastapi.Request, data: predict.PredictionInputSchema) -> t.Dict:
+def predict_route(
+    request: fastapi.Request, data: predict.PredictionInputSchema
+) -> dict:
     """
     API endpoint to get predictions for one single data point
     """
@@ -59,4 +61,21 @@ def predict(request: fastapi.Request, data: predict.PredictionInputSchema) -> t.
         result["message"] = HTTPStatus.INTERNAL_SERVER_ERROR.phrase
         result["errors"].append(str(e))
         result["status-code"] = HTTPStatus.INTERNAL_SERVER_ERROR
+    return result
+
+
+@app.post(
+    "/flag",
+    tags=["Flag"],
+)
+@utils.construct_response
+def flag(request: fastapi.Request, data: flag.FlagEndpointInputSchema) -> dict:
+    """
+    API endpoint to flag single predictions
+    """
+    result = {}
+    result["data"] = data.model_dump()
+    result["errors"] = list()
+    result["message"] = HTTPStatus.CREATED.phrase
+    result["status-code"] = HTTPStatus.CREATED
     return result

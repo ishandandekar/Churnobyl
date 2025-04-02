@@ -80,6 +80,10 @@ def construct_response(func):
             results["status-code"] = HTTPStatus.INTERNAL_SERVER_ERROR
             results["errors"] = list()
             results["errors"].append(str(e))
+
+        uid = str(uuid.uuid4())
+        curr_time = datetime.now().strftime("%H-%M-%S")
+        request_id = f"{uid}-{curr_time}"
         response = {
             "message": results.get("message", None),
             "method": request.method,
@@ -90,6 +94,7 @@ def construct_response(func):
             "data": results.get("data", None),
             "errors": results.get("errors", list()),
             "IP": request.client.host,
+            "requestID": request_id,
         }
         try:
             upload_response_to_bucket(response)
@@ -107,35 +112,10 @@ def upload_response_to_bucket(response: dict):
     storage_client = storage.Client()
     bucket = storage_client.bucket(os.environ["GCS_BUCKET_NAME"])
 
-    uid = str(uuid.uuid4())
-    curr_time = datetime.now().strftime("%H-%M-%S")
-    fname = f"{uid}-{curr_time}.json"
+    fname = f"{response['requestID']}.json"
     if "predict" in response["urlPath"]:
         fname = "predict/" + fname
+    elif "flag" in response["urlPath"]:
+        fname = "flag/" + fname
     blob = bucket.blob(fname)
     blob.upload_from_string(json.dumps(response))
-
-
-#
-# async def construct_response_and_upload_to_gcloud(request: fastapi.Request, call_next):
-#     try:
-#         results: dict = await call_next(request)
-#     except Exception as e:
-#         results = {}
-#         results["message"] = "HOUSTON THERE SEEMS TO BE A PROBLEM"
-#         results["status-code"] = HTTPStatus.INTERNAL_SERVER_ERROR
-#         results["errors"] = list()
-#         results["errors"].append(str(e))
-#     response = {
-#         "message": results.get("message", None),
-#         "method": request.method,
-#         "status-code": results["status-code"],
-#         "timestamp": datetime.now().isoformat(),
-#         "url": request.url._url,
-#         "urlPath": request.url.path,
-#         "data": results.get("data", None),
-#         "errors": results.get("errors", list()),
-#         "IP": request.client.host,
-#     }
-#     upload_response_to_bucket(response)
-#     return response
