@@ -1,7 +1,6 @@
 # Churnobyl
 
 [![Deploy](https://github.com/ishandandekar/Churnobyl/actions/workflows/deploy.yaml/badge.svg)](https://github.com/ishandandekar/Churnobyl/actions/workflows/deploy.yaml)
-<!--[![Tests](https://github.com/ishandandekar/Churnobyl/actions/workflows/tests.yaml/badge.svg)](https://github.com/ishandandekar/Churnobyl/actions/workflows/tests.yaml)-->
 
 
 Super excited to say the project is now complete and has achieved OPERATION VACATION!! The whole pipeline runs via Github Actions and deploys a docker container on a gcloud instance.
@@ -13,10 +12,6 @@ You can use this as a template to run and deploy an MLOps project
 ## Future additions:
 
 - Minimize human intervention. The pipeline must run automatically, if the production metric goes below a certain threshold
-- Adding a flag endpoint to capture wrong predictions submitted by users
-- Using self-hosted runners instead of Github appointed, to gain more control over functioning and logging of the pipeline
-- Model training doesn't support `StackingClassifier`
-- Tuning `VotingClassifier` is not available yet
 
 ## Milestones
 

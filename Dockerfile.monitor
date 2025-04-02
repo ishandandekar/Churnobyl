@@ -1,0 +1,17 @@
+FROM python:3.10-slim
+
+ENV PYTHONUNBUFFERED True
+ARG GCS_BUCKET_NAME
+
+ENV PYTHONUNBUFFERED=True
+
+ENV GCS_BUCKET_NAME=$GCS_BUCKET_NAME
+WORKDIR /app
+COPY ./monitor-requirements.txt ./
+COPY ./key.json ./
+
+ENV GOOGLE_APPLICATION_CREDENTIALS="/app/key.json"
+RUN pip install --no-cache-dir -r monitor-requirements.txt
+COPY ./monitor ./monitor
+EXPOSE 8080
+CMD ["streamlit", "run", "dashboard.py", "--server.port=8080", "--server.address=0.0.0.0","--theme.backgroundColor=#313244", "--theme.primaryColor=#cba6f7"]
